@@ -30,11 +30,14 @@ import hudson.model.Run;
 import hudson.remoting.Callable;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
+import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.logging.Level;
@@ -189,22 +192,45 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> implements MatrixA
         return buildSize;
     }
     
+    /**
+     * @return Counts disk usage for the given and previous builds
+     */
     public static long allBuildUsages(Run build) throws InterruptedException, IOException {
         long usage = 0;
+        
+        //Don't count builds to be removed by LogRotator
+        int count = 1;
+        LogRotator rotator = build.getParent().getLogRotator();
+        int numKeep = (rotator != null) ? rotator.getNumToKeep() : -1;
+        int daysKeep = (rotator != null) ? rotator.getDaysToKeep() : -1;
+        Calendar keepCalendar = null;
+        if (daysKeep != -1) {
+            keepCalendar = new GregorianCalendar();
+            keepCalendar.add(Calendar.DAY_OF_YEAR, -daysKeep);
+        }
+
+        Run lastBuild = build.getParent().getLastSuccessfulBuild();
+
         while (build != null) {
-            BuildDiskUsageAction bdua = build.getAction(BuildDiskUsageAction.class);
-            if (bdua != null) {
-                usage += bdua.getBuildUsage();
-            } else {
-                usage += _doCalculateDiskUsage(build);
+            if (build.isKeepLog() ||
+                    ((count <= numKeep) && ((keepCalendar == null) || (build.getTimestamp().after(keepCalendar)))) ||
+                    (lastBuild  == build)) {
+
+                BuildDiskUsageAction bdua = build.getAction(BuildDiskUsageAction.class);
+                if (bdua != null) {
+                    usage += bdua.getBuildUsage();
+                } else {
+                    usage += _doCalculateDiskUsage(build);
+                }
             }
-            
+
             build = build.getPreviousBuild();
+            count++;
         }
         return usage;
     }
 
-    
+
     /**
      * A {@link Callable} which computes disk usage of remote file object
      */
