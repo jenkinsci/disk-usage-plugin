@@ -126,21 +126,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> implements MatrixA
         }
         
         
-    }
-         
-    private static long calculateDiskUsageForBuilds(Job<? extends Job, ? extends Run> project) 
-            throws InterruptedException, IOException {
-        long usage = 0;
-        
-        for (Run i : project.getBuilds()) {
-            //Count disk usage (where unknown)
-            if (i.getAction(BuildDiskUsageAction.class) == null) {
-                usage += calculateDiskUsageForBuild(i);//Builds are stored on the master
-            }
-        }
-        
-        return usage;
-    }
+    }         
     
     private static long calculateDiskUsageForBuild(Run build) 
             throws InterruptedException, IOException {   
