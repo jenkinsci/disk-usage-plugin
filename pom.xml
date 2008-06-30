@@ -11,4 +11,5 @@
   <artifactId>disk-usage</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson disk-usage plugin</name>
+  <version>0.2-SNAPSHOT</version>
 </project>
