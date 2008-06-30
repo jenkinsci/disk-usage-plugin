@@ -11,11 +11,5 @@
   <artifactId>disk-usage</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson disk-usage plugin</name>
-  <version>0.2</version>
-
-  <scm>
-    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/disk-usage-0.2</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/disk-usage-0.2</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/disk-usage/tags/disk-usage-0.2</url>
-  </scm>
+  <version>0.3-SNAPSHOT</version>
 </project>
