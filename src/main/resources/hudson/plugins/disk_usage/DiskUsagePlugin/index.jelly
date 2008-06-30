@@ -32,7 +32,7 @@
     </table>
     
     <p />
-    Disk usage is calculated each ${it.COUNT_INTERVAL_MINUTES} minutes. If you want to trigger it now, click on the button.<br/>
+    Disk usage is calculated each ${it.COUNT_INTERVAL_MINUTES} minutes. If you want to trigger the calculation now, click on the button.<br/>
     <form action="recordDiskUsage">
       <input type="hidden" name="name" value="${h.name}"/>
       <f:submit value="Record Disk Usage" />
