@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.219</version>
+    <version>1.230</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -12,4 +12,6 @@
   <packaging>hpi</packaging>
   <name>Hudson disk-usage plugin</name>
   <version>0.3-SNAPSHOT</version>
+  <url>http://hudson.gotdns.com/wiki/display/HUDSON/Disk+Usage+Plugin</url>
+  
 </project>
