@@ -17,6 +17,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -36,7 +37,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * Disk usage information holder for
+ * Disk usage of a project
+ * 
  * @author dvrzalik
  */
 public class ProjectDiskUsageAction extends DiskUsageAction {
@@ -51,7 +53,38 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
     public String getUrlName() {
         return "disk-usage";
     }
+    
+    /**
+     * @return Disk usage for all builds
+     */
+    public DiskUsage getDiskUsage() {
+        DiskUsage du = new DiskUsage(0, 0);
 
+        if (project != null) {
+            BuildDiskUsageAction action = null;
+            Iterator<? extends AbstractBuild> buildIterator = project.getBuilds().iterator();
+            while ((action == null) && buildIterator.hasNext()) {
+                action = buildIterator.next().getAction(BuildDiskUsageAction.class);
+            }
+            if (action != null) {
+                DiskUsage bdu = action.getDiskUsage();
+                //Take last available workspace size
+                du.wsUsage = bdu.getWsUsage();
+                du.buildUsage += bdu.getBuildUsage();
+            }
+
+            while (buildIterator.hasNext()) {
+                action = buildIterator.next().getAction(BuildDiskUsageAction.class);
+                if (action != null) {
+                    du.buildUsage += action.getDiskUsage().getBuildUsage();
+                }
+            }
+            
+        }
+
+        return du;
+    }
+    
     public BuildDiskUsageAction getLastBuildAction() {
         Run run = project.getLastBuild();
         if (run != null) {
@@ -59,39 +92,6 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
         }
 
         return null;
-    }
-
-    public Long getWorkspaceUsage() {
-        if (project != null) {
-            for (Run build : project.getBuilds()) {
-                BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
-                if (action != null) {
-                    return action.wsUsage;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public Long getBuildUsage() {
-        long buildUsage = 0;
-        for (Run build : project.getBuilds()) {
-            BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
-            if (action != null) {
-                buildUsage += action.buildUsage;
-            }
-        }
-
-        return buildUsage;
-    }
-
-    public String getWorkspaceUsageString() {
-        return getSizeString(getWorkspaceUsage());
-    }
-
-    public String getBuildUsageString() {
-        return getSizeString(getBuildUsage());
     }
 
     /**
@@ -104,12 +104,8 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
             rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
             return;
         }
-
-        Run run = project.getLastBuild();
-        if ((run == null) ||
-                req.checkIfModified(run.getTimestamp(), rsp)) {
-            return;
-        }
+        
+        //TODO if(nothing_changed) return;
 
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb = new DataSetBuilder<String, NumberOnlyBuildLabel>();
 
@@ -119,19 +115,20 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
         for (AbstractBuild build : project.getBuilds()) {
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
-                maxValue = Math.max(maxValue, Math.max(dua.getWsUsage(), dua.getAllBuildsUsage()));
-                usages.add(new Object[]{build, dua.getWsUsage(), dua.getAllBuildsUsage()});
+                DiskUsage usage = dua.getDiskUsage();
+                maxValue = Math.max(maxValue, Math.max(usage.wsUsage, usage.getBuildUsage()));
+                usages.add(new Object[]{build, usage.wsUsage, usage.getBuildUsage()});
             }
         }
 
-        int floor = (int) getScale(maxValue);
-        String unit = getUnitString(floor);
+        int floor = (int) DiskUsage.getScale(maxValue);
+        String unit = DiskUsage.getUnitString(floor);
         double base = Math.pow(1024, floor);
 
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
             dsb.add(((Long) usage[1]) / base, "workspace", label);
-            dsb.add(((Long) usage[2]) / base, "all builds", label);
+            dsb.add(((Long) usage[2]) / base, "build", label);
         }
 
         ChartUtil.generateGraph(req, rsp, createChart(req, dsb.build(), unit), 350, 150);
