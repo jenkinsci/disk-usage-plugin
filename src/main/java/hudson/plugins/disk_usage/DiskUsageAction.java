@@ -1,7 +1,5 @@
 package hudson.plugins.disk_usage;
 
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.ProminentProjectAction;
 
 /**

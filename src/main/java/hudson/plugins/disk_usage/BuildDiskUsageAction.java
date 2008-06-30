@@ -5,7 +5,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
-import hudson.model.Run;
 import java.util.LinkedList;
 import java.util.List;
 

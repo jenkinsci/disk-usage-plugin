@@ -1,18 +1,13 @@
 package hudson.plugins.disk_usage;
 
-import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Job;
-import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.ChartUtil;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
-import hudson.util.StackedAreaRenderer2;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.IOException;
@@ -27,9 +22,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.chart.title.LegendTitle;
-import org.jfree.data.Range;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
