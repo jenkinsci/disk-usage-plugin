@@ -12,7 +12,7 @@
 
     <l:main-panel>
 
-     <h1><img src="${rootURL}/plugin/disk-usage/icons/diskusage48.gif" /> Disk usage </h1>
+     <h1><img src="${rootURL}/plugin/disk-usage/icons/diskusage48.png" /> Disk usage </h1>
         
      <table id="projectstatus" class="pane bigtable">
       <tr>

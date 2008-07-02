@@ -33,7 +33,7 @@ public class DiskUsagePlugin extends Plugin {
             public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace"};
 
             public String getIconFileName() {
-                return "/plugin/disk-usage/icons/diskusage48.gif";
+                return "/plugin/disk-usage/icons/diskusage48.png";
             }
 
             public String getDisplayName() {
