@@ -45,7 +45,7 @@ public class DiskUsagePlugin extends Plugin {
             }
 
             public String getDescription() {
-                return "Display per-project disk usage";
+                return "Displays per-project disk usage";
             }
         });
         
