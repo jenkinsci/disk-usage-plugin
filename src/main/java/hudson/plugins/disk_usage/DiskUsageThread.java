@@ -90,7 +90,10 @@ public class DiskUsageThread extends PeriodicWork {
                 AbstractBuild lastBuild = (AbstractBuild) parent.getLastBuild();
                 if (lastBuild != null) {
                     FilePath workspace = parent.getWorkspace();
-                    wsUsage = workspace.act(new DiskUsageCallable(workspace));
+                    //slave might be offline...
+                    if(workspace != null) {
+                        wsUsage = workspace.act(new DiskUsageCallable(workspace));
+                    }
                 }
             }
 
