@@ -81,7 +81,11 @@ public class DiskUsagePlugin extends Plugin {
                 DiskUsage du1 = getDiskUsage(o1);
                 DiskUsage du2 = getDiskUsage(o2);
                 
-                return (int) (du1.wsUsage + du1.buildUsage - du2.wsUsage - du2.buildUsage);                
+                long result = du2.wsUsage + du2.buildUsage - du1.wsUsage - du1.buildUsage;
+                
+                if(result > 0) return 1;
+                if(result < 0) return -1;
+                return 0;
             }
         };
         
