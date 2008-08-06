@@ -171,4 +171,9 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
 
         return chart;
     }
+    
+    /** Shortcut for the jelly view */
+    public boolean showGraph() {
+        return DiskUsageProperty.DESCRIPTOR.isShowGraph();
+    }
 }

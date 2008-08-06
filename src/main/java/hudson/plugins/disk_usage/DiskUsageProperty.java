@@ -26,10 +26,12 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         return DESCRIPTOR;
     }
     
-    public static final JobPropertyDescriptor DESCRIPTOR = new DiskUsageDescriptor();
+    public static final DiskUsageDescriptor DESCRIPTOR = new DiskUsageDescriptor();
 
     public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
 
+        //Show graph on the project page?
+        private Boolean showGraph;
         
         public DiskUsageDescriptor() {
             super(DiskUsageProperty.class);
@@ -48,13 +50,25 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
         @Override
         public boolean configure(StaplerRequest req) throws FormException {
+            showGraph = req.getParameter("disk_usage.showGraph") != null;
             return true;
         }
+        
+        
 
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
-            return false; // this shouldn't show on the configuration page
-        }        
+            return true;
+        }
+
+        public boolean isShowGraph() {
+            //The graph is shown by default
+            return (showGraph != null) ? showGraph : true;
+        }
+
+        public void setShowGraph(Boolean showGraph) {
+            this.showGraph = showGraph;
+        }
     }         
 }
 

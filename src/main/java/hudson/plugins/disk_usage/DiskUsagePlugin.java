@@ -5,6 +5,7 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Job;
+import hudson.model.Jobs;
 import hudson.model.ManagementLink;
 import hudson.triggers.Trigger;
 import java.io.IOException;
@@ -48,6 +49,8 @@ public class DiskUsagePlugin extends Plugin {
                 return "Displays per-project disk usage";
             }
         });
+        
+        Jobs.PROPERTIES.add(DiskUsageProperty.DESCRIPTOR);
         
         //trigger disk usage thread each 15 minutes
         Trigger.timer.scheduleAtFixedRate(duThread, 1000*60*COUNT_INTERVAL_MINUTES, 1000*60*COUNT_INTERVAL_MINUTES);
