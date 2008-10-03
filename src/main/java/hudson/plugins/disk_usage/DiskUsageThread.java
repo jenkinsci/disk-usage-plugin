@@ -53,19 +53,20 @@ public class DiskUsageThread extends PeriodicWork {
                     }
                 }
 
+                //well, this is not absolutely thread-safe, but in the worst case we get invalid result for one build
+                //(which will be rewritten next time)
                 if (!project.isBuilding()) {
 
                     List<AbstractBuild> builds = project.getBuilds();
                     Iterator<AbstractBuild> buildIterator = builds.iterator();
                     try {
-                        //Assign workspace size to the last build
-                        if (buildIterator.hasNext()) {
-                            calculateDiskUsageForBuild(buildIterator.next(), true);
-                        }
-
+                        
                         while (buildIterator.hasNext()) {
-                            calculateDiskUsageForBuild(buildIterator.next(), false);
+                            calculateDiskUsageForBuild(buildIterator.next());
                         }
+                        
+                        //Assign workspace size to the last build
+                        calculateWorkspaceDiskUsage(project);
 
                     } catch (Exception ex) {
                         logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
@@ -75,32 +76,37 @@ public class DiskUsageThread extends PeriodicWork {
         }
     }
 
-    private static void calculateDiskUsageForBuild(AbstractBuild build, boolean countWorkspace)
-            throws IOException, InterruptedException {
+    private static void calculateDiskUsageForBuild(AbstractBuild build)
+            throws IOException {
 
-        if (build.isBuilding()) {
-            return;
+        //Build disk usage has to be always recalculated to be kept up-to-date 
+        //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
+        long buildSize = DiskUsageCallable.getFileSize(build.getRootDir());
+        BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
+        if (action == null) {
+            action = new BuildDiskUsageAction(build, 0, buildSize);
+            build.addAction(action);
+        } else {
+            action.diskUsage.buildUsage = buildSize;
         }
 
-        BuildDiskUsageAction bdua = build.getAction(BuildDiskUsageAction.class);
-        if (bdua == null) {
-            long wsUsage = 0;
-            if (countWorkspace) {
-                AbstractProject parent = build.getProject();
-                AbstractBuild lastBuild = (AbstractBuild) parent.getLastBuild();
-                if (lastBuild != null) {
-                    FilePath workspace = parent.getWorkspace();
-                    //slave might be offline...
-                    if(workspace != null) {
-                        wsUsage = workspace.act(new DiskUsageCallable(workspace));
-                    }
-                }
+        build.save();
+    }
+    
+    private static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
+        AbstractBuild lastBuild = (AbstractBuild) project.getLastBuild();
+        if (lastBuild != null) {
+            BuildDiskUsageAction bdua = lastBuild.getAction(BuildDiskUsageAction.class);
+            if (bdua == null) {
+                bdua = new BuildDiskUsageAction(lastBuild, 0, 0);
+                lastBuild.addAction(bdua);
             }
-
-            long buildSize = DiskUsageCallable.getFileSize(build.getRootDir());
-            BuildDiskUsageAction action = new BuildDiskUsageAction(build, wsUsage, buildSize);
-            build.addAction(action);
-            build.save();
+            FilePath workspace = project.getWorkspace();
+            //slave might be offline...
+            if ((workspace != null) && (bdua.diskUsage.wsUsage <= 0)) {
+                bdua.diskUsage.wsUsage = workspace.act(new DiskUsageCallable(workspace));
+                lastBuild.save();
+            }
         }
     }
 
