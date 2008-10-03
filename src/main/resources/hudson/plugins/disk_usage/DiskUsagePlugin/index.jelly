@@ -14,12 +14,20 @@
 
      <h1><img src="${rootURL}/plugin/disk-usage/icons/diskusage48.png" /> Disk usage </h1>
         
+     <j:set var="projects" value="${it.getProjectList()}" />     
+     
+     <!-- sum of values -->
+     <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
+     
+     <b>Builds: </b>${diskUsageSum.getBuildUsageString()}<br/>
+     <b>Workspace: </b>${diskUsageSum.getWsUsageString()}<br/><p/>
+     
+     <!-- project table -->
      <table id="projectstatus" class="pane bigtable">
       <tr>
         <th>Project name</th> <th>Builds</th> <th>Workspace</th>
       </tr>
 
-      <j:set var="projects" value="${it.getProjectList()}" />
       <j:forEach var="p" items="${projects}">
         <tr>
           <td><b><a href="${it.getProjectUrl(p)}">${p.getName()}</a></b> </td>

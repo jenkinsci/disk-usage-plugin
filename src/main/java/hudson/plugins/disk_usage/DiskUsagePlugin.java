@@ -26,6 +26,8 @@ public class DiskUsagePlugin extends Plugin {
     public static final int COUNT_INTERVAL_MINUTES = 15;
     
     private transient final DiskUsageThread duThread = new DiskUsageThread();
+    
+    private static DiskUsage diskUsageSum;
 
     public void start() throws Exception {
 
@@ -92,10 +94,24 @@ public class DiskUsagePlugin extends Plugin {
             }
         };
         
-        List projectList = Util.createSubList(Hudson.getInstance().getItems(), AbstractProject.class);
+        List<AbstractProject> projectList = Util.createSubList(Hudson.getInstance().getItems(), AbstractProject.class);
         Collections.sort(projectList, comparator);
         
+        //calculate sum
+        DiskUsage sum = new DiskUsage(0, 0);
+        for(AbstractProject project: projectList) {
+            DiskUsage du = getDiskUsage(project);
+            sum.buildUsage += du.buildUsage;
+            sum.wsUsage += du.wsUsage;
+        }
+        
+        diskUsageSum = sum;
+        
         return projectList;
+    }
+
+    public static DiskUsage getDiskUsageSum() {
+        return diskUsageSum;
     }
     
     public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
