@@ -23,6 +23,8 @@ import org.kohsuke.stapler.StaplerResponse;
  * @plugin
  */
 public class DiskUsagePlugin extends Plugin {
+    
+    //trigger disk usage thread each 60 minutes
     public static final int COUNT_INTERVAL_MINUTES = 60;
     
     private transient final DiskUsageThread duThread = new DiskUsageThread();
@@ -54,7 +56,6 @@ public class DiskUsagePlugin extends Plugin {
         
         Jobs.PROPERTIES.add(DiskUsageProperty.DESCRIPTOR);
         
-        //trigger disk usage thread each 15 minutes
         Trigger.timer.scheduleAtFixedRate(duThread, 1000*60*COUNT_INTERVAL_MINUTES, 1000*60*COUNT_INTERVAL_MINUTES);
     }
     
