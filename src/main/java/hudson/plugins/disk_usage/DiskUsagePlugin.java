@@ -23,7 +23,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @plugin
  */
 public class DiskUsagePlugin extends Plugin {
-    public static final int COUNT_INTERVAL_MINUTES = 15;
+    public static final int COUNT_INTERVAL_MINUTES = 60;
     
     private transient final DiskUsageThread duThread = new DiskUsageThread();
     
