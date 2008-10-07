@@ -19,8 +19,7 @@
      <!-- sum of values -->
      <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
      
-     <b>Builds: </b>${diskUsageSum.getBuildUsageString()}<br/>
-     <b>Workspace: </b>${diskUsageSum.getWsUsageString()}<br/><p/>
+     <b>Builds: </b>${diskUsageSum.getBuildUsageString()}<b> Workspace: </b>${diskUsageSum.getWsUsageString()}<br/><p/>
      
      <!-- project table -->
      <table id="projectstatus" class="pane bigtable">
