@@ -3,6 +3,7 @@ package hudson.plugins.disk_usage;
 import hudson.model.PeriodicWork;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
@@ -20,14 +21,17 @@ import java.util.logging.Level;
  * 
  * @author dvrzalik
  */
+@Extension
 public class DiskUsageThread extends PeriodicWork {
+    //trigger disk usage thread each 60 minutes
+    public static final int COUNT_INTERVAL_MINUTES = 60;
 
-    public DiskUsageThread() {
-        super("Disk usage");
+    public long getRecurrencePeriod() {
+        return 1000*60*COUNT_INTERVAL_MINUTES;
     }
 
     @Override
-    protected void execute() {
+    protected void doRun() {
         logger.log(Level.INFO, "Starting disk usage thread");
 
         List items = Hudson.getInstance().getItems();
