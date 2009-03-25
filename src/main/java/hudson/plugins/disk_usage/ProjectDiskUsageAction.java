@@ -3,11 +3,14 @@ package hudson.plugins.disk_usage;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
+import hudson.model.Hudson;
 import hudson.util.ChartUtil;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
+import hudson.plugins.disk_usage.DiskUsageProperty.DiskUsageDescriptor;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.IOException;
@@ -174,6 +177,6 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
     
     /** Shortcut for the jelly view */
     public boolean showGraph() {
-        return DiskUsageProperty.DESCRIPTOR.isShowGraph();
+        return Hudson.getInstance().getDescriptorByType(DiskUsageDescriptor.class).isShowGraph();
     }
 }
