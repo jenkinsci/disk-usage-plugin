@@ -12,5 +12,5 @@
   <packaging>hpi</packaging>
   <name>Hudson disk-usage plugin</name>
   <version>0.9-SNAPSHOT</version>
-  <url>http://hudson.gotdns.com/wiki/display/HUDSON/Disk+Usage+Plugin</url>
+  <url>http://wiki.hudson-ci.org/display/HUDSON/Disk+Usage+Plugin</url>
 </project>
