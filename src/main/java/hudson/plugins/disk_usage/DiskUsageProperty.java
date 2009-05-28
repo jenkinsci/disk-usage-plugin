@@ -25,8 +25,12 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     @Extension
     public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
 
+        public DiskUsageDescriptor() {
+            load();
+        }
+
         //Show graph on the project page?
-        private Boolean showGraph;
+        private boolean showGraph;
 
         @Override
         public String getDisplayName() {
@@ -53,7 +57,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
         public boolean isShowGraph() {
             //The graph is shown by default
-            return (showGraph != null) ? showGraph : true;
+            return showGraph;
         }
 
         public void setShowGraph(Boolean showGraph) {
