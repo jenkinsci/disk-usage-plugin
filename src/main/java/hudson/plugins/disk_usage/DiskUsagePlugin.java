@@ -29,6 +29,7 @@ public class DiskUsagePlugin extends Plugin {
     
     private static DiskUsage diskUsageSum;
 
+    @Override
     public void start() throws Exception {
 
         ManagementLink.LIST.add(new ManagementLink() {
