@@ -39,8 +39,6 @@ public class DiskUsageThread extends AsyncPeriodicWork {
 
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
-        logger.log(Level.INFO, "Starting disk usage thread");
-
         List items = Hudson.getInstance().getItems();
 
         //Include nested projects as well
