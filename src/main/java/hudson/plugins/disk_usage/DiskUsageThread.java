@@ -1,6 +1,5 @@
 package hudson.plugins.disk_usage;
 
-import hudson.model.PeriodicWork;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
@@ -110,7 +109,7 @@ public class DiskUsageThread extends AsyncPeriodicWork {
                 bdua = new BuildDiskUsageAction(lastBuild, 0, 0);
                 lastBuild.addAction(bdua);
             }
-            FilePath workspace = project.getWorkspace();
+            FilePath workspace = project.getSomeWorkspace();
             //slave might be offline...
             if ((workspace != null) && (bdua.diskUsage.wsUsage <= 0)) {
                 bdua.diskUsage.wsUsage = workspace.act(new DiskUsageCallable(workspace));

@@ -44,10 +44,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
 
         @Override
-        public boolean configure(StaplerRequest req) throws FormException {
+        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             showGraph = req.getParameter("disk_usage.showGraph") != null;
             save();
-            return true;
+            return super.configure(req, formData);
         }
 
         @Override

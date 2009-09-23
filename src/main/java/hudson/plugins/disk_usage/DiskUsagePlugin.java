@@ -1,13 +1,12 @@
 package hudson.plugins.disk_usage;
 
+import hudson.Extension;
 import hudson.Plugin;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Job;
-import hudson.model.Jobs;
 import hudson.model.ManagementLink;
-import hudson.triggers.Trigger;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,29 +28,26 @@ public class DiskUsagePlugin extends Plugin {
     
     private static DiskUsage diskUsageSum;
 
-    @Override
-    public void start() throws Exception {
+    @Extension
+    public static class DiskUsageManagementLink extends ManagementLink {
 
-        ManagementLink.LIST.add(new ManagementLink() {
+        public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace"};
 
-            public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace"};
+        public String getIconFileName() {
+            return "/plugin/disk-usage/icons/diskusage48.png";
+        }
 
-            public String getIconFileName() {
-                return "/plugin/disk-usage/icons/diskusage48.png";
-            }
+        public String getDisplayName() {
+            return "Disk usage";
+        }
 
-            public String getDisplayName() {
-                return "Disk usage";
-            }
+        public String getUrlName() {
+            return "plugin/disk-usage/";
+        }
 
-            public String getUrlName() {
-                return "plugin/disk-usage/";
-            }
-
-            public String getDescription() {
-                return "Displays per-project disk usage";
-            }
-        });
+        @Override public String getDescription() {
+            return "Displays per-project disk usage";
+        }
     }
     
     /**
