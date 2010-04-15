@@ -111,4 +111,8 @@ public class DiskUsagePlugin extends Plugin {
         
         res.forwardToPreviousPage(req);
     }
+    
+    public int getCountInterval(){
+    	return duThread.COUNT_INTERVAL_MINUTES;
+    }
 }
