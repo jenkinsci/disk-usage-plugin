@@ -22,7 +22,7 @@
      <b>Builds: </b>${diskUsageSum.getBuildUsageString()}<b> Workspace: </b>${diskUsageSum.getWsUsageString()}<br/><p/>
      
      <!-- project table -->
-     <table id="projectstatus" class="pane bigtable">
+     <table id="projectstatus" class="sortable pane bigtable">
       <tr>
         <th>Project name</th> <th>Builds</th> <th>Workspace</th>
       </tr>
@@ -32,8 +32,8 @@
           <td><b><a href="${it.getProjectUrl(p)}">${p.getName()}</a></b> </td>
           
           <j:set var="usage" value="${it.getDiskUsage(p)}" />
-          <td>${usage.getBuildUsageString()}</td>
-          <td>${usage.getWsUsageString()}</td>
+          <td data="${usage.getBuildUsage()}">${usage.getBuildUsageString()}</td>
+          <td data="${usage.getWsUsage()}">${usage.getWsUsageString()}</td>
         </tr>
       </j:forEach>
     </table>
