@@ -36,6 +36,14 @@
           <td data="${usage.getWsUsage()}">${usage.getWsUsageString()}</td>
         </tr>
       </j:forEach>
+      
+      <!-- sum of values -->
+      <tr>
+        <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
+        <td data="~~~"><b>Total</b> </td>
+        <td data="${diskUsageSum.getBuildUsage()}"><b>${diskUsageSum.getBuildUsageString()}</b></td>
+        <td data="${diskUsageSum.getWsUsage()}"><b>${diskUsageSum.getWsUsageString()}</b></td>
+      </tr>
     </table>
     
     <p />
