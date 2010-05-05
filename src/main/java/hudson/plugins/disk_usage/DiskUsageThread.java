@@ -13,6 +13,7 @@ import hudson.model.TopLevelItem;
 import hudson.remoting.Callable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.Math;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -91,14 +92,21 @@ public class DiskUsageThread extends AsyncPeriodicWork {
         //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
         long buildSize = DiskUsageCallable.getFileSize(build.getRootDir());
         BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
+        boolean updateBuild = false;
         if (action == null) {
             action = new BuildDiskUsageAction(build, 0, buildSize);
             build.addAction(action);
+            updateBuild = true;
         } else {
-            action.diskUsage.buildUsage = buildSize;
+        	if (( action.diskUsage.buildUsage <= 0 ) ||
+        			( Math.abs(action.diskUsage.buildUsage - buildSize) > 1024 )) {
+        		action.diskUsage.buildUsage = buildSize;
+        		updateBuild = true;
+        	}
         }
-
-        build.save();
+        if ( updateBuild ) {
+        	build.save();
+        }
     }
     
     private static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
