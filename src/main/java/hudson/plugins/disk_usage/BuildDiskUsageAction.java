@@ -38,6 +38,8 @@ public class BuildDiskUsageAction extends DiskUsageAction implements BuildBadgeA
         }
         
         //In case there is no workspace size available, refer to the previous result
+        // ?? - du.wsUsage should be up to date all the time, this approach causes wrong results e.g. when workspace is wipe out, old data are still shown
+        /*
         AbstractBuild previous = build;
         while((du.wsUsage == 0) && 
                 ((previous = (AbstractBuild) previous.getPreviousBuild()) != null)) {
@@ -46,6 +48,7 @@ public class BuildDiskUsageAction extends DiskUsageAction implements BuildBadgeA
                 du.wsUsage = bdua.diskUsage.wsUsage;
             }
         }
+        */
         return du;
     }
     
