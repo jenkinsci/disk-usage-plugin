@@ -21,4 +21,10 @@
     </developer>
   </developers>
 
+  <scm>
+    <connection>scm:git:git://github.com/hudson/disk-usage-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:hudson/disk-usage-plugin.git</developerConnection>
+    <url>http://github.com/hudson/disk-usage-plugin</url>
+  </scm>
+
 </project>
