@@ -19,12 +19,13 @@
      <!-- sum of values -->
      <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
      
-     <b>Builds: </b>${diskUsageSum.getBuildUsageString()}<b> Workspace: </b>${diskUsageSum.getWsUsageString()}<br/><p/>
+     <b>Builds: </b>${diskUsageSum.getBuildUsageString()}<b> Workspace: </b>${diskUsageSum.getWsUsageString()}<b> Predicted Needed Space (Workspace + Builds): </b>${diskUsageSum.getSizeString(diskUsageSum.getPredictedNeededSpace())}<b> Current Free Disk Space: </b>${diskUsageSum.getSizeString(diskUsageSum.getFreeDiskSpace())}<b> Predicted Free Disk Space: </b>${diskUsageSum.getSizeString(diskUsageSum.getFreeDiskSpace()-(diskUsageSum.getPredictedNeededSpace()-diskUsageSum.getWsUsage()-diskUsageSum.getBuildUsage()))}<br/><p/>
+     <font color="red">Red color indicates that the project is not fully configured to get a good disk usage prediction. You should configure it soon.</font><br/>
      
      <!-- project table -->
      <table id="projectstatus" class="sortable pane bigtable">
       <tr>
-        <th>Project name</th> <th>Builds</th> <th>Workspace</th>
+        <th>Project name</th> <th>Workspace</th> <th>Builds</th> <th>Nb Builds / Nb Builds to keep</th> <th>Needed Space (Workspace + Builds)</th>
       </tr>
 
       <j:forEach var="p" items="${projects}">
@@ -32,8 +33,18 @@
           <td><b><a href="${it.getProjectUrl(p)}">${p.getName()}</a></b> </td>
           
           <j:set var="usage" value="${it.getDiskUsage(p)}" />
-          <td data="${usage.getBuildUsage()}">${usage.getBuildUsageString()}</td>
           <td data="${usage.getWsUsage()}">${usage.getWsUsageString()}</td>
+          <td data="${usage.getBuildUsage()}">${usage.getBuildUsageString()}</td>
+          
+          <td data="${p.getBuilds().size()}">
+          	<j:if test="${usage.isDiskManagementNotFullyConfigured()}" escapeText="false"><font color="red">${p.getBuilds().size()} / ${usage.getPredictedNumberOfBuilds()}</font></j:if>
+          	<j:if test="${!usage.isDiskManagementNotFullyConfigured()}">${p.getBuilds().size()} / ${usage.getPredictedNumberOfBuilds()}</j:if>
+          </td>
+
+          <td data="${usage.getPredictedNeededSpace()}">
+          	<j:if test="${usage.isDiskManagementNotFullyConfigured()}" escapeText="false"><font color="red">${usage.getSizeString(usage.getPredictedNeededSpace())}</font></j:if>
+          	<j:if test="${!usage.isDiskManagementNotFullyConfigured()}">${usage.getSizeString(usage.getPredictedNeededSpace())}</j:if>
+          </td>
         </tr>
       </j:forEach>
       
@@ -41,8 +52,10 @@
       <tr>
         <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
         <td data="~~~"><b>Total</b> </td>
-        <td data="${diskUsageSum.getBuildUsage()}"><b>${diskUsageSum.getBuildUsageString()}</b></td>
         <td data="${diskUsageSum.getWsUsage()}"><b>${diskUsageSum.getWsUsageString()}</b></td>
+        <td data="${diskUsageSum.getBuildUsage()}"><b>${diskUsageSum.getBuildUsageString()}</b></td>
+        <td><b>-</b></td>
+        <td data="${diskUsageSum.getPredictedNeededSpace}"><b>${diskUsageSum.getSizeString(diskUsageSum.getPredictedNeededSpace())}</b></td>
       </tr>
     </table>
     

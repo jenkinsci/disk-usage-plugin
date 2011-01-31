@@ -1,7 +1,9 @@
 package hudson.plugins.disk_usage;
 
+import java.text.DecimalFormat;
+
 /**
- *
+ * 
  * @author dvrzalik
  */
 public class DiskUsage {
@@ -9,13 +11,18 @@ public class DiskUsage {
     long buildUsage = 0;
     long wsUsage = 0;
 
-    public DiskUsage() {}
-    
-    public DiskUsage(long buildDiskUsage,long wsDiskUsage) {
+    long predictedNeededSpace = 0;
+    int predictedNumberOfBuilds = 0;
+    boolean diskManagementNotFullyConfigured = false;
+
+    public DiskUsage() {
+    }
+
+    public DiskUsage(long buildDiskUsage, long wsDiskUsage) {
         buildUsage = buildDiskUsage;
         wsUsage = wsDiskUsage;
     }
-    
+
     public long getBuildUsage() {
         return buildUsage;
     }
@@ -24,6 +31,21 @@ public class DiskUsage {
         return wsUsage;
     }
 
+    public boolean isDiskManagementNotFullyConfigured() {
+        return diskManagementNotFullyConfigured;
+    }
+
+    public long getPredictedNeededSpace() {
+        return predictedNeededSpace;
+    }
+
+    public String getPredictedNumberOfBuilds() {
+        if (predictedNumberOfBuilds > 0)
+            return new Integer(predictedNumberOfBuilds).toString();
+        else
+            return "?";
+    }
+    
     public String getBuildUsageString() {
         return getSizeString(buildUsage);
     }
@@ -41,8 +63,9 @@ public class DiskUsage {
         floor = Math.min(floor, 4);
         double base = Math.pow(1024, floor);
         String unit = getUnitString(floor);
-
-        return Math.round(size / base) + unit;
+        
+        //return Math.round(size / base) + unit; // why rounding
+        return new DecimalFormat("0.00").format(new Double(size) / base) + unit;
     }
 
     public static final double getScale(long number) {

@@ -2,21 +2,23 @@ package hudson.plugins.disk_usage;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Run;
 import hudson.model.Hudson;
+import hudson.model.Run;
+import hudson.plugins.disk_usage.DiskUsageProperty.DiskUsageDescriptor;
 import hudson.util.ChartUtil;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
 import hudson.util.ShiftedCategoryAxis;
-import hudson.plugins.disk_usage.DiskUsageProperty.DiskUsageDescriptor;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -49,38 +51,108 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
     public String getUrlName() {
         return "disk-usage";
     }
+
+    // diskUsage cache
+    private DiskUsage diskUsage = null;
     
     /**
      * @return Disk usage for all builds
      */
     public DiskUsage getDiskUsage() {
-        DiskUsage du = new DiskUsage(0, 0);
+    	// get already computed diskUsage to prevent many calls to this method when sorting the project list
+		if (diskUsage == null) {
+			DiskUsage du = new DiskUsage(0, 0);
 
-        if (project != null) {
-            BuildDiskUsageAction action = null;
-            Iterator<? extends AbstractBuild> buildIterator = project.getBuilds().iterator();
-            while ((action == null) && buildIterator.hasNext()) {
-                action = buildIterator.next().getAction(BuildDiskUsageAction.class);
-            }
-            if (action != null) {
-                DiskUsage bdu = action.getDiskUsage();
-                //Take last available workspace size
-                du.wsUsage = bdu.getWsUsage();
-                du.buildUsage += bdu.getBuildUsage();
-            }
+			if (project != null) {
+				BuildDiskUsageAction action = null;
+				Iterator<? extends AbstractBuild> buildIterator = project
+						.getBuilds().iterator();
+				while ((action == null) && buildIterator.hasNext()) {
+					action = buildIterator.next().getAction(
+							BuildDiskUsageAction.class);
+				}
+				if (action != null) {
+					DiskUsage bdu = action.getDiskUsage();
+					// Take last available workspace size
+					du.wsUsage = bdu.getWsUsage();
+					du.buildUsage += bdu.getBuildUsage();
+				}
 
-            while (buildIterator.hasNext()) {
-                action = buildIterator.next().getAction(BuildDiskUsageAction.class);
-                if (action != null) {
-                    du.buildUsage += action.getDiskUsage().getBuildUsage();
-                }
-            }
-            
-        }
+				while (buildIterator.hasNext()) {
+					action = buildIterator.next().getAction(
+							BuildDiskUsageAction.class);
+					if (action != null) {
+						du.buildUsage += action.getDiskUsage().getBuildUsage();
+					}
+				}
 
-        return du;
+				// compute average usage per build
+				long averageUsagePerBuild = (Long) (du.buildUsage / project
+						.getBuilds().size());
+				du.predictedNumberOfBuilds = getPredictedNumberOfBuilds();
+
+				if (du.predictedNumberOfBuilds == 0) {
+					du.predictedNeededSpace = du.wsUsage + du.buildUsage;
+					du.diskManagementNotFullyConfigured = true;
+				} else {
+					du.predictedNeededSpace = du.wsUsage
+							+ du.predictedNumberOfBuilds * averageUsagePerBuild;
+					du.diskManagementNotFullyConfigured = false;
+				}
+
+			}
+			diskUsage = du;
+		}
+		return diskUsage;
     }
-    
+
+    private int getPredictedNumberOfBuilds() {
+
+        float predictedNumberOfBuilds = 0;
+
+        if (project.getLogRotator() != null) { // "delete old builds" checked
+
+            int nbDaysToKeep = project.getLogRotator().getDaysToKeep();
+            if (nbDaysToKeep != -1) {
+                float nbBuildsPerDay = 0;
+
+                int nbBuilds = project.getBuilds().size();
+
+                Date firstProjectDate = project.getBuilds().get(0).getTimestamp().getTime();
+                int i = nbBuilds - 1;
+                AbstractBuild lastNonKeptDefinitely = null;
+                while (lastNonKeptDefinitely == null) {
+                    AbstractBuild candidateBuild = project.getBuilds().get(i);
+                    if (!candidateBuild.isKeepLog()) {
+                        lastNonKeptDefinitely = project.getBuilds().get(i);
+                    }
+                    i--;
+                }
+                Date lastProjectDate = lastNonKeptDefinitely.getTimestamp().getTime();
+
+                // nombre de jours entre le premier et le dernier
+                long CONST_DURATION_OF_DAY = 1000l * 60 * 60 * 24;
+                long diff = Math.abs(lastProjectDate.getTime() - firstProjectDate.getTime());
+                long numberOfDays = (long) diff / CONST_DURATION_OF_DAY;
+
+                nbBuildsPerDay = new Float(nbBuilds) / new Float(numberOfDays);
+                predictedNumberOfBuilds = new Float(nbBuildsPerDay) * nbDaysToKeep;
+
+            }
+
+            int nbBuildsToKeep = project.getLogRotator().getNumToKeep();
+
+            if (nbBuildsToKeep != -1) {
+                // We keep the smaller number of builds
+                if (nbBuildsToKeep < predictedNumberOfBuilds || predictedNumberOfBuilds == 0)
+                    predictedNumberOfBuilds = nbBuildsToKeep;
+            }
+
+        }
+        return Math.round(predictedNumberOfBuilds);
+
+    }
+
     public BuildDiskUsageAction getLastBuildAction() {
         Run run = project.getLastBuild();
         if (run != null) {
@@ -100,20 +172,20 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
             rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
             return;
         }
-        
-        //TODO if(nothing_changed) return;
+
+        // TODO if(nothing_changed) return;
 
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb = new DataSetBuilder<String, NumberOnlyBuildLabel>();
 
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
-        //First iteration just to get scale of the y-axis
+        // First iteration just to get scale of the y-axis
         for (AbstractBuild build : project.getBuilds()) {
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
                 DiskUsage usage = dua.getDiskUsage();
                 maxValue = Math.max(maxValue, Math.max(usage.wsUsage, usage.getBuildUsage()));
-                usages.add(new Object[]{build, usage.wsUsage, usage.getBuildUsage()});
+                usages.add(new Object[]{ build, usage.wsUsage, usage.getBuildUsage() });
             }
         }
 
@@ -132,8 +204,7 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
 
     private JFreeChart createChart(StaplerRequest req, CategoryDataset dataset, String unit) {
 
-        final JFreeChart chart = ChartFactory.createLineChart(
-                null, // chart title
+        final JFreeChart chart = ChartFactory.createLineChart(null, // chart title
                 null, // unused
                 "disk usage (" + unit + ")", // range axis label
                 dataset, // data
@@ -174,7 +245,7 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
 
         return chart;
     }
-    
+
     /** Shortcut for the jelly view */
     public boolean showGraph() {
         return Hudson.getInstance().getDescriptorByType(DiskUsageDescriptor.class).isShowGraph();
