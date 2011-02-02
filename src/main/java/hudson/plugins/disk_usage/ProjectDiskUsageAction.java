@@ -86,18 +86,21 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
 					}
 				}
 
-				// compute average usage per build
-				long averageUsagePerBuild = (Long) (du.buildUsage / project
-						.getBuilds().size());
-				du.predictedNumberOfBuilds = getPredictedNumberOfBuilds();
+				if (project.getBuilds().size() != 0) {
+					// compute average usage per build
+					long averageUsagePerBuild = (Long) (du.buildUsage / project
+							.getBuilds().size());
+					du.predictedNumberOfBuilds = getPredictedNumberOfBuilds();
 
-				if (du.predictedNumberOfBuilds == 0) {
-					du.predictedNeededSpace = du.wsUsage + du.buildUsage;
-					du.diskManagementNotFullyConfigured = true;
-				} else {
-					du.predictedNeededSpace = du.wsUsage
-							+ du.predictedNumberOfBuilds * averageUsagePerBuild;
-					du.diskManagementNotFullyConfigured = false;
+					if (du.predictedNumberOfBuilds == 0) {
+						du.predictedNeededSpace = du.wsUsage + du.buildUsage;
+						du.diskManagementNotFullyConfigured = true;
+					} else {
+						du.predictedNeededSpace = du.wsUsage
+								+ du.predictedNumberOfBuilds
+								* averageUsagePerBuild;
+						du.diskManagementNotFullyConfigured = false;
+					}
 				}
 
 			}
@@ -117,27 +120,36 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
                 float nbBuildsPerDay = 0;
 
                 int nbBuilds = project.getBuilds().size();
+                
+				if (nbBuilds != 0) {
+					// number of days between the first and the last build
+					// don't take into account the build definitely kept
+					
+					Date firstProjectDate = project.getBuilds().get(0)
+							.getTimestamp().getTime();
+					int i = nbBuilds - 1;
+					AbstractBuild lastNonKeptDefinitely = null;
+					while (lastNonKeptDefinitely == null) {
+						AbstractBuild candidateBuild = project.getBuilds().get(
+								i);
+						if (!candidateBuild.isKeepLog()) {
+							lastNonKeptDefinitely = project.getBuilds().get(i);
+						}
+						i--;
+					}
+					Date lastProjectDate = lastNonKeptDefinitely.getTimestamp()
+							.getTime();
 
-                Date firstProjectDate = project.getBuilds().get(0).getTimestamp().getTime();
-                int i = nbBuilds - 1;
-                AbstractBuild lastNonKeptDefinitely = null;
-                while (lastNonKeptDefinitely == null) {
-                    AbstractBuild candidateBuild = project.getBuilds().get(i);
-                    if (!candidateBuild.isKeepLog()) {
-                        lastNonKeptDefinitely = project.getBuilds().get(i);
-                    }
-                    i--;
-                }
-                Date lastProjectDate = lastNonKeptDefinitely.getTimestamp().getTime();
+					long CONST_DURATION_OF_DAY = 1000l * 60 * 60 * 24;
+					long diff = Math.abs(lastProjectDate.getTime()
+							- firstProjectDate.getTime());
+					long numberOfDays = (long) diff / CONST_DURATION_OF_DAY;
 
-                // nombre de jours entre le premier et le dernier
-                long CONST_DURATION_OF_DAY = 1000l * 60 * 60 * 24;
-                long diff = Math.abs(lastProjectDate.getTime() - firstProjectDate.getTime());
-                long numberOfDays = (long) diff / CONST_DURATION_OF_DAY;
-
-                nbBuildsPerDay = new Float(nbBuilds) / new Float(numberOfDays);
-                predictedNumberOfBuilds = new Float(nbBuildsPerDay) * nbDaysToKeep;
-
+					nbBuildsPerDay = new Float(nbBuilds)
+							/ new Float(numberOfDays);
+					predictedNumberOfBuilds = new Float(nbBuildsPerDay)
+							* nbDaysToKeep;
+				}
             }
 
             int nbBuildsToKeep = project.getLogRotator().getNumToKeep();
