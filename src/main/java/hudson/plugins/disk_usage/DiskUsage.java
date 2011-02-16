@@ -7,10 +7,11 @@ import java.text.DecimalFormat;
  * @author dvrzalik
  */
 public class DiskUsage {
-
+	
     long buildUsage = 0;
     long wsUsage = 0;
 
+    // prediction fields
     long predictedNeededSpace = 0;
     int predictedNumberOfBuilds = 0;
     boolean diskManagementNotFullyConfigured = false;
