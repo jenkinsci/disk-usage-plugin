@@ -104,7 +104,7 @@ public class DiskUsagePlugin extends Plugin {
             sum.predictedNeededSpace += du.predictedNeededSpace;
 
         }
-        sum.freeDiskSpace = new File(System.getenv("HUDSON_HOME")).getFreeSpace();
+        sum.freeDiskSpace = Hudson.getInstance().getRootDir().getFreeSpace();
 
         diskUsageSum = sum;
 
