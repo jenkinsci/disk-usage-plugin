@@ -52,7 +52,7 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
         return "disk-usage";
     }
 
-    // diskUsage cache
+    // diskUsage caching
     private DiskUsage diskUsage = null;
     
     /**
