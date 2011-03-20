@@ -38,7 +38,7 @@ public class DiskUsagePlugin extends Plugin {
         }
 
         public String getDisplayName() {
-            return "Disk usage";
+            return Messages.DisplayName();
         }
 
         public String getUrlName() {
@@ -46,7 +46,7 @@ public class DiskUsagePlugin extends Plugin {
         }
 
         @Override public String getDescription() {
-            return "Displays per-project disk usage";
+            return Messages.Description();
         }
     }
     

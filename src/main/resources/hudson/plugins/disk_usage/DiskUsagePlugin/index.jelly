@@ -12,19 +12,19 @@
 
     <l:main-panel>
 
-     <h1><img src="${rootURL}/plugin/disk-usage/icons/diskusage48.png" /> Disk usage </h1>
+     <h1><img src="${rootURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>
         
      <j:set var="projects" value="${it.getProjectList()}" />     
      
      <!-- sum of values -->
      <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
      
-     <b>Builds: </b>${diskUsageSum.getBuildUsageString()}<b> Workspace: </b>${diskUsageSum.getWsUsageString()}<br/><p/>
+     <b>${%Builds}: </b>${diskUsageSum.getBuildUsageString()}, <b> ${%Workspace}: </b>${diskUsageSum.getWsUsageString()}<br/><p/>
      
      <!-- project table -->
      <table id="projectstatus" class="sortable pane bigtable">
       <tr>
-        <th>Project name</th> <th>Builds</th> <th>Workspace</th>
+        <th>${%Project name}</th> <th>${%Builds}</th> <th>${%Workspace}</th>
       </tr>
 
       <j:forEach var="p" items="${projects}">
@@ -40,17 +40,17 @@
       <!-- sum of values -->
       <tr>
         <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
-        <td data="~~~"><b>Total</b> </td>
+        <td data="~~~"><b>${%Total}</b> </td>
         <td data="${diskUsageSum.getBuildUsage()}"><b>${diskUsageSum.getBuildUsageString()}</b></td>
         <td data="${diskUsageSum.getWsUsage()}"><b>${diskUsageSum.getWsUsageString()}</b></td>
       </tr>
     </table>
     
     <p />
-    Disk usage is calculated each ${it.getCountInterval()} minutes. If you want to trigger the calculation now, click on the button.<br/>
+    ${%Interval.Message(it.getCountInterval())}<br/>
     <form action="recordDiskUsage">
       <input type="hidden" name="name" value="${h.name}"/>
-      <f:submit value="Record Disk Usage" />
+      <f:submit value="${%Record Disk Usage}" />
     </form>
 
     </l:main-panel>

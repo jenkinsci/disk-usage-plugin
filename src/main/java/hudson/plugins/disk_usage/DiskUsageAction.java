@@ -13,10 +13,10 @@ public abstract class DiskUsageAction implements ProminentProjectAction {
     }
 
     public String getDisplayName() {
-        return "Disk usage";
+        return Messages.DisplayName();
     }
 
     public String getUrlName() {
-        return "diskUsage";
+        return Messages.UrlName();
     }
 }

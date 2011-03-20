@@ -135,7 +135,7 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
         final JFreeChart chart = ChartFactory.createLineChart(
                 null, // chart title
                 null, // unused
-                "disk usage (" + unit + ")", // range axis label
+                Messages.ProjectDiskUsage() + " (" + unit + ")", // range axis label
                 dataset, // data
                 PlotOrientation.VERTICAL, // orientation
                 true, // include legend

@@ -34,7 +34,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
         @Override
         public String getDisplayName() {
-            return "Disk usage";
+            return Messages.DisplayName();
         }
 
 
