@@ -12,7 +12,7 @@
   <packaging>hpi</packaging>
   <name>Hudson disk-usage plugin</name>
   <version>0.13</version>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/Disk+Usage+Plugin</url>
+  <url>http://wiki.jenkins-ci.org/display/HUDSON/Disk+Usage+Plugin</url>
 
   <developers>
     <developer>
@@ -22,11 +22,33 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/hudson/disk-usage-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:hudson/disk-usage-plugin.git</developerConnection>
-    <url>http://github.com/hudson/disk-usage-plugin</url>
+    <connection>scm:git:git://github.com/jenkinsci/disk-usage-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/disk-usage-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/disk-usage-plugin</url>
   </scm>
 
+  <distributionManagement>
+    <repository>
+      <id>java.net-m2-repository</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/
+      </url>
+    </repository>
+  </distributionManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>1.5.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>token-macro</artifactId>
+      <version>1.0</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+  
   <build>
     <plugins>
       <plugin>
@@ -45,11 +67,12 @@
     
     <extensions>
       <extension>
-        <groupId>org.jvnet.wagon-svn</groupId>
-        <artifactId>wagon-svn</artifactId>
-        <version>1.9</version>
+	<groupId>org.jvnet.wagon-svn</groupId>
+	<artifactId>wagon-svn</artifactId>
+	<version>1.9</version>
       </extension>
     </extensions>
   </build>
+
 
 </project>
