@@ -17,6 +17,7 @@ import java.lang.Math;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A Thread responsible for gathering disk usage information
@@ -143,6 +144,9 @@ public class DiskUsageThread extends AsyncPeriodicWork {
      */
     public static class DiskUsageCallable implements Callable<Long, IOException> {
 
+    	public static final Logger LOGGER = Logger
+    		.getLogger(DiskUsageCallable.class.getName());
+
         private FilePath path;
 
         public DiskUsageCallable(FilePath filePath) {
@@ -158,9 +162,14 @@ public class DiskUsageThread extends AsyncPeriodicWork {
             long size = 0;
 
             if (f.isDirectory() && !Util.isSymlink(f)) {
-                for (File child : f.listFiles()) {
-                    size += getFileSize(child);
-                }
+            	File[] fileList = f.listFiles();
+            	if (fileList != null) {
+                    for (File child : fileList) {
+                        size += getFileSize(child);
+                    }
+            	} else {
+            		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
+            	}
             }
             
             return size + f.length();
