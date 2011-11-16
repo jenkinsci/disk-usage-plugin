@@ -38,7 +38,7 @@
       </j:forEach>
       
       <!-- sum of values -->
-      <tr>
+      <tr class="sortbottom">
         <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
         <td data="~~~"><b>${%Total}</b> </td>
         <td data="${diskUsageSum.getBuildUsage()}"><b>${diskUsageSum.getBuildUsageString()}</b></td>
