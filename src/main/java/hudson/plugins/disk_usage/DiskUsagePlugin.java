@@ -7,6 +7,8 @@ import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.ManagementLink;
+import hudson.model.RootAction;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,7 +31,7 @@ public class DiskUsagePlugin extends Plugin {
     private static DiskUsage diskUsageSum;
 
     @Extension
-    public static class DiskUsageManagementLink extends ManagementLink {
+    public static class DiskUsageManagementLink extends ManagementLink implements RootAction {
 
         public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace"};
 
