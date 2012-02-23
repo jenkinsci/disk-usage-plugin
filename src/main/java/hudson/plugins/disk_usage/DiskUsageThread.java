@@ -53,15 +53,6 @@ public class DiskUsageThread extends AsyncPeriodicWork {
         for (Object item : items) {
             if (item instanceof AbstractProject) {
                 AbstractProject project = (AbstractProject) item;
-                if (project.getAction(ProjectDiskUsageAction.class) == null) {
-                    try {
-                        project.addProperty(new DiskUsageProperty());
-                        project.save();
-                    } catch (IOException ex) {
-                        logger.log(Level.WARNING, "Error when adding disk usage property for " + project.getName(), ex);
-                        break;
-                    }
-                }
 
                 //well, this is not absolutely thread-safe, but in the worst case we get invalid result for one build
                 //(which will be rewritten next time)
