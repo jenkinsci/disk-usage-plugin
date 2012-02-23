@@ -1,13 +1,16 @@
 package hudson.plugins.disk_usage;
 
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Job;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
+import hudson.model.*;
 import hudson.Extension;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.util.Collection;
+import java.util.Collections;
 
 //(basically nothing to see here)
 /**
@@ -15,14 +18,31 @@ import org.kohsuke.stapler.StaplerRequest;
  * 
  * @author dvrzalik
  */
+@Deprecated
 public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
-    
-     @Override
-    public Action getJobAction(Job<?, ?> job) {
-        return new ProjectDiskUsageAction((AbstractProject) job);//??
+
+    @Override
+    public Collection<? extends Action> getJobActions(Job<?, ?> job) {
+        return Collections.emptyList();
+    }
+
+    /**
+     * convert legacy DiskUsageProperty configuration to DiskUsageProjectActionFactory
+     * @throws IOException
+     */
+    @Initializer(after = InitMilestone.PLUGINS_STARTED)
+    public static void transitionAuth() throws IOException {
+        DiskUsageDescriptor that = (DiskUsageDescriptor) Hudson.getInstance().getDescriptor(DiskUsageProperty.class);
+        if (!that.converted) {
+            DiskUsageProjectActionFactory.DESCRIPTOR.setShowGraph(that.showGraph);
+            that.converted = true;
+            that.save();
+            DiskUsageProjectActionFactory.DESCRIPTOR.save();
+        }
     }
 
     @Extension
+    @Deprecated
     public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
 
         public DiskUsageDescriptor() {
@@ -31,6 +51,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
         //Show graph on the project page?
         private boolean showGraph;
+
+        private boolean converted;
 
         @Override
         public String getDisplayName() {
