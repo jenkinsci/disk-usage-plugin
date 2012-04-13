@@ -3,6 +3,7 @@ package hudson.plugins.disk_usage;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.*;
+import hudson.plugins.disk_usage.DiskUsageThread.DiskUsageCallable;
 import hudson.Extension;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Logger;
 
 //(basically nothing to see here)
 /**
@@ -33,6 +35,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     @Initializer(after = InitMilestone.PLUGINS_STARTED)
     public static void transitionAuth() throws IOException {
         DiskUsageDescriptor that = (DiskUsageDescriptor) Hudson.getInstance().getDescriptor(DiskUsageProperty.class);
+        if(that == null){
+            LOGGER.warning("Cannot convert DiskUsageProjectActions, DiskUsageDescripto is null, check log for previous DI error, e.g. Guice errors.");
+            return;
+        }
         if (!that.converted) {
             DiskUsageProjectActionFactory.DESCRIPTOR.setShowGraph(that.showGraph);
             that.converted = true;
@@ -86,6 +92,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             this.showGraph = showGraph;
         }
     }
+    
+    public static final Logger LOGGER = Logger.getLogger(DiskUsageProperty.class.getName());
 }
 
     
