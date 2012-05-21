@@ -3,17 +3,13 @@ package hudson.plugins.disk_usage;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.AsyncPeriodicWork;
-import hudson.model.Hudson;
-import hudson.model.ItemGroup;
-import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
+import hudson.matrix.MatrixProject;
+import hudson.model.*;
 import hudson.remoting.Callable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -40,15 +36,9 @@ public class DiskUsageThread extends AsyncPeriodicWork {
 
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
-        List items = Hudson.getInstance().getItems();
-
-        //Include nested projects as well
-        //TODO fix MatrixProject and use getAllJobs()
-        for (TopLevelItem item : Hudson.getInstance().getItems()) {
-            if(item instanceof ItemGroup) {
-                items.addAll(((ItemGroup)item).getItems());
-            }
-        }
+        List<Item> items = new ArrayList<Item>();
+        ItemGroup<? extends Item> itemGroup = Hudson.getInstance();
+        addAllItems(itemGroup, items);
 
         for (Object item : items) {
             if (item instanceof AbstractProject) {
@@ -75,6 +65,22 @@ public class DiskUsageThread extends AsyncPeriodicWork {
                 }
             }
         }
+    }
+
+    /**
+     * Recursively add items form itemGroup
+     */
+    public List<Item> addAllItems(ItemGroup<? extends Item> itemGroup, List<Item> items) {
+        for (Item item : itemGroup.getItems()) {
+            if (item instanceof MatrixProject) {
+                items.add(item);
+            } else if (item instanceof ItemGroup) {
+                addAllItems((ItemGroup) item, items);
+            } else {
+                items.add(item);
+            }
+        }
+        return items;
     }
 
     private static void calculateDiskUsageForBuild(AbstractBuild build)

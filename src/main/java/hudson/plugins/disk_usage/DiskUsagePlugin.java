@@ -3,13 +3,11 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.Plugin;
 import hudson.Util;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
-import hudson.model.Job;
-import hudson.model.ManagementLink;
-import hudson.model.RootAction;
+import hudson.matrix.MatrixProject;
+import hudson.model.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -87,8 +85,8 @@ public class DiskUsagePlugin extends Plugin {
                 return 0;
             }
         };
-        
-        List<AbstractProject> projectList = Util.createSubList(Hudson.getInstance().getItems(), AbstractProject.class);
+
+        List<AbstractProject> projectList = addAllProjects(Hudson.getInstance(), new ArrayList<AbstractProject>());
         Collections.sort(projectList, comparator);
         
         //calculate sum
@@ -102,6 +100,20 @@ public class DiskUsagePlugin extends Plugin {
         diskUsageSum = sum;
         
         return projectList;
+    }
+
+    /**
+     * Recursively add Projects form itemGroup
+     */
+    public static List<AbstractProject> addAllProjects(ItemGroup<? extends Item> itemGroup, List<AbstractProject> items) {
+        for (Item item : itemGroup.getItems()) {
+            if (item instanceof AbstractProject) {
+                items.add((AbstractProject) item);
+            } else if (item instanceof ItemGroup) {
+                addAllProjects((ItemGroup) item, items);
+            }
+        }
+        return items;
     }
 
     public static DiskUsage getDiskUsageSum() {
