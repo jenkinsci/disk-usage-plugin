@@ -177,6 +177,6 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
     
     /** Shortcut for the jelly view */
     public boolean showGraph() {
-        return Hudson.getInstance().getDescriptorByType(DiskUsageDescriptor.class).isShowGraph();
+        return Hudson.getInstance().getDescriptorByType(DiskUsageProjectActionFactory.DescriptorImpl.class).isShowGraph();
     }
 }
