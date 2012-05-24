@@ -29,7 +29,7 @@
 
       <j:forEach var="p" items="${projects}">
         <tr>
-          <td><b><a href="${it.getProjectUrl(p)}">${p.getName()}</a></b> </td>
+          <td><b><a href="${it.getProjectUrl(p)}">${p.getFullName()}</a></b> </td>
           
           <j:set var="usage" value="${it.getDiskUsage(p)}" />
           <td data="${usage.getBuildUsage()}">${usage.getBuildUsageString()}</td>
