@@ -10,7 +10,7 @@ Project disk usage information + trend graph
     
   <div style="width:auto;align:right;margin:12px;">
     <div style="width:auto;margin:0px;margin-left:auto;text-align:right;">
-      <img src="${rootURL}/plugin/disk-usage/icons/diskusage16.png" /> 
+      <img src="${resURL}/plugin/disk-usage/icons/diskusage16.png" /> 
       <b>${%Disk Usage}: </b> ${%Workspace} ${projectDiskUsage.getWsUsageString()}, ${%Builds} ${projectDiskUsage.getBuildUsageString()}  
     </div>
   </div>
