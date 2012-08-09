@@ -135,7 +135,7 @@ public class DiskUsagePlugin extends Plugin {
 	public Graph getOverallGraph(){
         long maxValue = 0;
         //First iteration just to get scale of the y-axis
-        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : DiskUsageOvearallGraphGenerator.DESCRIPTOR.history ){
+        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : DiskUsageProjectActionFactory.DESCRIPTOR.history ){
             maxValue = Math.max(maxValue, Math.max(usage.getWsUsage(), usage.getBuildUsage()));
         }
 
@@ -145,7 +145,7 @@ public class DiskUsagePlugin extends Plugin {
 
         DataSetBuilder<String, Date> dsb = new DataSetBuilder<String, Date>();
 
-        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : DiskUsageOvearallGraphGenerator.DESCRIPTOR.history ) {
+        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : DiskUsageProjectActionFactory.DESCRIPTOR.history ) {
 			Date label = usage.getDate();
             dsb.add(((Long) usage.getWsUsage()) / base, "workspace", label);
             dsb.add(((Long) usage.getBuildUsage()) / base, "build", label);

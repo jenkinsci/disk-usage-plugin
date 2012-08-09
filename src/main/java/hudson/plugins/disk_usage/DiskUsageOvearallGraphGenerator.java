@@ -21,11 +21,11 @@ import java.util.List;
  * @author jbrazdil
  */
 @Extension
-public class DiskUsageOvearallGraphGenerator extends PeriodicWork implements Describable<DiskUsageOvearallGraphGenerator> {
+public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 
 	@Override
 	public long getRecurrencePeriod() {
-		return PeriodicWork.MIN;
+		return PeriodicWork.DAY;
 	}
 
 	@Override
@@ -39,46 +39,13 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork implements Des
             sum.wsUsage += du.wsUsage;
         }
 
-		DESCRIPTOR.history.add(new DiskUsageRecord(sum));
-		DESCRIPTOR.save();
-
-	}
-
-	public Descriptor<DiskUsageOvearallGraphGenerator> getDescriptor() {
-		return DESCRIPTOR;
-	}
-
-    @Extension
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
-    public static final class DescriptorImpl extends Descriptor<DiskUsageOvearallGraphGenerator> {
-		final int SIZE = 10;
-		List<DiskUsageRecord> history = new LinkedList<DiskUsageRecord>(){
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean add(DiskUsageRecord e) {
-					boolean ret = super.add(e);
-					if(ret && this.size() > SIZE){
-						this.removeFirst();
-					}
-					return ret;
-				}
-			};
-
-		public DescriptorImpl() {
-           load();
-        }
-
-		@Override
-		public String getDisplayName() {
-			return Messages.DisplayName();
-		}
+		DiskUsageProjectActionFactory.DESCRIPTOR.history.add(new DiskUsageRecord(sum));
+		DiskUsageProjectActionFactory.DESCRIPTOR.save();
 
 	}
 
 	public static class DiskUsageRecord extends DiskUsage{
-		private static SimpleDateFormat sdf = new SimpleDateFormat("d/M H:m");
+		private static SimpleDateFormat sdf = new SimpleDateFormat("d/M");
 		Date date;
 
 		public DiskUsageRecord(DiskUsage du){

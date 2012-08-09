@@ -66,7 +66,8 @@ public class DiskUsageGraph extends Graph{
 		domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
 		domainAxis.setLowerMargin(0.0);
 		domainAxis.setUpperMargin(0.0);
-		domainAxis.setCategoryMargin(0.0);
+		// voodoo for better spacing between labels with many columns
+		domainAxis.setCategoryMargin(-((double) dataset.getColumnCount() / 10.0));
 
 		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
