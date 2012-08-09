@@ -130,7 +130,7 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
         ChartUtil.generateGraph(req, rsp, createChart(req, dsb.build(), unit), 350, 150);
     }
 
-    private JFreeChart createChart(StaplerRequest req, CategoryDataset dataset, String unit) {
+    static JFreeChart createChart(StaplerRequest req, CategoryDataset dataset, String unit) {
 
         final JFreeChart chart = ChartFactory.createLineChart(
                 null, // chart title
