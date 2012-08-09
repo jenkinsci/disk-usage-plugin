@@ -4,33 +4,14 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.Hudson;
-import hudson.util.ChartUtil;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
-import hudson.util.ColorPalette;
 import hudson.util.DataSetBuilder;
-import hudson.util.ShiftedCategoryAxis;
-import hudson.plugins.disk_usage.DiskUsageProperty.DiskUsageDescriptor;
+import hudson.util.Graph;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.chart.title.LegendTitle;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.RectangleInsets;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Disk usage of a project
@@ -94,13 +75,7 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
      * Generates a graph with disk usage trend
      * 
      */
-    public void doGraph(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (ChartUtil.awtProblemCause != null) {
-            // not available. send out error message
-            rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
-            return;
-        }
-        
+    public Graph getGraph() throws IOException {
         //TODO if(nothing_changed) return;
 
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb = new DataSetBuilder<String, NumberOnlyBuildLabel>();
@@ -127,54 +102,9 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
             dsb.add(((Long) usage[2]) / base, "build", label);
         }
 
-        ChartUtil.generateGraph(req, rsp, createChart(req, dsb.build(), unit), 350, 150);
+		return new DiskUsageGraph(dsb.build(), unit);
     }
 
-    private JFreeChart createChart(StaplerRequest req, CategoryDataset dataset, String unit) {
-
-        final JFreeChart chart = ChartFactory.createLineChart(
-                null, // chart title
-                null, // unused
-                Messages.ProjectDiskUsage() + " (" + unit + ")", // range axis label
-                dataset, // data
-                PlotOrientation.VERTICAL, // orientation
-                true, // include legend
-                true, // tooltips
-                false // urls
-                );
-
-        final LegendTitle legend = chart.getLegend();
-        legend.setPosition(RectangleEdge.RIGHT);
-
-        chart.setBackgroundPaint(Color.white);
-
-        final CategoryPlot plot = chart.getCategoryPlot();
-
-        plot.setBackgroundPaint(Color.WHITE);
-        plot.setOutlinePaint(null);
-        plot.setRangeGridlinesVisible(true);
-        plot.setRangeGridlinePaint(Color.black);
-
-        CategoryAxis domainAxis = new ShiftedCategoryAxis(null);
-        plot.setDomainAxis(domainAxis);
-        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-        domainAxis.setLowerMargin(0.0);
-        domainAxis.setUpperMargin(0.0);
-        domainAxis.setCategoryMargin(0.0);
-
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        rangeAxis.setLowerBound(0);
-
-        final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-        renderer.setStroke(new BasicStroke(4.0f));
-        ColorPalette.apply(renderer);
-
-        plot.setInsets(new RectangleInsets(5.0, 0, 0, 5.0));
-
-        return chart;
-    }
-    
     /** Shortcut for the jelly view */
     public boolean showGraph() {
         return Hudson.getInstance().getDescriptorByType(DiskUsageProjectActionFactory.DescriptorImpl.class).isShowGraph();

@@ -12,8 +12,17 @@
 
     <l:main-panel>
 
+	 <div style="width:auto; float:right; margin:12px;">
+		<div class="test-trend-caption">
+		  ${%Disk Usage Trend}
+		</div>
+		<div>
+		  <img src="overallGraph/png" lazymap="overallGraph/map"/>
+		</div>
+	</div>
+
      <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>
-        
+
      <j:set var="projects" value="${it.getProjectList()}" />     
      
      <!-- sum of values -->
