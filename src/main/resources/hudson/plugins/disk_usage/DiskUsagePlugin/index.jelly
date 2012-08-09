@@ -17,7 +17,7 @@
 		  ${%Disk Usage Trend}
 		</div>
 		<div>
-		  <img src="graph" />
+		  <img src="overallGraph/png" lazymap="overallGraph/map"/>
 		</div>
 	</div>
 

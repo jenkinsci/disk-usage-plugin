@@ -4,8 +4,8 @@ import hudson.Extension;
 import hudson.Plugin;
 import hudson.Util;
 import hudson.model.*;
-import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
+import hudson.util.Graph;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -132,15 +132,7 @@ public class DiskUsagePlugin extends Plugin {
      * Generates a graph with disk usage trend
      *
      */
-    public void doGraph(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (ChartUtil.awtProblemCause != null) {
-            // not available. send out error message
-            rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
-            return;
-        }
-
-        //TODO if(nothing_changed) return;
-
+	public Graph getOverallGraph(){
         long maxValue = 0;
         //First iteration just to get scale of the y-axis
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : DiskUsageOvearallGraphGenerator.DESCRIPTOR.history ){
@@ -159,8 +151,8 @@ public class DiskUsagePlugin extends Plugin {
             dsb.add(((Long) usage.getBuildUsage()) / base, "build", label);
         }
 
-        ChartUtil.generateGraph(req, rsp, ProjectDiskUsageAction.createChart(req, dsb.build(), unit), 350, 150);
-    }
+		return new DiskUsageGraph(dsb.build(), unit);
+	}
 
     public int getCountInterval(){
     	return duThread.COUNT_INTERVAL_MINUTES;
