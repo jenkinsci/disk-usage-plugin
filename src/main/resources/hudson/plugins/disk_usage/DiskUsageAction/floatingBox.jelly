@@ -21,7 +21,7 @@ Project disk usage information + trend graph
     </div>
 
     <div>
-      <img src="disk-usage/graph" />
+      <img src="disk-usage/graph/png" lazymap="disk-usage/graph/map" />
     </div>
   </j:if>
   
