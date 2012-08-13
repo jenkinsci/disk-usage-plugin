@@ -96,7 +96,6 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
 
         public void setHistoryLength(Integer historyLength) {
-			System.out.println("Setting History length!!" + historyLength);
             this.historyLength = historyLength;
         }
     }
