@@ -1,14 +1,21 @@
 package hudson.plugins.disk_usage;
 
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
-import hudson.Extension;
 import hudson.matrix.MatrixProject;
-import hudson.model.*;
+import hudson.maven.MavenModuleSet;
+import hudson.model.AsyncPeriodicWork;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.TaskListener;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Hudson;
 import hudson.remoting.Callable;
+
 import java.io.File;
 import java.io.IOException;
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -72,7 +79,7 @@ public class DiskUsageThread extends AsyncPeriodicWork {
      */
     public List<Item> addAllItems(ItemGroup<? extends Item> itemGroup, List<Item> items) {
         for (Item item : itemGroup.getItems()) {
-            if (item instanceof MatrixProject) {
+            if (item instanceof MatrixProject || item instanceof MavenModuleSet) { 
                 items.add(item);
             } else if (item instanceof ItemGroup) {
                 addAllItems((ItemGroup) item, items);
