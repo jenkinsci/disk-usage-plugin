@@ -4,7 +4,9 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.matrix.MatrixProject;
+import hudson.maven.MavenBuild;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -17,6 +19,7 @@ import hudson.remoting.Callable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -96,6 +99,15 @@ public class DiskUsageThread extends AsyncPeriodicWork {
         //Build disk usage has to be always recalculated to be kept up-to-date 
         //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
         long buildSize = DiskUsageCallable.getFileSize(build.getRootDir());
+        if (build instanceof MavenModuleSetBuild) {
+            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
+            for (List<MavenBuild> mavenBuilds : builds) {
+                for (MavenBuild mavenBuild : mavenBuilds) {
+                    calculateDiskUsageForBuild(mavenBuild);
+                }
+            }
+        }
+        
         BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
         boolean updateBuild = false;
         if (action == null) {
