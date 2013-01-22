@@ -16,12 +16,14 @@ import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
 
+import hudson.remoting.Channel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +36,8 @@ import java.util.logging.Logger;
 public class DiskUsageThread extends AsyncPeriodicWork {
     //trigger disk usage thread each 6 hours
     public static final int COUNT_INTERVAL_MINUTES = 60*6;
+    
+    public static final int WORKSPACE_TIMEOUT = 1000*60*5;
 
 
     public DiskUsageThread() {
@@ -93,7 +97,7 @@ public class DiskUsageThread extends AsyncPeriodicWork {
         return items;
     }
 
-    private static void calculateDiskUsageForBuild(AbstractBuild build)
+    protected static void calculateDiskUsageForBuild(AbstractBuild build)
             throws IOException {
 
         //Build disk usage has to be always recalculated to be kept up-to-date 
@@ -141,9 +145,13 @@ public class DiskUsageThread extends AsyncPeriodicWork {
             //slave might be offline...or have been deleted - set to 0
             if (workspace != null) {
             	long oldWsUsage = bdua.diskUsage.wsUsage;
-                bdua.diskUsage.wsUsage = workspace.act(new DiskUsageCallable(workspace));
-                if (Math.abs(bdua.diskUsage.wsUsage - oldWsUsage) > 1024 ) {
+                try{
+                    bdua.diskUsage.wsUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace)).get(WORKSPACE_TIMEOUT, TimeUnit.MILLISECONDS);
+                    if (Math.abs(bdua.diskUsage.wsUsage - oldWsUsage) > 1024 ) {
                 	updateWs = true;
+                    }
+                }catch(Exception ex){
+                    Logger.getLogger(DiskUsageThread.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for job " + project.getDisplayName() + " through channel " + workspace.getChannel(),ex);
                 }
             }
             else{
