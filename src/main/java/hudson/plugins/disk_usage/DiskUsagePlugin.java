@@ -31,7 +31,7 @@ public class DiskUsagePlugin extends Plugin {
     private static DiskUsage diskUsageSum;
 
     @Extension
-    public static class DiskUsageManagementLink extends ManagementLink implements RootAction {
+    public static class DiskUsageManagementLink extends ManagementLink {
 
         public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace"};
 
@@ -44,11 +44,31 @@ public class DiskUsagePlugin extends Plugin {
         }
 
         public String getUrlName() {
-            return "/plugin/disk-usage/";
+            return "plugin/disk-usage/";
         }
 
         @Override public String getDescription() {
             return Messages.Description();
+        }
+    }
+    
+    
+    /**
+     * Unfortunately, I cannot figure out any other solution to satisfy JENKINS-12917 and at the same time JENKINS-16420 
+     */
+    @Extension
+    public static class DiskUsageRootLink implements RootAction {
+
+    	public String getIconFileName() {
+            return "/plugin/disk-usage/icons/diskusage48.png";
+        }
+
+        public String getDisplayName() {
+            return Messages.DisplayName();
+        }
+
+        public String getUrlName() {
+            return "/plugin/disk-usage/";
         }
     }
     
