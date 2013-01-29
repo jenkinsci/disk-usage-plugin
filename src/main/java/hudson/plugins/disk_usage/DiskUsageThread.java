@@ -16,7 +16,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
 
-import hudson.remoting.Channel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
