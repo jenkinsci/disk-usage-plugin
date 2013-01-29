@@ -44,7 +44,7 @@ public class DiskUsagePlugin extends Plugin {
         }
 
         public String getUrlName() {
-            return Hudson.getInstance().getRootUrl() + "plugin/disk-usage/";
+            return "/plugin/disk-usage/";
         }
 
         @Override public String getDescription() {
