@@ -7,13 +7,7 @@ import hudson.matrix.MatrixProject;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
-import hudson.model.AsyncPeriodicWork;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import hudson.model.*;
 import hudson.remoting.Callable;
 
 import java.io.File;
@@ -140,7 +134,7 @@ public class DiskUsageThread extends AsyncPeriodicWork {
                 lastBuild.addAction(bdua);
                 updateWs = true;
             }
-            FilePath workspace = project.getSomeWorkspace();
+            FilePath workspace = lastBuild.getWorkspace();
             //slave might be offline...or have been deleted - set to 0
             if (workspace != null) {
             	long oldWsUsage = bdua.diskUsage.wsUsage;
