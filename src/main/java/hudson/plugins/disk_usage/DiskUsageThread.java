@@ -180,11 +180,10 @@ public class DiskUsageThread extends AsyncPeriodicWork {
 
             if (f.isDirectory() && !Util.isSymlink(f)) {
             	File[] fileList = f.listFiles();
-            	if (fileList != null) {
-                    for (File child : fileList) {
-                        size += getFileSize(child);
-                    }
-            	} else {
+            	if (fileList != null) for (File child : fileList) {
+                    if (!Util.isSymlink(child)) size += getFileSize(child);
+                }
+                else {
             		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
             	}
             }
