@@ -8,6 +8,7 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.*;
+import hudson.plugins.disk_usage.DiskUsageProperty.DiskUsageDescriptor;
 import hudson.remoting.Callable;
 
 import java.io.File;
@@ -50,7 +51,7 @@ public class DiskUsageThread extends AsyncPeriodicWork {
         for (Object item : items) {
             if (item instanceof AbstractProject) {
                 AbstractProject project = (AbstractProject) item;
-
+                DiskUsageUtil.calculateDiskUsageForProject(project);
                 //well, this is not absolutely thread-safe, but in the worst case we get invalid result for one build
                 //(which will be rewritten next time)
                 if (!project.isBuilding()) {
@@ -60,11 +61,11 @@ public class DiskUsageThread extends AsyncPeriodicWork {
                     try {
 
                         while (buildIterator.hasNext()) {
-                            calculateDiskUsageForBuild(buildIterator.next());
+                            DiskUsageUtil.calculateDiskUsageForBuild(buildIterator.next());
                         }
 
                         //Assign workspace size to the last build
-                        calculateWorkspaceDiskUsage(project);
+                        DiskUsageUtil.calculateWorkspaceDiskUsage(project);
 
                     } catch (Exception ex) {
                         logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
@@ -90,72 +91,6 @@ public class DiskUsageThread extends AsyncPeriodicWork {
         return items;
     }
 
-    protected static void calculateDiskUsageForBuild(AbstractBuild build)
-            throws IOException {
-
-        //Build disk usage has to be always recalculated to be kept up-to-date 
-        //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
-        long buildSize = DiskUsageCallable.getFileSize(build.getRootDir());
-        if (build instanceof MavenModuleSetBuild) {
-            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
-            for (List<MavenBuild> mavenBuilds : builds) {
-                for (MavenBuild mavenBuild : mavenBuilds) {
-                    calculateDiskUsageForBuild(mavenBuild);
-                }
-            }
-        }
-        
-        BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
-        boolean updateBuild = false;
-        if (action == null) {
-            action = new BuildDiskUsageAction(build, 0, buildSize);
-            build.addAction(action);
-            updateBuild = true;
-        } else {
-        	if (( action.diskUsage.buildUsage <= 0 ) ||
-        			( Math.abs(action.diskUsage.buildUsage - buildSize) > 1024 )) {
-        		action.diskUsage.buildUsage = buildSize;
-        		updateBuild = true;
-        	}
-        }
-        if ( updateBuild ) {
-        	build.save();
-        }
-    }
-    
-    private static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
-        AbstractBuild lastBuild = (AbstractBuild) project.getLastBuild();
-        if (lastBuild != null) {
-            BuildDiskUsageAction bdua = lastBuild.getAction(BuildDiskUsageAction.class);
-            //also recalculate workspace - deleting workspace by e.g. scripts is also quite common
-            boolean updateWs = false;
-            if (bdua == null) {
-                bdua = new BuildDiskUsageAction(lastBuild, 0, 0);
-                lastBuild.addAction(bdua);
-                updateWs = true;
-            }
-            FilePath workspace = lastBuild.getWorkspace();
-            //slave might be offline...or have been deleted - set to 0
-            if (workspace != null) {
-            	long oldWsUsage = bdua.diskUsage.wsUsage;
-                try{
-                    bdua.diskUsage.wsUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace)).get(WORKSPACE_TIMEOUT, TimeUnit.MILLISECONDS);
-                    if (Math.abs(bdua.diskUsage.wsUsage - oldWsUsage) > 1024 ) {
-                	updateWs = true;
-                    }
-                }catch(Exception ex){
-                    Logger.getLogger(DiskUsageThread.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for job " + project.getDisplayName() + " through channel " + workspace.getChannel(),ex);
-                }
-            }
-            else{
-            	bdua.diskUsage.wsUsage = 0; //workspace have been delete or is not reachable
-            }
-            if(updateWs){
-            	lastBuild.save();
-            }
-        }
-    }
-
     /**
      * A {@link Callable} which computes disk usage of remote file object
      */
@@ -165,23 +100,31 @@ public class DiskUsageThread extends AsyncPeriodicWork {
     		.getLogger(DiskUsageCallable.class.getName());
 
         private FilePath path;
+        private List<FilePath> exceedFilesPath;
 
-        public DiskUsageCallable(FilePath filePath) {
+        public DiskUsageCallable(FilePath filePath, List<FilePath> exceedFilesPath) {
             this.path = filePath;
+            this.exceedFilesPath = exceedFilesPath;
         }
 
         public Long call() throws IOException {
             File f = new File(path.getRemote());
-            return getFileSize(f);
+            List<File> exceeded = new ArrayList<File>();
+            for(FilePath file: exceedFilesPath){
+                exceeded.add(new File(file.getRemote()));
+            }
+            return getFileSize(f, exceeded);
         }
 
-        public static Long getFileSize(File f) throws IOException {
+        public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
             long size = 0;
 
             if (f.isDirectory() && !Util.isSymlink(f)) {
             	File[] fileList = f.listFiles();
             	if (fileList != null) for (File child : fileList) {
-                    if (!Util.isSymlink(child)) size += getFileSize(child);
+                    if(exceedFiles.contains(child))
+                        continue; //do not count exceeded files
+                    if (!Util.isSymlink(child)) size += getFileSize(child, exceedFiles);
                 }
                 else {
             		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");

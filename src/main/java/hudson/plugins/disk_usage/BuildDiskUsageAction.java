@@ -5,6 +5,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
+import hudson.model.ProminentProjectAction;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,44 +13,41 @@ import java.util.List;
  * Disk usage information for a single build
  * @author dvrzalik
  */
-public class BuildDiskUsageAction extends DiskUsageAction implements BuildBadgeAction {
+//TODO really implementsProminentProjectAction???
+public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction {
 
-    DiskUsage diskUsage;
+    Long diskUsage;
     AbstractBuild build;
 
-    public BuildDiskUsageAction(AbstractBuild build, long wsUsage, long buildUsage) {
-        diskUsage = new DiskUsage(buildUsage, wsUsage);
+    public BuildDiskUsageAction(AbstractBuild build, long diskUsage) {
+        this.diskUsage = diskUsage;
         this.build = build;
     }
 
+        public String getIconFileName() {
+        return null;
+    }
+
+    public String getDisplayName() {
+        return Messages.DisplayName();
+    }
+
+    public String getUrlName() {
+        return Messages.UrlName();
+    }
+    
     /**
      * @return Disk usage of the build (included child builds)
      */
-    public DiskUsage getDiskUsage() {
-        DiskUsage du = (diskUsage != null) ? 
-            new DiskUsage(diskUsage.buildUsage, diskUsage.wsUsage) :
-            new DiskUsage(0,0);
+    public Long getDiskUsage() {
 
         for (AbstractBuild child : getChildBuilds(build)) {
             BuildDiskUsageAction bdua = child.getAction(BuildDiskUsageAction.class);
             if (bdua != null) {
-                du.buildUsage += bdua.diskUsage.getBuildUsage();
+                diskUsage += bdua.diskUsage;
             }
         }
-        
-        //In case there is no workspace size available, refer to the previous result
-        // ?? - du.wsUsage should be up to date all the time, this approach causes wrong results e.g. when workspace is wipe out, old data are still shown
-        /*
-        AbstractBuild previous = build;
-        while((du.wsUsage == 0) && 
-                ((previous = (AbstractBuild) previous.getPreviousBuild()) != null)) {
-            BuildDiskUsageAction bdua = previous.getAction(BuildDiskUsageAction.class);    
-            if (bdua != null) {
-                du.wsUsage = bdua.diskUsage.wsUsage;
-            }
-        }
-        */
-        return du;
+        return diskUsage;
     }
     
     /**

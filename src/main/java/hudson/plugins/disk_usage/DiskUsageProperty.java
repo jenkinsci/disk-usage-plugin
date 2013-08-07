@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 //(basically nothing to see here)
@@ -20,7 +22,6 @@ import java.util.logging.Logger;
  * 
  * @author dvrzalik
  */
-@Deprecated
 public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
     @Override
@@ -28,37 +29,31 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         return Collections.emptyList();
     }
 
-    /**
-     * convert legacy DiskUsageProperty configuration to DiskUsageProjectActionFactory
-     * @throws IOException
-     */
-    @Initializer(after = InitMilestone.PLUGINS_STARTED)
-    public static void transitionAuth() throws IOException {
-        DiskUsageDescriptor that = (DiskUsageDescriptor) Hudson.getInstance().getDescriptor(DiskUsageProperty.class);
-        if(that == null){
-            LOGGER.warning("Cannot convert DiskUsageProjectActions, DiskUsageDescripto is null, check log for previous DI error, e.g. Guice errors.");
-            return;
-        }
-        if (!that.converted) {
-            DiskUsageProjectActionFactory.DESCRIPTOR.setShowGraph(that.showGraph);
-            that.converted = true;
-            that.save();
-            DiskUsageProjectActionFactory.DESCRIPTOR.save();
-        }
-    }
-
     @Extension
-    @Deprecated
     public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
+        
+        private Long diskUsageWithoutBuilds = 0l;
+        private Map<String,Long> slaveWorkspacesUsage = new TreeMap<String,Long>();
 
         public DiskUsageDescriptor() {
             load();
         }
-
-        //Show graph on the project page?
-        private boolean showGraph;
-
-        private boolean converted;
+        
+        public void setDiskUsageWithoutBuilds(Long diskUsageWithoutBuilds){
+            this.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
+        }
+        
+        public void putSlaveWorkspace(Node node, Long size){
+            slaveWorkspacesUsage.put(node.getNodeName(), size);
+        }
+        
+        public Map<String,Long> getSlaveWorkspaceUsage(){
+            return slaveWorkspacesUsage;
+        }
+        
+        public Long getDiskUsageWithoutBuilds(){
+            return diskUsageWithoutBuilds;
+        }
 
         @Override
         public String getDisplayName() {
@@ -73,23 +68,12 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            showGraph = req.getParameter("disk_usage.showGraph") != null;
-            save();
-            return super.configure(req, formData);
+            return true;
         }
 
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
             return true;
-        }
-
-        public boolean isShowGraph() {
-            //The graph is shown by default
-            return showGraph;
-        }
-
-        public void setShowGraph(Boolean showGraph) {
-            this.showGraph = showGraph;
         }
     }
     

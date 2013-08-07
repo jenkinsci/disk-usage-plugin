@@ -18,7 +18,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     @Override
     public void onCompleted(AbstractBuild build, TaskListener listener){
         try{
-                DiskUsageThread.calculateDiskUsageForBuild(build);
+                DiskUsageUtil.calculateDiskUsageForBuild(build);
         }
         catch(Exception ex){
             listener.getLogger().println("Disk usage plugin fails during calculation disk usage of this build.");

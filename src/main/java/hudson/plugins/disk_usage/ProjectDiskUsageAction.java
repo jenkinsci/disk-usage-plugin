@@ -4,62 +4,83 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.Hudson;
+import hudson.model.ProminentProjectAction;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import jenkins.model.Jenkins;
 
 /**
  * Disk usage of a project
  * 
  * @author dvrzalik
  */
-public class ProjectDiskUsageAction extends DiskUsageAction {
+public class ProjectDiskUsageAction implements ProminentProjectAction {
 
     AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project;
-
+    
     public ProjectDiskUsageAction(AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project) {
-        this.project = project;
+        this.project = project;       
+    }
+    
+        public String getIconFileName() {
+        return null;
     }
 
-    @Override
+    public String getDisplayName() {
+        return Messages.DisplayName();
+    }
+
     public String getUrlName() {
-        return "disk-usage";
+        return Messages.UrlName();
+    }
+    
+    public Long getDiskUsageWorkspace(){
+         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        if(property==null)
+            return 0l;
+        DiskUsageProperty.DiskUsageDescriptor descriptor = (DiskUsageProperty.DiskUsageDescriptor) property.getDescriptor();
+        Long diskUsageWorkspace = 0l;
+        for(Long size: descriptor.getSlaveWorkspaceUsage().values()){
+            diskUsageWorkspace =+ size;
+        }
+        return diskUsageWorkspace;
+    }
+    
+    public Long getDiskUsageWithoutBuilds(){
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        if(property==null)
+            return 0l;
+        DiskUsageProperty.DiskUsageDescriptor descriptor = (DiskUsageProperty.DiskUsageDescriptor) property.getDescriptor();
+        return descriptor.getDiskUsageWithoutBuilds();
+    }
+    
+    
+    public Long getJobRootDirDiskUsage(){
+        return getBuildsDiskUsage() + getDiskUsageWithoutBuilds();
     }
     
     /**
      * @return Disk usage for all builds
      */
-    public DiskUsage getDiskUsage() {
-        DiskUsage du = new DiskUsage(0, 0);
-
+    public Long getBuildsDiskUsage() {
+        Long buildsDiskUsage = 0l;
         if (project != null) {
             BuildDiskUsageAction action = null;
             Iterator<? extends AbstractBuild> buildIterator = project.getBuilds().iterator();
-            while ((action == null) && buildIterator.hasNext()) {
-                action = buildIterator.next().getAction(BuildDiskUsageAction.class);
-            }
-            if (action != null) {
-                DiskUsage bdu = action.getDiskUsage();
-                //Take last available workspace size
-                du.wsUsage = bdu.getWsUsage();
-                du.buildUsage += bdu.getBuildUsage();
-            }
-
             while (buildIterator.hasNext()) {
                 action = buildIterator.next().getAction(BuildDiskUsageAction.class);
                 if (action != null) {
-                    du.buildUsage += action.getDiskUsage().getBuildUsage();
+                    buildsDiskUsage += action.diskUsage;
                 }
-            }
-            
+            }          
         }
 
-        return du;
+        return buildsDiskUsage;
     }
     
     public BuildDiskUsageAction getLastBuildAction() {
@@ -86,19 +107,17 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
         for (AbstractBuild build : project.getBuilds()) {
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
-                DiskUsage usage = dua.getDiskUsage();
-                maxValue = Math.max(maxValue, Math.max(usage.wsUsage, usage.getBuildUsage()));
-                usages.add(new Object[]{build, usage.wsUsage, usage.getBuildUsage()});
+                //maxValue = Math.max(maxValue, Math.max(dua.getDiskUsage());
+                usages.add(new Object[]{build, dua.getDiskUsage()});
             }
         }
 
-        int floor = (int) DiskUsage.getScale(maxValue);
-        String unit = DiskUsage.getUnitString(floor);
+        int floor = (int) DiskUsageUtil.getScale(maxValue);
+        String unit = DiskUsageUtil.getUnitString(floor);
         double base = Math.pow(1024, floor);
 
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
-            dsb.add(((Long) usage[1]) / base, "workspace", label);
             dsb.add(((Long) usage[2]) / base, "build", label);
         }
 
@@ -107,6 +126,6 @@ public class ProjectDiskUsageAction extends DiskUsageAction {
 
     /** Shortcut for the jelly view */
     public boolean showGraph() {
-        return Hudson.getInstance().getDescriptorByType(DiskUsageProjectActionFactory.DescriptorImpl.class).isShowGraph();
+        return Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).isShowGraph();
     }
 }

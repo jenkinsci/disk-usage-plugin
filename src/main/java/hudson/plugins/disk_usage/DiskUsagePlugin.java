@@ -12,8 +12,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import javax.servlet.ServletException;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -28,12 +30,42 @@ public class DiskUsagePlugin extends Plugin {
 
     private transient final DiskUsageThread duThread = new DiskUsageThread();
     
-    private static DiskUsage diskUsageSum;
+    private String countIntervalBuilds; 
+    
+    private String countIntervalJobs;
+    
+    private String countIntervalWorkspace;
+    
+    private String countIntervalJenkinsHome;
+    
+    private  int workspaceTimeOut = 1000*60*5;
+    
+    private static Long diskUsageBuilds = 0l;
+    private static Long diskUsageJenkinsHome =0l;
+    private static Long diskUsageJobsWithoutBuilds = 0l;
+    private static Long diskUsageWorkspaces = 0l;
+    
+    private boolean showGraph = true;
+    private int historyLength = 183;
+    
+		List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> history = new LinkedList<DiskUsageOvearallGraphGenerator.DiskUsageRecord>(){
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public boolean add(DiskUsageOvearallGraphGenerator.DiskUsageRecord e) {
+					boolean ret = super.add(e);
+					if(ret && this.size() > historyLength){
+						this.removeRange(0, this.size() - historyLength);
+					}
+					return ret;
+				}
+			};
+    
 
     @Extension
     public static class DiskUsageManagementLink extends ManagementLink {
 
-        public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace"};
+        public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace", "JobDirectory (without builds)"};
 
         public String getIconFileName() {
             return "/plugin/disk-usage/icons/diskusage48.png";
@@ -72,16 +104,16 @@ public class DiskUsagePlugin extends Plugin {
         }
     }
     
+    public int getWorkspaceTimeOut(){
+        return workspaceTimeOut;
+    }
+    
     /**
      * @return DiskUsage for given project (shortcut for the view). Never null.
      */
-    public static DiskUsage getDiskUsage(Job project) {
+    public static ProjectDiskUsageAction getDiskUsage(Job project) {
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
-        if (action != null) {
-            return action.getDiskUsage();
-        }
-        
-        return new DiskUsage(0, 0);
+        return action;
     }
     
     //Another shortcut
@@ -97,10 +129,10 @@ public class DiskUsagePlugin extends Plugin {
 
             public int compare(AbstractProject o1, AbstractProject o2) {
                 
-                DiskUsage du1 = getDiskUsage(o1);
-                DiskUsage du2 = getDiskUsage(o2);
+                ProjectDiskUsageAction dua1 = getDiskUsage(o1);
+                ProjectDiskUsageAction dua2 = getDiskUsage(o2);
                 
-                long result = du2.wsUsage + du2.buildUsage - du1.wsUsage - du1.buildUsage;
+                long result = dua2.getJobRootDirDiskUsage() + dua2.getDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() - dua1.getDiskUsageWorkspace();
                 
                 if(result > 0) return 1;
                 if(result < 0) return -1;
@@ -112,14 +144,15 @@ public class DiskUsagePlugin extends Plugin {
         Collections.sort(projectList, comparator);
         
         //calculate sum
-        DiskUsage sum = new DiskUsage(0, 0);
+        diskUsageBuilds = 0l;
+        diskUsageJenkinsHome =0l;
+        diskUsageJobsWithoutBuilds = 0l;
+        diskUsageWorkspaces = 0l;
         for(AbstractProject project: projectList) {
-            DiskUsage du = getDiskUsage(project);
-            sum.buildUsage += du.buildUsage;
-            sum.wsUsage += du.wsUsage;
+            diskUsageBuilds =+ getDiskUsage(project).getBuildsDiskUsage();
+            diskUsageJobsWithoutBuilds =+ getDiskUsage(project).getDiskUsageWithoutBuilds();
+            diskUsageWorkspaces =+ getDiskUsage(project).getDiskUsageWorkspace();
         }
-        
-        diskUsageSum = sum;
         
         return projectList;
     }
@@ -137,16 +170,51 @@ public class DiskUsagePlugin extends Plugin {
         }
         return items;
     }
-
-    public static DiskUsage getDiskUsageSum() {
-        return diskUsageSum;
-    }
     
     public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
         duThread.doRun();
         
         res.forwardToPreviousPage(req);
     }
+    
+     public boolean doConfigure(StaplerRequest req, StaplerResponse res) throws ServletException, IOException{
+            JSONObject form = req.getSubmittedForm();
+            countIntervalBuilds = form.getBoolean("countBuildsEnabled")? form.getString("countIntervalBuilds") : null;
+            countIntervalJobs = form.getBoolean("countJobsEnabled")? form.getString("countIntervalJobs") : null;
+            countIntervalWorkspace = form.getBoolean("countWorkspaceEnabled")? form.getString("countIntervalWorkspace") : null;
+            countIntervalJenkinsHome = form.getBoolean("countJenkinsHomeEnabled")? form.getString("countIntervalJenkinsHome") : null;
+            workspaceTimeOut = form.getInt("countInterval");
+            showGraph = req.getParameter("disk_usage.showGraph") != null;
+			String histlen = req.getParameter("disk_usage.historyLength");
+			if(histlen != null ){
+				try{
+					historyLength = Integer.parseInt(histlen);
+				}catch(NumberFormatException ex){
+					historyLength = 183;
+				}
+			}else{
+				historyLength = 183;
+			}
+            save();
+            return true;
+        }
+     
+      public boolean isShowGraph() {
+            //The graph is shown by default
+            return showGraph;
+        }
+
+        public void setShowGraph(Boolean showGraph) {
+            this.showGraph = showGraph;
+        }
+
+        public int getHistoryLength() {
+            return historyLength;
+        }
+
+        public void setHistoryLength(Integer historyLength) {
+            this.historyLength = historyLength;
+        }
     
     /**
      * Generates a graph with disk usage trend
@@ -155,20 +223,22 @@ public class DiskUsagePlugin extends Plugin {
 	public Graph getOverallGraph(){
         long maxValue = 0;
         //First iteration just to get scale of the y-axis
-        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : DiskUsageProjectActionFactory.DESCRIPTOR.history ){
-            maxValue = Math.max(maxValue, Math.max(usage.getWsUsage(), usage.getBuildUsage()));
+        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : history ){
+            maxValue = Math.max(maxValue, Math.max(usage.diskUsageJobsWithoutBuilds, usage.diskUsageWorkspaces));
         }
 
-        int floor = (int) DiskUsage.getScale(maxValue);
-        String unit = DiskUsage.getUnitString(floor);
+        int floor = (int) DiskUsageUtil.getScale(maxValue);
+        String unit = DiskUsageUtil.getUnitString(floor);
         double base = Math.pow(1024, floor);
 
         DataSetBuilder<String, Date> dsb = new DataSetBuilder<String, Date>();
 
-        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : DiskUsageProjectActionFactory.DESCRIPTOR.history ) {
+        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : history ) {
 			Date label = usage.getDate();
-            dsb.add(((Long) usage.getWsUsage()) / base, "workspace", label);
-            dsb.add(((Long) usage.getBuildUsage()) / base, "build", label);
+            dsb.add(((Long) usage.diskUsageWorkspaces) / base, "workspace", label);
+            dsb.add(((Long) usage.diskUsageBuilds) / base, "build", label);
+            dsb.add(((Long) usage.diskUsageJobsWithoutBuilds) / base, "job directory (without builds)", label);
+            dsb.add(((Long) usage.diskUsageJenkinsHome) / base, "henkins home", label);
         }
 
 		return new DiskUsageGraph(dsb.build(), unit);
@@ -177,4 +247,6 @@ public class DiskUsagePlugin extends Plugin {
     public int getCountInterval(){
     	return duThread.COUNT_INTERVAL_MINUTES;
     }
+    
+    
 }
