@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -28,7 +29,9 @@ import org.kohsuke.stapler.StaplerResponse;
 public class DiskUsagePlugin extends Plugin {
     
 
-    private transient final DiskUsageThread duThread = new DiskUsageThread();
+    private transient final BuildDiskUsageCalculationThread builsdDuThread = new BuildDiskUsageCalculationThread();
+    
+    private transient final JobWithoutBuildsDiskUsageCalculation jobsDuThread = new JobWithoutBuildsDiskUsageCalculation();
     
     private String countIntervalBuilds; 
     
@@ -40,15 +43,14 @@ public class DiskUsagePlugin extends Plugin {
     
     private  int workspaceTimeOut = 1000*60*5;
     
-    private static Long diskUsageBuilds = 0l;
-    private static Long diskUsageJenkinsHome =0l;
-    private static Long diskUsageJobsWithoutBuilds = 0l;
-    private static Long diskUsageWorkspaces = 0l;
+    protected static Long diskUsageBuilds = 0l;
+    protected static Long diskUsageJenkinsHome =0l;
+    protected static Long diskUsageJobsWithoutBuilds = 0l;
+    protected static Long diskUsageWorkspaces = 0l;
     
     private boolean showGraph = true;
     private int historyLength = 183;
-    
-		List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> history = new LinkedList<DiskUsageOvearallGraphGenerator.DiskUsageRecord>(){
+    private List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> history = new LinkedList<DiskUsageOvearallGraphGenerator.DiskUsageRecord>(){
 				private static final long serialVersionUID = 1L;
 
 				@Override
@@ -61,49 +63,14 @@ public class DiskUsagePlugin extends Plugin {
 				}
 			};
     
-
-    @Extension
-    public static class DiskUsageManagementLink extends ManagementLink {
-
-        public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace", "JobDirectory (without builds)"};
-
-        public String getIconFileName() {
-            return "/plugin/disk-usage/icons/diskusage48.png";
-        }
-
-        public String getDisplayName() {
-            return Messages.DisplayName();
-        }
-
-        public String getUrlName() {
-            return "plugin/disk-usage/";
-        }
-
-        @Override public String getDescription() {
-            return Messages.Description();
-        }
+    public BuildDiskUsageCalculationThread getBuildsDiskuUsateThread(){
+        return builsdDuThread;
     }
     
-    
-    /**
-     * Unfortunately, I cannot figure out any other solution to satisfy JENKINS-12917 and at the same time JENKINS-16420 
-     */
-    @Extension
-    public static class DiskUsageRootLink implements RootAction {
-
-    	public String getIconFileName() {
-            return "/plugin/disk-usage/icons/diskusage48.png";
-        }
-
-        public String getDisplayName() {
-            return Messages.DisplayName();
-        }
-
-        public String getUrlName() {
-            return "/plugin/disk-usage/";
-        }
+    public JobWithoutBuildsDiskUsageCalculation getJobsDiskuUsateThread(){
+        return jobsDuThread;
     }
-    
+   
     public int getWorkspaceTimeOut(){
         return workspaceTimeOut;
     }
@@ -140,7 +107,8 @@ public class DiskUsagePlugin extends Plugin {
             }
         };
 
-        List<AbstractProject> projectList = addAllProjects(Hudson.getInstance(), new ArrayList<AbstractProject>());
+        List<AbstractProject> projectList = new ArrayList<AbstractProject>();
+        projectList.addAll(DiskUsageUtil.getAllProjects(Jenkins.getInstance()));
         Collections.sort(projectList, comparator);
         
         //calculate sum
@@ -156,28 +124,8 @@ public class DiskUsagePlugin extends Plugin {
         
         return projectList;
     }
-
-    /**
-     * Recursively add Projects form itemGroup
-     */
-    public static List<AbstractProject> addAllProjects(ItemGroup<? extends Item> itemGroup, List<AbstractProject> items) {
-        for (Item item : itemGroup.getItems()) {
-            if (item instanceof AbstractProject) {
-                items.add((AbstractProject) item);
-            } else if (item instanceof ItemGroup) {
-                addAllProjects((ItemGroup) item, items);
-            }
-        }
-        return items;
-    }
     
-    public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
-        duThread.doRun();
-        
-        res.forwardToPreviousPage(req);
-    }
-    
-     public boolean doConfigure(StaplerRequest req, StaplerResponse res) throws ServletException, IOException{
+     public boolean Configure(StaplerRequest req, StaplerResponse res) throws ServletException, IOException{
             JSONObject form = req.getSubmittedForm();
             countIntervalBuilds = form.getBoolean("countBuildsEnabled")? form.getString("countIntervalBuilds") : null;
             countIntervalJobs = form.getBoolean("countJobsEnabled")? form.getString("countIntervalJobs") : null;
@@ -215,37 +163,25 @@ public class DiskUsagePlugin extends Plugin {
         public void setHistoryLength(Integer historyLength) {
             this.historyLength = historyLength;
         }
+        
+        public List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> getHistory(){
+            return history;
+        }
+
+    public String getCountIntervalForBuilds(){
+    	return countIntervalBuilds;
+    }
     
-    /**
-     * Generates a graph with disk usage trend
-     *
-     */
-	public Graph getOverallGraph(){
-        long maxValue = 0;
-        //First iteration just to get scale of the y-axis
-        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : history ){
-            maxValue = Math.max(maxValue, Math.max(usage.diskUsageJobsWithoutBuilds, usage.diskUsageWorkspaces));
-        }
-
-        int floor = (int) DiskUsageUtil.getScale(maxValue);
-        String unit = DiskUsageUtil.getUnitString(floor);
-        double base = Math.pow(1024, floor);
-
-        DataSetBuilder<String, Date> dsb = new DataSetBuilder<String, Date>();
-
-        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : history ) {
-			Date label = usage.getDate();
-            dsb.add(((Long) usage.diskUsageWorkspaces) / base, "workspace", label);
-            dsb.add(((Long) usage.diskUsageBuilds) / base, "build", label);
-            dsb.add(((Long) usage.diskUsageJobsWithoutBuilds) / base, "job directory (without builds)", label);
-            dsb.add(((Long) usage.diskUsageJenkinsHome) / base, "henkins home", label);
-        }
-
-		return new DiskUsageGraph(dsb.build(), unit);
-	}
-
-    public int getCountInterval(){
-    	return duThread.COUNT_INTERVAL_MINUTES;
+    public String getCountIntervalForJobs(){
+    	return countIntervalJobs;
+    }
+    
+    public String getCountIntervalForWorkspaces(){
+    	return countIntervalWorkspace;
+    }
+    
+    public String getCountIntervalForJenkinsHome(){
+    	return countIntervalJenkinsHome;
     }
     
     

@@ -3,14 +3,13 @@ package hudson.plugins.disk_usage;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
-import hudson.model.Hudson;
+import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import jenkins.model.Jenkins;
 
@@ -43,9 +42,8 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
          DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null)
             return 0l;
-        DiskUsageProperty.DiskUsageDescriptor descriptor = (DiskUsageProperty.DiskUsageDescriptor) property.getDescriptor();
         Long diskUsageWorkspace = 0l;
-        for(Long size: descriptor.getSlaveWorkspaceUsage().values()){
+        for(Long size: property.getSlaveWorkspaceUsage().values()){
             diskUsageWorkspace =+ size;
         }
         return diskUsageWorkspace;
@@ -55,13 +53,41 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null)
             return 0l;
-        DiskUsageProperty.DiskUsageDescriptor descriptor = (DiskUsageProperty.DiskUsageDescriptor) property.getDescriptor();
-        return descriptor.getDiskUsageWithoutBuilds();
+        return property.getDiskUsageWithoutBuilds();
+    }
+    
+    public Long getAllDiskUsageWithoutBuilds(){
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        if(property==null)
+            return 0l;
+        return property.getAllDiskUsageWithoutBuilds();
     }
     
     
     public Long getJobRootDirDiskUsage(){
         return getBuildsDiskUsage() + getDiskUsageWithoutBuilds();
+    }
+    
+    private Long getBuildsDiskUsageAllSubItems(ItemGroup group){
+        Long buildsDiskUsage = 0l;
+        for(Object item: group.getItems()){
+            if(item instanceof ItemGroup){
+               ItemGroup subGroup = (ItemGroup) item;
+               buildsDiskUsage += getBuildsDiskUsageAllSubItems(subGroup);
+            }
+            if(item instanceof AbstractProject){
+                AbstractProject p = (AbstractProject) item;
+                List<AbstractBuild> builds = p.getBuilds();
+                for(AbstractBuild build : builds){
+                   // System.out.println(build.getDisplayName());
+                   BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
+                    if (action != null) {
+                        buildsDiskUsage += action.diskUsage;
+                    } 
+                }
+            }
+        }
+        return buildsDiskUsage;
     }
     
     /**
@@ -70,16 +96,19 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     public Long getBuildsDiskUsage() {
         Long buildsDiskUsage = 0l;
         if (project != null) {
-            BuildDiskUsageAction action = null;
-            Iterator<? extends AbstractBuild> buildIterator = project.getBuilds().iterator();
-            while (buildIterator.hasNext()) {
-                action = buildIterator.next().getAction(BuildDiskUsageAction.class);
-                if (action != null) {
+            for(AbstractBuild build: project.getBuilds()){
+                //System.out.println(build.getDisplayName());
+                 BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
+                 if (action != null) {
                     buildsDiskUsage += action.diskUsage;
-                }
-            }          
+                 }
+            }  
+            if(project instanceof ItemGroup){
+               ItemGroup group = (ItemGroup) project;
+               Long sub = getBuildsDiskUsageAllSubItems(group);
+               buildsDiskUsage += sub;
+            }
         }
-
         return buildsDiskUsage;
     }
     

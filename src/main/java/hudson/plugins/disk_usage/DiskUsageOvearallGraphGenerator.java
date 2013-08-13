@@ -28,7 +28,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 
 	@Override
 	protected void doRun() throws Exception {
-        List<AbstractProject> projectList = DiskUsagePlugin.addAllProjects(Hudson.getInstance(), new ArrayList<AbstractProject>());
+        List<AbstractProject> projectList = DiskUsageUtil.getAllProjects(Jenkins.getInstance());
 
 	Long diskUsageBuilds = 0l;
         Long diskUsageJobsWithoutBuilds = 0l;
@@ -42,7 +42,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
             diskUsageJobsWithoutBuilds += action.getDiskUsageWithoutBuilds();
         }
 
-		plugin.history.add(new DiskUsageRecord(diskUsageBuilds, diskUsageWorkspaces, diskUsageJobsWithoutBuilds, diskUsageJenkinsHome));
+		plugin.getHistory().add(new DiskUsageRecord(diskUsageBuilds, diskUsageWorkspaces, diskUsageJobsWithoutBuilds, diskUsageJenkinsHome));
 		plugin.save();
 
 	}

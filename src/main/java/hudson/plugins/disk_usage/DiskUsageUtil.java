@@ -10,10 +10,13 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Node;
+import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.plugins.disk_usage.DiskUsageProperty.DiskUsageDescriptor;
-import hudson.plugins.disk_usage.DiskUsageThread.DiskUsageCallable;
+import hudson.remoting.Callable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +75,6 @@ public class DiskUsageUtil {
     
     public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
             long size = 0;
-
             if (f.isDirectory() && !Util.isSymlink(f)) {
             	File[] fileList = f.listFiles();
             	if (fileList != null) for (File child : fileList) {
@@ -84,24 +86,36 @@ public class DiskUsageUtil {
             		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
             	}
             }
-            
             return size + f.length();
    }
     
     protected static void calculateDiskUsageForProject(AbstractProject project) throws IOException{
         List<File> exceededFiles = new ArrayList<File>();
-        exceededFiles.add(new File(project.getRootDir(),"builds"));
-        long buildSize = DiskUsageCallable.getFileSize(project.getRootDir(), exceededFiles);
-        DiskUsageDescriptor descriptor = (DiskUsageDescriptor) project.getProperty(DiskUsageProperty.class).getDescriptor();
-        Long diskUsageWithoutBuilds = descriptor.getDiskUsageWithoutBuilds();
+        List<AbstractBuild> builds = project.getBuilds();
+        for(AbstractBuild build : builds){
+            exceededFiles.add(build.getRootDir());
+        }
+        if(project instanceof ItemGroup){
+            List<AbstractProject> projects = getAllProjects((ItemGroup) project);
+            for(AbstractProject p: projects){
+                    exceededFiles.add(p.getRootDir());
+            }
+        }
+        long buildSize = DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles);
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        if(property==null){
+            property = new DiskUsageProperty();
+            project.addProperty(property);
+        }
+        Long diskUsageWithoutBuilds = property.getDiskUsageWithoutBuilds();
         boolean update = false;
         	if (( diskUsageWithoutBuilds <= 0 ) ||
         			( Math.abs(diskUsageWithoutBuilds - buildSize) > 1024 )) {
-        		descriptor.setDiskUsageWithoutBuilds(buildSize);
+        		property.setDiskUsageWithoutBuilds(buildSize);
         		update = true;
         	}
         if (update) {
-        	descriptor.save();
+        	project.save();
         }
     }
 
@@ -111,16 +125,15 @@ public class DiskUsageUtil {
 
         //Build disk usage has to be always recalculated to be kept up-to-date 
         //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
-        long buildSize = DiskUsageCallable.getFileSize(build.getRootDir(), new ArrayList<File>());
-        if (build instanceof MavenModuleSetBuild) {
-            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
-            for (List<MavenBuild> mavenBuilds : builds) {
-                for (MavenBuild mavenBuild : mavenBuilds) {
-                    calculateDiskUsageForBuild(mavenBuild);
-                }
-            }
-        }
-        
+        long buildSize = DiskUsageUtil.getFileSize(build.getRootDir(), new ArrayList<File>());
+//        if (build instanceof MavenModuleSetBuild) {
+//            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
+//            for (List<MavenBuild> mavenBuilds : builds) {
+//                for (MavenBuild mavenBuild : mavenBuilds) {
+//                    calculateDiskUsageForBuild(mavenBuild);
+//                }
+//            }
+//        }
         BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
         boolean updateBuild = false;
         if (action == null) {
@@ -140,27 +153,67 @@ public class DiskUsageUtil {
     }
     
     protected static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
-        DiskUsageDescriptor descriptor = (DiskUsageDescriptor) project.getProperty(DiskUsageProperty.class).getDescriptor();
+        DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
             
         for(Node node: Jenkins.getInstance().getNodes()){
            if(project instanceof TopLevelItem && node.toComputer()!=null && node.toComputer().getChannel()!=null){
                TopLevelItem item = (TopLevelItem) project;
                FilePath workspace = node.getWorkspaceFor(item);
                if(workspace.exists()){
-                   Long diskUsage = descriptor.getSlaveWorkspaceUsage().get(node.getNodeName());
+                   Long diskUsage = property.getSlaveWorkspaceUsage().get(node.getNodeName());
                    try{
                         workspace.getChannel().callAsync(new DiskUsageCallable(workspace, new ArrayList<FilePath>())).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getWorkspaceTimeOut(), TimeUnit.MILLISECONDS);             
                    }
                    catch(Exception e){
-                       Logger.getLogger(DiskUsageThread.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for job " + project.getDisplayName() + " through channel " + workspace.getChannel(),e);
+                       Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for job " + project.getDisplayName() + " through channel " + workspace.getChannel(),e);
                    }
                    if(diskUsage!=null && diskUsage>0){
-                       descriptor.putSlaveWorkspace(node, diskUsage);
+                       property.putSlaveWorkspace(node, diskUsage);
                    }
                }
             }
         }
-        descriptor.save();
+        project.save();
+    }
+    
+    public static List<AbstractProject> getAllProjects(ItemGroup<? extends Item> itemGroup) {
+        List<AbstractProject> items = new ArrayList<AbstractProject>();
+        for (Item item : itemGroup.getItems()) {
+            if(item instanceof AbstractProject){
+                items.add((AbstractProject)item);
+            }
+            if (item instanceof ItemGroup) {
+                items.addAll(getAllProjects((ItemGroup) item));
+            }
+        }
+        return items;
+    }
+
+    /**
+     * A {@link Callable} which computes disk usage of remote file object
+     */
+    public static class DiskUsageCallable implements Callable<Long, IOException> {
+
+    	public static final Logger LOGGER = Logger
+    		.getLogger(DiskUsageCallable.class.getName());
+
+        private FilePath path;
+        private List<FilePath> exceedFilesPath;
+
+        public DiskUsageCallable(FilePath filePath, List<FilePath> exceedFilesPath) {
+            this.path = filePath;
+            this.exceedFilesPath = exceedFilesPath;
+        }
+
+        public Long call() throws IOException {
+            File f = new File(path.getRemote());
+            List<File> exceeded = new ArrayList<File>();
+            for(FilePath file: exceedFilesPath){
+                exceeded.add(new File(file.getRemote()));
+            }
+            return DiskUsageUtil.getFileSize(f, exceeded);
+        }
+       
     }
     
     public static final Logger LOGGER = Logger

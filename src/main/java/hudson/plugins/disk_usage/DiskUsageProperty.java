@@ -1,15 +1,11 @@
 package hudson.plugins.disk_usage;
 
-import hudson.init.InitMilestone;
-import hudson.init.Initializer;
+
 import hudson.model.*;
-import hudson.plugins.disk_usage.DiskUsageThread.DiskUsageCallable;
 import hudson.Extension;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -28,18 +24,11 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     public Collection<? extends Action> getJobActions(Job<?, ?> job) {
         return Collections.emptyList();
     }
-
-    @Extension
-    public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
-        
-        private Long diskUsageWithoutBuilds = 0l;
-        private Map<String,Long> slaveWorkspacesUsage = new TreeMap<String,Long>();
-
-        public DiskUsageDescriptor() {
-            load();
-        }
-        
-        public void setDiskUsageWithoutBuilds(Long diskUsageWithoutBuilds){
+    
+      private Long diskUsageWithoutBuilds = 0l;
+     private Map<String,Long> slaveWorkspacesUsage = new TreeMap<String,Long>();
+     
+     public void setDiskUsageWithoutBuilds(Long diskUsageWithoutBuilds){
             this.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
         }
         
@@ -53,6 +42,40 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         
         public Long getDiskUsageWithoutBuilds(){
             return diskUsageWithoutBuilds;
+        }
+        
+        public Long getAllDiskUsageWithoutBuilds(){
+           Long diskUsage = diskUsageWithoutBuilds;
+           if(owner instanceof ItemGroup){
+                     ItemGroup group = (ItemGroup) owner;
+                         diskUsage += getDiskUsageWithoutBuildsAllSubItems(group);
+           }
+           return diskUsage;
+        }
+        
+        private Long getDiskUsageWithoutBuildsAllSubItems(ItemGroup group){
+        Long diskUsage = 0l;
+        for(Object item: group.getItems()){
+            if(item instanceof ItemGroup){
+               ItemGroup subGroup = (ItemGroup) item;
+               diskUsage += getDiskUsageWithoutBuildsAllSubItems(subGroup);
+            }
+            if(item instanceof AbstractProject){
+                AbstractProject p = (AbstractProject) item;
+                DiskUsageProperty property = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
+                if(property!=null){
+                    diskUsage += property.getDiskUsageWithoutBuilds();
+                }
+            }
+        }
+        return diskUsage;
+    }
+
+    @Extension
+    public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
+
+        public DiskUsageDescriptor() {
+            load();
         }
 
         @Override
