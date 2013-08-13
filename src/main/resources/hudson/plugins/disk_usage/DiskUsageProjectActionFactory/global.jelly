@@ -6,7 +6,7 @@
       </f:entry>
 
       <f:entry title="">
-          ${%Overall graph history length (days)}
+          ${%OverallGraphHistoryLength}
 	      <f:textbox name="disk_usage.historyLength" value="${descriptor.historyLength}" />
       </f:entry>
   </f:section>
