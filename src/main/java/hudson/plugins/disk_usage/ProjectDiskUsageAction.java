@@ -39,14 +39,36 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     }
     
     public Long getDiskUsageWorkspace(){
-         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null)
             return 0l;
-        Long diskUsageWorkspace = 0l;
-        for(Long size: property.getSlaveWorkspaceUsage().values()){
-            diskUsageWorkspace =+ size;
+        return property.getAllWorkspaceSize();
+    }
+    
+    /**
+     * Returns all workspace disku usage including workspace usage its sub-projects
+     * 
+     * @return disk usage project and its sub-projects
+     */
+    public Long getAllDiskUsageWorkspace(){
+        Long diskUsage = 0l;
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        if(property!=null){
+            diskUsage += property.getAllWorkspaceSize();
         }
-        return diskUsageWorkspace;
+        if(project instanceof ItemGroup){
+            ItemGroup group = (ItemGroup) project;
+            for(Object i:group.getItems()){
+                if(i instanceof AbstractProject){
+                    AbstractProject p = (AbstractProject) i;
+                    DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
+                    if(prop!=null){
+                        diskUsage += prop.getAllWorkspaceSize();
+                    } 
+                }
+            }
+        }
+        return diskUsage;
     }
     
     public Long getDiskUsageWithoutBuilds(){

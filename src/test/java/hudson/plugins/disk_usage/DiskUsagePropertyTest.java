@@ -1,5 +1,10 @@
 package hudson.plugins.disk_usage;
 
+import java.io.File;
+import java.util.Map;
+import java.util.Set;
+import hudson.model.listeners.RunListener;
+import hudson.model.Slave;
 import org.junit.Test;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.AxisList;
@@ -49,5 +54,64 @@ public class DiskUsagePropertyTest {
         }
         assertEquals("DiskUsageProperty for FreeStyleProject " + project.getDisplayName() + " returns wrong value its size without builds and including sub-projects.", sizeOfProject, project.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds());
         assertEquals("DiskUsageProperty for MatrixProject " + project.getDisplayName() + " returns wrong value for its size without builds and including sub-projects.", matrixProjectTotalSize, matrixProject.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds());
+    }
+    
+    @Test
+    public void checkWorkspacesTest() throws Exception{
+        //turn off run listener
+        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        j.jenkins.getExtensionList(RunListener.class).remove(listener);
+        Slave slave1 = j.createOnlineSlave();
+        Slave slave2 = j.createOnlineSlave();
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
+        project.setAssignedLabel(slave1.getSelfLabel());
+        j.buildAndAssertSuccess(project);
+        project.setAssignedLabel(slave2.getSelfLabel());
+        j.buildAndAssertSuccess(project);
+        project.getBuildByNumber(1).delete();
+        DiskUsageProperty prop = project.getProperty(DiskUsageProperty.class);
+        if(prop == null){
+            prop = new DiskUsageProperty();
+            project.addProperty(prop);
+        }
+        prop.checkWorkspaces();
+        Set<String> nodes = prop.getSlaveWorkspaceUsage().keySet();
+        assertTrue("DiskUsage property should contains slave " + slave2.getDisplayName() + " in slaveWorkspaceUsage.", nodes.contains(slave2.getNodeName()));
+        assertFalse("DiskUsage property should not contains slave " + slave1.getDisplayName() + " in slaveWorkspaceUsage when detection of user workspace withour reference from project is not set.", nodes.contains(slave1.getNodeName()));
+        j.jenkins.getPlugin(DiskUsagePlugin.class).setCheckWorkspaceOnSlave(true);
+        prop.checkWorkspaces();
+        assertTrue("DiskUsage property should contains slave " + slave2.getDisplayName() + " in slaveWorkspaceUsage.", nodes.contains(slave2.getNodeName()));
+        assertTrue("DiskUsage property should contains slave " + slave1.getDisplayName() + " in slaveWorkspaceUsage when detection of user workspace withour reference from project is set.", nodes.contains(slave1.getNodeName()));      
+    }
+    
+    @Test
+    public void getWorkspaceSizeTest() throws Exception{
+        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        j.jenkins.getExtensionList(RunListener.class).remove(listener);
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
+        project.setAssignedLabel(slave1.getSelfLabel());
+        j.buildAndAssertSuccess(project);
+        project.setAssignedLabel(slave2.getSelfLabel());
+        j.buildAndAssertSuccess(project);
+        project.setCustomWorkspace(j.jenkins.getRootDir().getAbsolutePath() + "/project-custom-workspace");
+        j.buildAndAssertSuccess(project);
+        DiskUsageProperty prop = project.getProperty(DiskUsageProperty.class);
+        if(prop == null){
+            prop = new DiskUsageProperty();
+            project.addProperty(prop);
+        }
+        prop.checkWorkspaces();
+        Long workspaceSize = 7509l;
+        Map<String,Map<String,Long>> diskUsage = prop.getSlaveWorkspaceUsage();
+        for(String name : diskUsage.keySet()){
+            Map<String,Long> slaveInfo = diskUsage.get(name);
+            for(String path: slaveInfo.keySet()){
+                slaveInfo.put(path, workspaceSize);
+            }
+        }
+        assertEquals("DiskUsage workspaces which is configured as slave workspace is wrong.", workspaceSize*2, prop.getWorkspaceSize(true), 0);
+        assertEquals("DiskUsage workspaces which is not configured as slave workspace is wrong.", workspaceSize, prop.getWorkspaceSize(false), 0);
     }
 }

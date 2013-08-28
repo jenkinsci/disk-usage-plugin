@@ -4,6 +4,7 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
+import hudson.model.listeners.RunListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,6 +60,9 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testExecute() throws IOException, InterruptedException{
+        //turn off run listener
+        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        jenkins.getExtensionList(RunListener.class).remove(listener);
         FreeStyleProject project = (FreeStyleProject) jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) jenkins.getItem("project2");
         File file = new File(project.getRootDir(),"fileList");
@@ -75,6 +79,9 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testMatrixProject() throws IOException, InterruptedException{
+        //turn off run listener
+        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<String,Long> matrixConfigurationsSize = new TreeMap<String,Long>();
         MatrixProject project = (MatrixProject) jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) jenkins.getItem("project2");

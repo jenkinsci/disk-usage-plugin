@@ -6,22 +6,19 @@ package hudson.plugins.disk_usage;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.maven.MavenBuild;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
-import hudson.model.Run;
 import hudson.model.TopLevelItem;
-import hudson.plugins.disk_usage.DiskUsageProperty.DiskUsageDescriptor;
 import hudson.remoting.Callable;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -151,26 +148,58 @@ public class DiskUsageUtil {
         	build.save();
         }
     }
+        
+    protected static Long calculateWorkspaceDiskUsageForPath(FilePath workspace, ArrayList<FilePath> exceeded) throws IOException, InterruptedException{
+        Long diskUsage = 0l;
+        if(workspace.exists()){
+            try{
+                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getWorkspaceTimeOut(), TimeUnit.MILLISECONDS);             
+            }
+            catch(Exception e){
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for file path " + workspace.getRemote() + " through channel " + workspace.getChannel(),e);
+            }
+        }
+        return diskUsage;
+    }
     
     protected static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
         DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-            
-        for(Node node: Jenkins.getInstance().getNodes()){
-           if(project instanceof TopLevelItem && node.toComputer()!=null && node.toComputer().getChannel()!=null){
-               TopLevelItem item = (TopLevelItem) project;
-               FilePath workspace = node.getWorkspaceFor(item);
-               if(workspace.exists()){
-                   Long diskUsage = property.getSlaveWorkspaceUsage().get(node.getNodeName());
-                   try{
-                        workspace.getChannel().callAsync(new DiskUsageCallable(workspace, new ArrayList<FilePath>())).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getWorkspaceTimeOut(), TimeUnit.MILLISECONDS);             
-                   }
-                   catch(Exception e){
-                       Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for job " + project.getDisplayName() + " through channel " + workspace.getChannel(),e);
-                   }
-                   if(diskUsage!=null && diskUsage>0){
-                       property.putSlaveWorkspace(node, diskUsage);
-                   }
-               }
+        if(property==null){
+            property = new DiskUsageProperty();
+            project.addProperty(property);
+        }
+        property.checkWorkspaces();
+        for(String nodeName: property.getSlaveWorkspaceUsage().keySet()){
+            Node node = Jenkins.getInstance().getNode(nodeName);
+            if(node.toComputer()!=null && node.toComputer().getChannel()!=null){
+                for(String projectWorkspace: property.getSlaveWorkspaceUsage().get(nodeName).keySet()){
+                    FilePath workspace = new FilePath(node.toComputer().getChannel(), projectWorkspace);
+                    if(workspace.exists()){
+                        Long diskUsage = property.getSlaveWorkspaceUsage().get(node.getNodeName()).get(workspace.getRemote());
+                        ArrayList<FilePath> exceededFiles = new ArrayList<FilePath>();
+                        if(project instanceof ItemGroup){
+                            List<AbstractProject> projects = getAllProjects((ItemGroup) project);
+                            for(AbstractProject p: projects){
+                                DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
+                                if(prop==null){
+                                    prop = new DiskUsageProperty();
+                                    p.addProperty(prop);
+                                }
+                                prop.checkWorkspaces();
+                                Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
+                                if(paths!=null && !paths.isEmpty()){
+                                    for(String path: paths.keySet()){
+                                        exceededFiles.add(new FilePath(node.getChannel(),path));
+                                    }
+                                }
+                            }
+                        }
+                        diskUsage = calculateWorkspaceDiskUsageForPath(workspace, exceededFiles);
+                        if(diskUsage!=null && diskUsage>0){
+                            property.putSlaveWorkspaceSize(node, workspace.getRemote(), diskUsage);
+                        }
+                    }
+                }
             }
         }
         project.save();

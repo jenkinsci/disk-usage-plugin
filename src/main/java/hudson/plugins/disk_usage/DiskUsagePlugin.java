@@ -41,6 +41,8 @@ public class DiskUsagePlugin extends Plugin {
     
     private String countIntervalJenkinsHome;
     
+    private boolean checkWorkspaceOnSlave;
+    
     private  int workspaceTimeOut = 1000*60*5;
     
     protected static Long diskUsageBuilds = 0l;
@@ -182,6 +184,14 @@ public class DiskUsagePlugin extends Plugin {
     
     public String getCountIntervalForJenkinsHome(){
     	return countIntervalJenkinsHome;
+    }
+    
+    public boolean getCheckWorkspaceOnSlave(){
+        return checkWorkspaceOnSlave;
+    }
+    
+    public void setCheckWorkspaceOnSlave(boolean check){
+        checkWorkspaceOnSlave = check;
     }
     
     

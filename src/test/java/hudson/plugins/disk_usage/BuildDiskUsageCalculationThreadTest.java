@@ -10,6 +10,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.model.FreeStyleProject;
 import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.TaskListener;
+import hudson.model.listeners.RunListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,6 +62,9 @@ public class BuildDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testExecute() throws IOException, InterruptedException{
+        //turn off run listener
+        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<AbstractBuild, Long> buildSizesProject1 = new TreeMap<AbstractBuild,Long>();
         Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<AbstractBuild,Long>();
         FreeStyleProject project = (FreeStyleProject) jenkins.getItem("project1");
@@ -90,6 +94,9 @@ public class BuildDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testExecuteMatrixProject() throws IOException, InterruptedException{
+        //turn off run listener
+        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<AbstractBuild,Long>();
         Map<String,Long> matrixConfigurationBuildsSize = new TreeMap<String,Long>();
         MatrixProject project = (MatrixProject) jenkins.getItem("project1");

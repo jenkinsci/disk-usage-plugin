@@ -1,9 +1,16 @@
 package hudson.plugins.disk_usage;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.ItemGroup;
+import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +26,36 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     public void onCompleted(AbstractBuild build, TaskListener listener){
         try{
                 DiskUsageUtil.calculateDiskUsageForBuild(build);
+                DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+                if(property==null){
+                    property = new DiskUsageProperty();
+                    build.getProject().addProperty(property);
+                }
+                if(build.getWorkspace()!=null){
+                    ArrayList<FilePath> exceededFiles = new ArrayList<FilePath>();
+                    AbstractProject project = build.getProject();
+                    Node node = build.getBuiltOn();
+                        if(project instanceof ItemGroup){
+                            List<AbstractProject> projects = DiskUsageUtil.getAllProjects((ItemGroup) project);
+                            for(AbstractProject p: projects){
+                                DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
+                                if(prop==null){
+                                    prop = new DiskUsageProperty();
+                                    p.addProperty(prop);
+                                }
+                                prop.checkWorkspaces();
+                                Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
+                                if(paths!=null && !paths.isEmpty()){
+                                    for(String path: paths.keySet()){
+                                        exceededFiles.add(new FilePath(node.getChannel(),path));
+                                    }
+                                }
+                            }
+                        }
+                    property.checkWorkspaces();
+                    Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(),exceededFiles);
+                    property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
+                }
         }
         catch(Exception ex){
             listener.getLogger().println("Disk usage plugin fails during calculation disk usage of this build.");
