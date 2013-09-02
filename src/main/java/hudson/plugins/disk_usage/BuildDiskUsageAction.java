@@ -50,6 +50,14 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         }       
         return buildsDiskUsage;
     }
+    
+    public String getBuildUsageString(){
+        System.out.println("do get buidl usage");
+        AbstractProject p = build.getProject();
+        if(p instanceof ItemGroup)
+            return DiskUsageUtil.getSizeString(getBuildsDiskUsageAllSubItems((ItemGroup)build.getProject()));
+        return DiskUsageUtil.getSizeString(diskUsage);
+    }
 
     private Long getBuildsDiskUsageAllSubItems(ItemGroup group){
         Long buildsDiskUsage = 0l;

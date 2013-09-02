@@ -83,6 +83,7 @@ public class DiskUsageUtil {
             		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
             	}
             }
+            System.out.println("file lengt " + f + " " + f.length() );
             return size + f.length();
    }
     

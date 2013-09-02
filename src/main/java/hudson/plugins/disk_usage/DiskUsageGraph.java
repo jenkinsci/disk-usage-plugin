@@ -4,23 +4,20 @@
  */
 package hudson.plugins.disk_usage;
 
-import hudson.util.ColorPalette;
 import hudson.util.Graph;
 import hudson.util.ShiftedCategoryAxis;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.RectangleInsets;
 
 /**
  *
@@ -28,17 +25,23 @@ import org.jfree.ui.RectangleInsets;
  */
 public class DiskUsageGraph extends Graph{
 	CategoryDataset dataset;
+        CategoryDataset workspaceDataset;
 	String unit;
+        String workspaceUnit;
 
-	public DiskUsageGraph(CategoryDataset dataset, String unit){
+	public DiskUsageGraph(CategoryDataset dataset, String unit, CategoryDataset workspaceDataset, String workspaceUnit){
 		super(-1,350,150);
+                this.workspaceDataset = workspaceDataset;
 		this.dataset = dataset;
 		this.unit = unit;
+                this.workspaceUnit = workspaceUnit;
 	}
 
 	@Override
 	protected JFreeChart createGraph() {
-		final JFreeChart chart = ChartFactory.createLineChart(
+         
+            
+		final JFreeChart chart = ChartFactory.createStackedBarChart(
 				null, // chart title
 				null, // unused
 				Messages.ProjectDiskUsage() + " (" + unit + ")", // range axis label
@@ -54,7 +57,7 @@ public class DiskUsageGraph extends Graph{
 
 		chart.setBackgroundPaint(Color.white);
 
-		final CategoryPlot plot = chart.getCategoryPlot();
+		CategoryPlot plot = (CategoryPlot) chart.getPlot();
 
 		plot.setBackgroundPaint(Color.WHITE);
 		plot.setOutlinePaint(null);
@@ -68,17 +71,13 @@ public class DiskUsageGraph extends Graph{
 		domainAxis.setUpperMargin(0.0);
 		// voodoo for better spacing between labels with many columns
 		domainAxis.setCategoryMargin(-((double) dataset.getColumnCount() / 10.0));
-
-		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-		rangeAxis.setLowerBound(0);
-
-		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-		renderer.setBaseStroke(new BasicStroke(4.0f));
-		ColorPalette.apply(renderer);
-
-		plot.setInsets(new RectangleInsets(5.0, 0, 0, 5.0));
-
+                plot.setRangeAxis(1, plot.getRangeAxis(0));
+                plot.setDataset(1, workspaceDataset);
+                LineAndShapeRenderer renderer = new LineAndShapeRenderer();
+                plot.setRenderer(1, renderer);
+                plot.mapDatasetToRangeAxis(1, 1);
+                plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 		return chart;
 	}
+
 }

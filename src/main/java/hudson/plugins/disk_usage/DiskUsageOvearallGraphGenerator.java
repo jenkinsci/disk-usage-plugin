@@ -8,6 +8,7 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.PeriodicWork;
+import hudson.model.TopLevelItem;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,50 +29,22 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 
 	@Override
 	protected void doRun() throws Exception {
-        List<AbstractProject> projectList = DiskUsageUtil.getAllProjects(Jenkins.getInstance());
 
 	Long diskUsageBuilds = 0l;
         Long diskUsageJobsWithoutBuilds = 0l;
         Long diskUsageWorkspaces =0l;
-        Long diskUsageJenkinsHome = 0l;
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        for(AbstractProject project: projectList) {
-            ProjectDiskUsageAction action = (ProjectDiskUsageAction) project.getActions(ProjectDiskUsageAction.class);
+        for(TopLevelItem item: Jenkins.getInstance().getItems()) {
+            AbstractProject project = (AbstractProject) item;
+            ProjectDiskUsageAction action = (ProjectDiskUsageAction) project.getAction(ProjectDiskUsageAction.class);
             diskUsageBuilds += action.getBuildsDiskUsage();
-            diskUsageWorkspaces += action.getDiskUsageWorkspace();
-            diskUsageJobsWithoutBuilds += action.getDiskUsageWithoutBuilds();
+            diskUsageWorkspaces += action.getAllDiskUsageWorkspace();
+            diskUsageJobsWithoutBuilds += action.getAllDiskUsageWithoutBuilds();
         }
 
-		plugin.getHistory().add(new DiskUsageRecord(diskUsageBuilds, diskUsageWorkspaces, diskUsageJobsWithoutBuilds, diskUsageJenkinsHome));
+		plugin.getHistory().add(new DiskUsageRecord(diskUsageBuilds, diskUsageWorkspaces, diskUsageJobsWithoutBuilds));
 		plugin.save();
 
-	}
-
-	public static class DiskUsageRecord {
-		private static SimpleDateFormat sdf = new SimpleDateFormat("d/M");
-		Date date;
-                protected Long diskUsageBuilds = 0l;
-                protected Long diskUsageJenkinsHome =0l;
-                protected Long diskUsageJobsWithoutBuilds = 0l;
-                protected Long diskUsageWorkspaces = 0l;
-
-		public DiskUsageRecord(Long diskUsageBuilds, Long diskUsageWorkspaces, Long diskUsageJobsWithoutBuilds, Long diskUsageJenkinsHome){
-			this.diskUsageBuilds = diskUsageBuilds;
-                        this.diskUsageJenkinsHome = diskUsageJenkinsHome;
-                        this.diskUsageJobsWithoutBuilds = diskUsageJobsWithoutBuilds;
-                        this.diskUsageWorkspaces = diskUsageWorkspaces;
-			date = new Date(){
-				private static final long serialVersionUID = 1L;
-				@Override
-				public String toString(){
-					return sdf.format(this);
-				}
-			};
-		}
-
-		Date getDate(){
-			return date;
-		}
 	}
 
 }

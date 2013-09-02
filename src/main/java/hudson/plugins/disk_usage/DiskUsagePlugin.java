@@ -3,17 +3,22 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.Plugin;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.*;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -26,6 +31,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author dvrzalik
  * @plugin
  */
+@Extension
 public class DiskUsagePlugin extends Plugin {
     
 
@@ -52,18 +58,21 @@ public class DiskUsagePlugin extends Plugin {
     
     private boolean showGraph = true;
     private int historyLength = 183;
-    private List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> history = new LinkedList<DiskUsageOvearallGraphGenerator.DiskUsageRecord>(){
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean add(DiskUsageOvearallGraphGenerator.DiskUsageRecord e) {
-					boolean ret = super.add(e);
-					if(ret && this.size() > historyLength){
-						this.removeRange(0, this.size() - historyLength);
-					}
-					return ret;
-				}
-			};
+    private List<DiskUsageRecord> history = new ArrayList<DiskUsageRecord>();
+    
+    public DiskUsagePlugin(){
+        try {
+            load();
+        } catch (IOException ex) {
+            Logger.getLogger(DiskUsagePlugin.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    @Override
+    public XmlFile getConfigXml(){
+        return new XmlFile(Jenkins.XSTREAM,
+                new File(Jenkins.getInstance().getRootDir(),"disk-usage.xml"));
+    }
     
     public BuildDiskUsageCalculationThread getBuildsDiskuUsateThread(){
         return builsdDuThread;
@@ -166,7 +175,7 @@ public class DiskUsagePlugin extends Plugin {
             this.historyLength = historyLength;
         }
         
-        public List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> getHistory(){
+        public List<DiskUsageRecord> getHistory(){
             return history;
         }
 
@@ -194,5 +203,39 @@ public class DiskUsagePlugin extends Plugin {
         checkWorkspaceOnSlave = check;
     }
     
+    public Graph getOverallGraph(){
+        long maxValue = 0;
+        long maxValueWorkspace = 0l;
+        //First iteration just to get scale of the y-axis
+        for (DiskUsageRecord usage : history ){
+            maxValue = Math.max(maxValue, usage.diskUsageJobsWithoutBuilds + usage.diskUsageBuilds);
+            maxValueWorkspace = Math.max(maxValueWorkspace, diskUsageJobsWithoutBuilds + usage.diskUsageBuilds);
+        }
+
+        int floor = (int) DiskUsageUtil.getScale(maxValue);
+        String unit = DiskUsageUtil.getUnitString(floor);
+        double base = Math.pow(1024, floor);
+        floor = (int) DiskUsageUtil.getScale(maxValueWorkspace);
+        String unitWorkspace = DiskUsageUtil.getUnitString(floor);
+        double baseWorkspace = Math.pow(1024, floor);
+
+        DataSetBuilder<String, Date> dsb = new DataSetBuilder<String, Date>();
+        DataSetBuilder<String, Date> dsb2 = new DataSetBuilder<String, Date>();
+        for (DiskUsageRecord usage : history ) {
+            Date label = usage.getDate();
+            dsb.add(((Long) usage.diskUsageBuilds) / base, "builds", label);
+            dsb.add(((Long) usage.diskUsageJobsWithoutBuilds + usage.diskUsageBuilds) / base, "jobs", label);
+            dsb2.add(((Long) usage.diskUsageWorkspaces) / baseWorkspace, "workspaces", label);
+        }
+
+            return new DiskUsageGraph(dsb.build(), unit, dsb2.build(), unitWorkspace);
+        }  
+    
+    public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+         plugin.getBuildsDiskuUsateThread().doRun();
+        plugin.getJobsDiskuUsateThread().doRun();
+        res.forwardToPreviousPage(req);
+    }
     
 }

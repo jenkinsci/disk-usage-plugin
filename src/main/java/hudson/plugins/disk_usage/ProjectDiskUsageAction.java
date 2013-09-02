@@ -151,15 +151,16 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         //TODO if(nothing_changed) return;
 
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb = new DataSetBuilder<String, NumberOnlyBuildLabel>();
-
+        DataSetBuilder<String, NumberOnlyBuildLabel> dsb2 = new DataSetBuilder<String, NumberOnlyBuildLabel>();
+        
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
         //First iteration just to get scale of the y-axis
         for (AbstractBuild build : project.getBuilds()) {
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
-                //maxValue = Math.max(maxValue, Math.max(dua.getDiskUsage());
-                usages.add(new Object[]{build, dua.getDiskUsage()});
+                maxValue = Math.max(maxValue, getJobRootDirDiskUsage());
+                usages.add(new Object[]{build, dua.getAllDiskUsage(), getJobRootDirDiskUsage(), getAllDiskUsageWorkspace()});
             }
         }
 
@@ -169,14 +170,17 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
 
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
-            dsb.add(((Long) usage[2]) / base, "build", label);
+            dsb.add(((Long) usage[1]) / base, "build", label);
+            dsb.add(((Long) usage[2]) / base, "job directory", label);
+            dsb2.add(((Long) usage[3]) / base, "workspace", label);
         }
 
-		return new DiskUsageGraph(dsb.build(), unit);
+        return new DiskUsageGraph(dsb.build(), unit, dsb2.build(), unit);   
     }
 
     /** Shortcut for the jelly view */
     public boolean showGraph() {
+        System.out.println("sow graph");
         return Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).isShowGraph();
     }
 }

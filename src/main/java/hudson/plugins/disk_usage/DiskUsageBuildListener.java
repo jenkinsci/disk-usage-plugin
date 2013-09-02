@@ -25,6 +25,8 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     @Override
     public void onCompleted(AbstractBuild build, TaskListener listener){
         try{
+            //count build.xml too
+            build.save();
                 DiskUsageUtil.calculateDiskUsageForBuild(build);
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 if(property==null){
@@ -55,6 +57,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                     property.checkWorkspaces();
                     Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(),exceededFiles);
                     property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
+                    build.getProject().save();
                 }
         }
         catch(Exception ex){
