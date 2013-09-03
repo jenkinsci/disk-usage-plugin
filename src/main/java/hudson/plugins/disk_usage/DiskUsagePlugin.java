@@ -5,6 +5,7 @@ import hudson.Plugin;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.*;
+import hudson.security.Permission;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 
@@ -34,20 +35,19 @@ import org.kohsuke.stapler.StaplerResponse;
 @Extension
 public class DiskUsagePlugin extends Plugin {
     
-
-    private transient final BuildDiskUsageCalculationThread builsdDuThread = new BuildDiskUsageCalculationThread();
+    private String countIntervalBuilds = "* */4 * * *"; 
     
-    private transient final JobWithoutBuildsDiskUsageCalculation jobsDuThread = new JobWithoutBuildsDiskUsageCalculation();
+    private boolean calculationBuilds = true;
     
-    private String countIntervalBuilds; 
+    private String countIntervalJobs = "* */4 * * *";
     
-    private String countIntervalJobs;
+    private boolean calculationJobs = true;
     
-    private String countIntervalWorkspace;
+    private String countIntervalWorkspace ="* */4 * * *";
     
-    private String countIntervalJenkinsHome;
+    private boolean calculationWorkspace = true;
     
-    private boolean checkWorkspaceOnSlave;
+    private boolean checkWorkspaceOnSlave = true;
     
     private  int workspaceTimeOut = 1000*60*5;
     
@@ -74,12 +74,16 @@ public class DiskUsagePlugin extends Plugin {
                 new File(Jenkins.getInstance().getRootDir(),"disk-usage.xml"));
     }
     
-    public BuildDiskUsageCalculationThread getBuildsDiskuUsateThread(){
-        return builsdDuThread;
+    public BuildDiskUsageCalculationThread getBuildsDiskUsateThread(){
+        return AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
     }
     
-    public JobWithoutBuildsDiskUsageCalculation getJobsDiskuUsateThread(){
-        return jobsDuThread;
+    public JobWithoutBuildsDiskUsageCalculation getJobsDiskUsateThread(){
+        return AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
+    }
+    
+    public WorkspaceDiskUsageCalculationThread getWorkspaceDiskUsageThread(){
+       return AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class); 
     }
    
     public int getWorkspaceTimeOut(){
@@ -136,26 +140,30 @@ public class DiskUsagePlugin extends Plugin {
         return projectList;
     }
     
-     public boolean Configure(StaplerRequest req, StaplerResponse res) throws ServletException, IOException{
+     public void doDoConfigure(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
+         Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             JSONObject form = req.getSubmittedForm();
-            countIntervalBuilds = form.getBoolean("countBuildsEnabled")? form.getString("countIntervalBuilds") : null;
-            countIntervalJobs = form.getBoolean("countJobsEnabled")? form.getString("countIntervalJobs") : null;
-            countIntervalWorkspace = form.getBoolean("countWorkspaceEnabled")? form.getString("countIntervalWorkspace") : null;
-            countIntervalJenkinsHome = form.getBoolean("countJenkinsHomeEnabled")? form.getString("countIntervalJenkinsHome") : null;
-            workspaceTimeOut = form.getInt("countInterval");
-            showGraph = req.getParameter("disk_usage.showGraph") != null;
-			String histlen = req.getParameter("disk_usage.historyLength");
-			if(histlen != null ){
-				try{
-					historyLength = Integer.parseInt(histlen);
-				}catch(NumberFormatException ex){
-					historyLength = 183;
-				}
-			}else{
-				historyLength = 183;
-			}
+            //countIntervalBuilds = form.getBoolean("countBuildsEnabled")? form.getString("countIntervalBuilds") : null;
+            //countIntervalJobs = form.getBoolean("countJobsEnabled")? form.getString("countIntervalJobs") : null;
+            //countIntervalWorkspace = form.getBoolean("countWorkspaceEnabled")? form.getString("countIntervalWorkspace") : null;
+            //workspaceTimeOut = form.getInt("countInterval");
+            //checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
+            calculationBuilds = form.getBoolean("calculationBuilds");
+            calculationJobs = form.getBoolean("calculationJobs");
+            calculationWorkspace = form.getBoolean("calculationWorkspace");
+            showGraph = form.getBoolean("showGraph");
+//			String histlen = req.getParameter("disk_usage.historyLength");
+//			if(histlen != null ){
+//				try{
+//					historyLength = Integer.parseInt(histlen);
+//				}catch(NumberFormatException ex){
+//					historyLength = 183;
+//				}
+//			}else{
+//				historyLength = 183;
+//			}
             save();
-            return true;
+            req.getView(this, "index.jelly").forward(req, rsp);
         }
      
       public boolean isShowGraph() {
@@ -191,10 +199,6 @@ public class DiskUsagePlugin extends Plugin {
     	return countIntervalWorkspace;
     }
     
-    public String getCountIntervalForJenkinsHome(){
-    	return countIntervalJenkinsHome;
-    }
-    
     public boolean getCheckWorkspaceOnSlave(){
         return checkWorkspaceOnSlave;
     }
@@ -202,6 +206,23 @@ public class DiskUsagePlugin extends Plugin {
     public void setCheckWorkspaceOnSlave(boolean check){
         checkWorkspaceOnSlave = check;
     }
+    
+     public boolean isCalculationWorkspaceEnabled(){
+        return calculationWorkspace;
+    }
+    
+    public boolean isCalculationBuildsEnabled(){
+        return calculationBuilds;
+    }
+    
+    public boolean isCalculationJobsEnabled(){
+        return calculationJobs;
+    }
+    
+    public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
+        req.getView(this, "config.jelly").forward(req, rsp);
+    }
+    
     
     public Graph getOverallGraph(){
         long maxValue = 0;
@@ -232,9 +253,9 @@ public class DiskUsagePlugin extends Plugin {
         }  
     
     public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-         plugin.getBuildsDiskuUsateThread().doRun();
-        plugin.getJobsDiskuUsateThread().doRun();
+        getBuildsDiskUsateThread().doRun();
+        getJobsDiskUsateThread().doRun();
+        getWorkspaceDiskUsageThread().doRun();
         res.forwardToPreviousPage(req);
     }
     
