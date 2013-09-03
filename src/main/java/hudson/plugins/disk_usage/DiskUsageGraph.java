@@ -41,7 +41,7 @@ public class DiskUsageGraph extends Graph{
 	protected JFreeChart createGraph() {
          
             
-		final JFreeChart chart = ChartFactory.createStackedBarChart(
+		final JFreeChart chart = ChartFactory.createAreaChart(
 				null, // chart title
 				null, // unused
 				Messages.ProjectDiskUsage() + " (" + unit + ")", // range axis label

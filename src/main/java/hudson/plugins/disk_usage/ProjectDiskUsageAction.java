@@ -160,7 +160,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
                 maxValue = Math.max(maxValue, getJobRootDirDiskUsage());
-                usages.add(new Object[]{build, dua.getAllDiskUsage(), getJobRootDirDiskUsage(), getAllDiskUsageWorkspace()});
+                usages.add(new Object[]{build, getJobRootDirDiskUsage(), dua.getAllDiskUsage(), getAllDiskUsageWorkspace()});
             }
         }
 
@@ -170,8 +170,8 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
 
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
-            dsb.add(((Long) usage[1]) / base, "build", label);
-            dsb.add(((Long) usage[2]) / base, "job directory", label);
+            dsb.add(((Long) usage[1]) / base, "all job directory", label);  
+            dsb.add(((Long) usage[2]) / base, "build direcotory", label);     
             dsb2.add(((Long) usage[3]) / base, "workspace", label);
         }
 

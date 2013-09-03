@@ -223,8 +223,8 @@ public class DiskUsagePlugin extends Plugin {
         DataSetBuilder<String, Date> dsb2 = new DataSetBuilder<String, Date>();
         for (DiskUsageRecord usage : history ) {
             Date label = usage.getDate();
-            dsb.add(((Long) usage.diskUsageBuilds) / base, "builds", label);
-            dsb.add(((Long) usage.diskUsageJobsWithoutBuilds + usage.diskUsageBuilds) / base, "jobs", label);
+            dsb.add(((Long) usage.diskUsageJobsWithoutBuilds + usage.diskUsageBuilds) / base, "all job directories", label);
+            dsb.add(((Long) usage.diskUsageBuilds) / base, "build direcotires", label);
             dsb2.add(((Long) usage.diskUsageWorkspaces) / baseWorkspace, "workspaces", label);
         }
 
