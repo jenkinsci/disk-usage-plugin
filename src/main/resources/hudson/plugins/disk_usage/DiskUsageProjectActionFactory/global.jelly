@@ -9,5 +9,10 @@
           ${%OverallGraphHistoryLength}
 	      <f:textbox name="disk_usage.historyLength" value="${descriptor.historyLength}" />
       </f:entry>
+
+      <f:entry title="">
+                ${%TimeoutWorkspace}
+      	      <f:textbox name="disk_usage.timeoutWorkspace" value="${descriptor.timeoutWorkspace}" />
+            </f:entry>
   </f:section>
 </j:jelly>

@@ -30,7 +30,7 @@ public class DiskUsageThread extends AsyncPeriodicWork {
     //trigger disk usage thread each 6 hours
     public static final int COUNT_INTERVAL_MINUTES = 60*6;
     
-    public static final int WORKSPACE_TIMEOUT = 1000*60*5;
+    public static final int WORKSPACE_TIMEOUT = 1000*60*DiskUsageProjectActionFactory.DESCRIPTOR.getTimeoutWorkspace();
 
 
     public DiskUsageThread() {
