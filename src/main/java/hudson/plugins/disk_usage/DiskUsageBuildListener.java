@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.mail.MessagingException;
+import jenkins.model.Jenkins;
 
 /**
  * Build listener for calculation build disk usage
@@ -27,6 +29,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
         try{
             //count build.xml too
             build.save();
+            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
                 DiskUsageUtil.calculateDiskUsageForBuild(build);
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 if(property==null){
@@ -58,7 +61,9 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                     Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(),exceededFiles);
                     property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
                     build.getProject().save();
+                    DiskUsageUtil.controlorkspaceExceedSize(project);
                 }
+ //               DiskUsageUtil.controlAllJobsExceedSize(); I am not sure if it is necessary
         }
         catch(Exception ex){
             listener.getLogger().println("Disk usage plugin fails during calculation disk usage of this build.");

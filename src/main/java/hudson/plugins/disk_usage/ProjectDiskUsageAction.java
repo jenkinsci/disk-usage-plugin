@@ -101,7 +101,6 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                 AbstractProject p = (AbstractProject) item;
                 List<AbstractBuild> builds = p.getBuilds();
                 for(AbstractBuild build : builds){
-                   // System.out.println(build.getDisplayName());
                    BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
                     if (action != null) {
                         buildsDiskUsage += action.diskUsage;
@@ -119,7 +118,6 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         Long buildsDiskUsage = 0l;
         if (project != null) {
             for(AbstractBuild build: project.getBuilds()){
-                //System.out.println(build.getDisplayName());
                  BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
                  if (action != null) {
                     buildsDiskUsage += action.diskUsage;
@@ -180,7 +178,6 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
 
     /** Shortcut for the jelly view */
     public boolean showGraph() {
-        System.out.println("sow graph");
         return Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).isShowGraph();
     }
 }

@@ -11,12 +11,10 @@ import hudson.util.Graph;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,26 +33,35 @@ import org.kohsuke.stapler.StaplerResponse;
 @Extension
 public class DiskUsagePlugin extends Plugin {
     
-    private String countIntervalBuilds = "* */4 * * *"; 
+    private String countIntervalBuilds = "0 */6 * * *"; 
     
     private boolean calculationBuilds = true;
     
-    private String countIntervalJobs = "* */4 * * *";
+    private String countIntervalJobs = "0 */6 * * *";
     
     private boolean calculationJobs = true;
     
-    private String countIntervalWorkspace ="* */4 * * *";
+    private String countIntervalWorkspace ="0 */6 * * *";
     
     private boolean calculationWorkspace = true;
     
-    private boolean checkWorkspaceOnSlave = true;
+    private boolean checkWorkspaceOnSlave = false;
+    
+    private String email;
+    
+    private String jobSize;
+    
+    private String buildSize;
+    
+    private String allJobsSize;
+    
+    private String jobWorkspaceExceedSize;
     
     private  int workspaceTimeOut = 1000*60*5;
     
-    protected static Long diskUsageBuilds = 0l;
-    protected static Long diskUsageJenkinsHome =0l;
-    protected static Long diskUsageJobsWithoutBuilds = 0l;
-    protected static Long diskUsageWorkspaces = 0l;
+    private Long diskUsageBuilds = 0l;
+    private Long diskUsageJobsWithoutBuilds = 0l;
+    private Long diskUsageWorkspaces = 0l;
     
     private boolean showGraph = true;
     private int historyLength = 183;
@@ -66,6 +73,113 @@ public class DiskUsagePlugin extends Plugin {
         } catch (IOException ex) {
             Logger.getLogger(DiskUsagePlugin.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void refreshGlobalInformation(){
+        for(Item item: Jenkins.getInstance().getItems()){
+            diskUsageBuilds = 0l;
+            diskUsageWorkspaces = 0l;
+            diskUsageJobsWithoutBuilds = 0l;
+            if(item instanceof AbstractProject){
+                AbstractProject project = (AbstractProject) item;
+                ProjectDiskUsageAction action = (ProjectDiskUsageAction) project.getAction(ProjectDiskUsageAction.class);
+                diskUsageBuilds += action.getBuildsDiskUsage();
+                diskUsageWorkspaces += action.getAllDiskUsageWorkspace();
+                diskUsageJobsWithoutBuilds += action.getAllDiskUsageWithoutBuilds();
+            }
+        }
+    }
+    
+    public Long getCashedGlobalBuildsDiskUsage(){
+        return diskUsageBuilds;
+    }
+    
+    public Long getCashedGlobalJobsDiskUsage(){
+        return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
+    }
+    
+    public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){
+        return diskUsageJobsWithoutBuilds;
+    }
+    
+    public Long getCashedGlobalWorkspacesDiskUsage(){
+        return diskUsageWorkspaces;
+    }
+    
+    public Long getGlobalBuildsDiskUsage(){
+        refreshGlobalInformation();
+        return diskUsageBuilds;
+    }
+    
+    public Long getGlobalJobsDiskUsage(){
+        refreshGlobalInformation();
+        return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
+    }
+    
+    public Long getGlobalJobsWithoutBuildsDiskUsage(){
+        refreshGlobalInformation();
+        return diskUsageJobsWithoutBuilds;
+    }
+    
+    public Long getGlobalWorkspacesDiskUsage(){
+        refreshGlobalInformation();
+        return diskUsageWorkspaces;
+    }
+    
+    public Long getJobWorkspaceExceedSize(){
+        return DiskUsageUtil.getSizeInBytes(jobWorkspaceExceedSize);
+    }
+    
+    public String getJobWorkspaceExceedSizeInString(){
+        return jobWorkspaceExceedSize;
+    }
+    
+    public String getUnit(String unit){
+        if(unit==null)
+            return null;
+        return unit.split(" ")[1];
+    }
+    
+    public String getValue(String size){
+        if(size==null)
+            return null;
+        return size.split(" ")[0];
+    }
+    
+    public String getEmailAddress(){
+        return email;
+    }
+    
+    public boolean warningAboutExceededSize(){
+        return email!=null;
+    }
+    
+    public Long getAllJobsExceedSize(){
+        return DiskUsageUtil.getSizeInBytes(allJobsSize);
+    }
+    
+    public Long getBuildExceedSize(){
+        return DiskUsageUtil.getSizeInBytes(buildSize);
+    }
+    
+    public Long getJobExceedSize(){
+        return DiskUsageUtil.getSizeInBytes(jobSize);
+    }
+    
+    public String getAllJobsExceedSizeInString(){
+        return allJobsSize;
+    }
+    
+    public String getBuildExceedSizeInString(){
+        return buildSize;
+    }
+    
+    public String getJobExceedSizeInString(){
+        return jobSize;
+    }
+    
+    public void sendEmail(String message, String subject){
+        
     }
     
     @Override
@@ -106,7 +220,7 @@ public class DiskUsagePlugin extends Plugin {
     /**
      * @return Project list sorted by occupied disk space
      */
-    public static List getProjectList() {
+    public List getProjectList() {
         Comparator<AbstractProject> comparator = new Comparator<AbstractProject>() {
 
             public int compare(AbstractProject o1, AbstractProject o2) {
@@ -126,11 +240,6 @@ public class DiskUsagePlugin extends Plugin {
         projectList.addAll(DiskUsageUtil.getAllProjects(Jenkins.getInstance()));
         Collections.sort(projectList, comparator);
         
-        //calculate sum
-        diskUsageBuilds = 0l;
-        diskUsageJenkinsHome =0l;
-        diskUsageJobsWithoutBuilds = 0l;
-        diskUsageWorkspaces = 0l;
         for(AbstractProject project: projectList) {
             diskUsageBuilds =+ getDiskUsage(project).getBuildsDiskUsage();
             diskUsageJobsWithoutBuilds =+ getDiskUsage(project).getDiskUsageWithoutBuilds();
@@ -143,14 +252,25 @@ public class DiskUsagePlugin extends Plugin {
      public void doDoConfigure(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
          Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             JSONObject form = req.getSubmittedForm();
-            //countIntervalBuilds = form.getBoolean("countBuildsEnabled")? form.getString("countIntervalBuilds") : null;
-            //countIntervalJobs = form.getBoolean("countJobsEnabled")? form.getString("countIntervalJobs") : null;
-            //countIntervalWorkspace = form.getBoolean("countWorkspaceEnabled")? form.getString("countIntervalWorkspace") : null;
             //workspaceTimeOut = form.getInt("countInterval");
             //checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
-            calculationBuilds = form.getBoolean("calculationBuilds");
-            calculationJobs = form.getBoolean("calculationJobs");
-            calculationWorkspace = form.getBoolean("calculationWorkspace");
+            calculationBuilds = form.containsKey("calculationBuilds");
+            calculationJobs = form.containsKey("calculationJobs");
+            calculationWorkspace = form.containsKey("calculationWorkspace");
+            countIntervalBuilds = calculationBuilds? form.getJSONObject("calculationBuilds").getString("countIntervalBuilds") : "0 */6 * * *";
+            countIntervalJobs = calculationJobs? form.getJSONObject("calculationJobs").getString("countIntervalJobs") : "0 */6 * * *";
+            countIntervalWorkspace = calculationWorkspace? form.getJSONObject("calculationWorkspace").getString("countIntervalWorkspace") : "0 */6 * * *";
+
+            if(form.containsKey("warnings")){
+                JSONObject warnings = form.getJSONObject("warnings");
+                email = warnings.getString("email");           
+                if(email!=null){
+                    allJobsSize = warnings.containsKey("jobsWarning")? (warnings.getJSONObject("jobsWarning").getInt("allJobsSize") + " " + warnings.getJSONObject("jobsWarning").getString("JobsSizeUnit")) : null;
+                    buildSize = warnings.containsKey("buildWarning")? (warnings.getJSONObject("buildWarning").getInt("buildSize") + " " + warnings.getJSONObject("buildWarning").getString("buildSizeUnit")) : null;
+                    jobSize = warnings.containsKey("jobWarning")? (warnings.getJSONObject("jobWarning").getInt("jobSize") + " " + warnings.getJSONObject("jobWarning").getString("jobSizeUnit")) : null;
+                    jobWorkspaceExceedSize = warnings.containsKey("workspaceWarning")? (warnings.getJSONObject("workspaceWarning").getInt("jobWorkspaceExceedSize") + " " + warnings.getJSONObject("workspaceWarning").getString("jobWorkspaceExceedSizeUnit")) : null;
+                }
+            }
             showGraph = form.getBoolean("showGraph");
 //			String histlen = req.getParameter("disk_usage.historyLength");
 //			if(histlen != null ){
@@ -219,8 +339,24 @@ public class DiskUsagePlugin extends Plugin {
         return calculationJobs;
     }
     
+    public boolean warnAboutJobWorkspaceExceedSize(){
+        return jobWorkspaceExceedSize!=null;
+    }
+    
+    public boolean warnAboutAllJobsExceetedSize(){
+        return allJobsSize!=null;
+    }
+    
+    public boolean warnAboutBuildExceetedSize(){
+        return buildSize!=null;
+    }
+    
+    public boolean warnAboutJobExceetedSize(){
+        return jobSize!=null;
+    }
+    
     public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
-        req.getView(this, "config.jelly").forward(req, rsp);
+        req.getView(this, "settings.jelly").forward(req, rsp);
     }
     
     

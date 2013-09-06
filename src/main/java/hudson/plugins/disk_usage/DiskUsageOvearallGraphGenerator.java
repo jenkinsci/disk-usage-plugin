@@ -24,22 +24,10 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 
 	@Override
 	protected void doRun() throws Exception {
-
-	Long diskUsageBuilds = 0l;
-        Long diskUsageJobsWithoutBuilds = 0l;
-        Long diskUsageWorkspaces =0l;
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        for(TopLevelItem item: Jenkins.getInstance().getItems()) {
-            AbstractProject project = (AbstractProject) item;
-            ProjectDiskUsageAction action = (ProjectDiskUsageAction) project.getAction(ProjectDiskUsageAction.class);
-            diskUsageBuilds += action.getBuildsDiskUsage();
-            diskUsageWorkspaces += action.getAllDiskUsageWorkspace();
-            diskUsageJobsWithoutBuilds += action.getAllDiskUsageWithoutBuilds();
-        }
-
-		plugin.getHistory().add(new DiskUsageRecord(diskUsageBuilds, diskUsageWorkspaces, diskUsageJobsWithoutBuilds));
-		plugin.save();
-
+            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+            plugin.refreshGlobalInformation();
+            plugin.getHistory().add(new DiskUsageRecord(plugin.getCashedGlobalBuildsDiskUsage(), plugin.getGlobalWorkspacesDiskUsage(), plugin.getCashedGlobalJobsWithoutBuildsDiskUsage()));
+            plugin.save();
 	}
 
 }

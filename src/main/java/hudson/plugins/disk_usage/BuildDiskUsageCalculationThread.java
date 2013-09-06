@@ -1,6 +1,7 @@
 package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
+import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
@@ -22,6 +23,7 @@ import jenkins.model.Jenkins;
  * 
  * @author dvrzalik
  */
+@Extension
 public class BuildDiskUsageCalculationThread extends AsyncAperiodicWork {
     
     public BuildDiskUsageCalculationThread(){
@@ -30,26 +32,34 @@ public class BuildDiskUsageCalculationThread extends AsyncAperiodicWork {
 
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
-        List<Item> items = new ArrayList<Item>();
-        ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
-        items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        if(plugin.isCalculationBuildsEnabled()){
+            List<Item> items = new ArrayList<Item>();
+            ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
+            items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
 
-        for (Object item : items) {
-            if (item instanceof AbstractProject) {
-                AbstractProject project = (AbstractProject) item;
-                if (!project.isBuilding()) {
+            for (Object item : items) {
+                if (item instanceof AbstractProject) {
+                    AbstractProject project = (AbstractProject) item;
+                    if (!project.isBuilding()) {
 
-                    List<AbstractBuild> builds = project.getBuilds();
-                    for(AbstractBuild build : builds){
-                        try {                        
-                            DiskUsageUtil.calculateDiskUsageForBuild(build);                        
-                        } catch (Exception ex) {
-                            logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
+                        List<AbstractBuild> builds = project.getBuilds();
+                        for(AbstractBuild build : builds){
+                            try {                        
+                                DiskUsageUtil.calculateDiskUsageForBuild(build);                        
+                            } catch (Exception ex) {
+                                logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
+                            }
                         }
                     }
                 }
             }
         }
+    }
+    
+    @Override
+    public long getInitialDelay(){
+        return getRecurrencePeriod();
     }
 
     @Override
@@ -59,7 +69,7 @@ public class BuildDiskUsageCalculationThread extends AsyncAperiodicWork {
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
-            return now.getTimeInMillis() - nextExecution.getTimeInMillis();           
+            return nextExecution.getTimeInMillis() - now.getTimeInMillis();           
         } catch (ANTLRException ex) {
             logger.log(Level.SEVERE, null, ex);
             //it should not happen

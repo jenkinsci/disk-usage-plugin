@@ -5,6 +5,7 @@
 package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
+import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.AsyncAperiodicWork;
@@ -24,6 +25,7 @@ import jenkins.model.Jenkins;
  *
  * @author lucinka
  */
+@Extension
 public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
     
     public JobWithoutBuildsDiskUsageCalculation(){
@@ -32,20 +34,29 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
 
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
-        List<Item> items = new ArrayList<Item>();
-        ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
-        items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
+         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        if(plugin.isCalculationJobsEnabled()){
+            List<Item> items = new ArrayList<Item>();
+            ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
+            items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
 
-        for (Object item : items) {
-            if (item instanceof AbstractProject) {
-                AbstractProject project = (AbstractProject) item;
-                try{
-                    DiskUsageUtil.calculateDiskUsageForProject(project);
-                 } catch (Exception ex) {
+            for (Object item : items) {
+                if (item instanceof AbstractProject) {
+                    AbstractProject project = (AbstractProject) item;
+                    try{
+                        DiskUsageUtil.calculateDiskUsageForProject(project);
+                    } catch (Exception ex) {
                         logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
-                 }               
+                    }               
+                }
             }
+            DiskUsageUtil.controlAllJobsExceedSize();
         }
+    }
+    
+    @Override
+    public long getInitialDelay(){
+        return getRecurrencePeriod();
     }
 
     @Override
@@ -55,7 +66,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
-            return now.getTimeInMillis() - nextExecution.getTimeInMillis();           
+            return nextExecution.getTimeInMillis() - now.getTimeInMillis();           
         } catch (ANTLRException ex) {
             logger.log(Level.SEVERE, null, ex);
             //it should not happen

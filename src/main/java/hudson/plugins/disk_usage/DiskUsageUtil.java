@@ -11,17 +11,23 @@ import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
-import hudson.model.TopLevelItem;
 import hudson.remoting.Callable;
+import hudson.tasks.MailSender;
+import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.mail.Message.RecipientType;
+import javax.mail.MessagingException;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import jenkins.model.Jenkins;
 
 /**
@@ -30,7 +36,70 @@ import jenkins.model.Jenkins;
  */
 public class DiskUsageUtil {
     
-    public static final String getSizeString(Long size) {
+    public static void sendEmail(String subject, String message) throws MessagingException{
+       
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        String address = plugin.getEmailAddress();
+        MimeMessage msg = new MimeMessage(Mailer.descriptor().createSession());
+        msg.setSubject(subject);
+        msg.setText(message, "utf-8");
+        msg.setFrom(new InternetAddress(Mailer.descriptor().getAdminAddress()));
+        msg.setSentDate(new Date());
+        msg.setRecipient(RecipientType.TO, new InternetAddress(address));
+        Transport.send(msg);     
+    }
+    
+    public static Long getSizeInBytes(String stringSize){
+        if(stringSize==null)
+            return null;
+        String []values = stringSize.split(" ");
+        int index = getIndex(values[1]);
+        Long value = Long.decode(values[0]);
+        Long size = value * 1024 * index;
+        return size;        
+    }
+    
+    public static void controlAllJobsExceedSize(){
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        plugin.refreshGlobalInformation();
+        Long allJobsSize = plugin.getCashedGlobalJobsDiskUsage();
+        Long exceedJobsSize = plugin.getAllJobsExceedSize();
+        if(allJobsSize>exceedJobsSize){
+            try {
+                sendEmail("Jobs exeed size", "Jobs exceed size " + getSizeString(exceedJobsSize) + ". Their size is now " + getSizeString(allJobsSize));
+            } catch (MessagingException ex) {
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+            }
+        }          
+    }
+    
+    public static void controlorkspaceExceedSize(AbstractProject project){
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        Long size = property.getAllWorkspaceSize();
+                        if(plugin.warnAboutJobWorkspaceExceedSize() && size>plugin.getJobWorkspaceExceedSize()){
+                            StringBuilder builder = new StringBuilder();
+                            builder.append("Workspaces of Job " + project.getDisplayName() + " have size " + size + ".");
+                            builder.append("\n");
+                            builder.append("List of workspaces:");
+                            for(String slaveName : property.getSlaveWorkspaceUsage().keySet()){
+                                Long s = 0l;
+                                for(Long l :property.getSlaveWorkspaceUsage().get(slaveName).values()){
+                                    s += l;
+                                }
+                                builder.append("\n");
+                                builder.append("Slave " + slaveName + " has workspace of job " + project.getDisplayName() + " with size " + getSizeString(s));
+                            }
+                            try {
+                                sendEmail("Workspaces of Job " + project.getDisplayName() + " exceed size", builder.toString());
+                            } catch (MessagingException ex) {
+                                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+                            }
+                        }
+        
+    }
+    
+    public static String getSizeString(Long size) {
         if (size == null || size <= 0) {
             return "-";
         }
@@ -43,8 +112,21 @@ public class DiskUsageUtil {
         return Math.round(size / base) + unit;
     }
 
-    public static final double getScale(long number) {
+    public static double getScale(long number) {
         return Math.floor(Math.log(number) / Math.log(1024));
+    }
+    
+    public static int getIndex(String unit){
+        int index = 0;
+        if(unit.equals("KB"))
+            index = 1;
+        if(unit.equals("MB"))
+            index = 2;
+        if(unit.equals("GB"))
+            index = 3;        
+        if(unit.equals("TB"))
+            index = 4;
+        return index;
     }
 
     public static String getUnitString(int floor) {
@@ -83,11 +165,11 @@ public class DiskUsageUtil {
             		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
             	}
             }
-            System.out.println("file lengt " + f + " " + f.length() );
             return size + f.length();
    }
     
     protected static void calculateDiskUsageForProject(AbstractProject project) throws IOException{
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         List<File> exceededFiles = new ArrayList<File>();
         List<AbstractBuild> builds = project.getBuilds();
         for(AbstractBuild build : builds){
@@ -112,6 +194,13 @@ public class DiskUsageUtil {
         		property.setDiskUsageWithoutBuilds(buildSize);
         		update = true;
         	}
+                if(plugin.warnAboutJobExceetedSize() && buildSize>plugin.getJobExceedSize()){
+            try {
+                sendEmail("Job " + project.getDisplayName() + " exceeds size", "Job " + project.getDisplayName() + " has size " + getSizeString(buildSize) + ".");
+            } catch (MessagingException ex) {
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting job size.", ex);
+            }
+                }
         if (update) {
         	project.save();
         }
@@ -120,7 +209,7 @@ public class DiskUsageUtil {
 
         protected static void calculateDiskUsageForBuild(AbstractBuild build)
             throws IOException {
-
+            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         //Build disk usage has to be always recalculated to be kept up-to-date 
         //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
         long buildSize = DiskUsageUtil.getFileSize(build.getRootDir(), new ArrayList<File>());
@@ -137,14 +226,23 @@ public class DiskUsageUtil {
         if (action == null) {
             action = new BuildDiskUsageAction(build, buildSize);
             build.addAction(action);
+            action.diskUsage = buildSize;
             updateBuild = true;
-        } else {
-        	if (( action.diskUsage <= 0 ) ||
+        } 
+        else {
+            if (( action.diskUsage <= 0 ) ||
         			( Math.abs(action.diskUsage - buildSize) > 1024 )) {
         		action.diskUsage = buildSize;
         		updateBuild = true;
-        	}
+            }
         }
+                if(plugin.warnAboutBuildExceetedSize() && buildSize>plugin.getBuildExceedSize()){
+                    try {
+                        sendEmail("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " exceeds size", "Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has size " + getSizeString(buildSize) + ".");
+                    } catch (MessagingException ex) {
+                        Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+                    }
+                }
         if ( updateBuild ) {
         	build.save();
         }
@@ -164,6 +262,7 @@ public class DiskUsageUtil {
     }
     
     protected static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
             property = new DiskUsageProperty();
@@ -199,6 +298,7 @@ public class DiskUsageUtil {
                         if(diskUsage!=null && diskUsage>0){
                             property.putSlaveWorkspaceSize(node, workspace.getRemote(), diskUsage);
                         }
+                        controlorkspaceExceedSize(project);
                     }
                 }
             }
