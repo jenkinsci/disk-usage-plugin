@@ -41,6 +41,9 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 		// Number of days in history
         private int historyLength = 183;
 
+        // Timeout for a single Project's workspace analyze (in mn)
+        private int timeoutWorkspace = 5;
+
 		List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> history = new LinkedList<DiskUsageOvearallGraphGenerator.DiskUsageRecord>(){
 				private static final long serialVersionUID = 1L;
 
@@ -67,7 +70,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
+            // Configure showGraph
             showGraph = req.getParameter("disk_usage.showGraph") != null;
+
+            // Configure historyLength
 			String histlen = req.getParameter("disk_usage.historyLength");
 			if(histlen != null ){
 				try{
@@ -78,6 +84,18 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 			}else{
 				historyLength = 183;
 			}
+
+            // Configure timeoutWorkspace
+            String timeoutWks = req.getParameter("disk_usage.timeoutWorkspace");
+            if (timeoutWks != null ) {
+                try {
+                    timeoutWorkspace = Integer.parseInt(timeoutWks);
+                } catch (NumberFormatException ex) {
+                    timeoutWorkspace = 5;
+                }
+            } else {
+                timeoutWorkspace = 5;
+            }
             save();
             return super.configure(req, formData);
         }
@@ -97,6 +115,14 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
         public void setHistoryLength(Integer historyLength) {
             this.historyLength = historyLength;
+        }
+
+        public int getTimeoutWorkspace() {
+            return timeoutWorkspace;
+        }
+
+        public void setTimeoutWorkspace(Integer timeoutWorkspace) {
+            this.timeoutWorkspace = timeoutWorkspace;
         }
     }
 
