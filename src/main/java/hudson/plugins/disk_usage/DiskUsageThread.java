@@ -29,9 +29,6 @@ import java.util.logging.Logger;
 public class DiskUsageThread extends AsyncPeriodicWork {
     //trigger disk usage thread each 6 hours
     public static final int COUNT_INTERVAL_MINUTES = 60*6;
-    
-    public static final int WORKSPACE_TIMEOUT = 1000*60*DiskUsageProjectActionFactory.DESCRIPTOR.getTimeoutWorkspace();
-
 
     public DiskUsageThread() {
         super("Project disk usage");
@@ -139,7 +136,7 @@ public class DiskUsageThread extends AsyncPeriodicWork {
             if (workspace != null) {
             	long oldWsUsage = bdua.diskUsage.wsUsage;
                 try{
-                    bdua.diskUsage.wsUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace)).get(WORKSPACE_TIMEOUT, TimeUnit.MILLISECONDS);
+                    bdua.diskUsage.wsUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace)).get(DiskUsageProjectActionFactory.DESCRIPTOR.getTimeoutWorkspace(), TimeUnit.MINUTES);
                     if (Math.abs(bdua.diskUsage.wsUsage - oldWsUsage) > 1024 ) {
                 	updateWs = true;
                     }
