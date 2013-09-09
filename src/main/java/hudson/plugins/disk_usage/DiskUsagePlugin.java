@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -272,16 +274,10 @@ public class DiskUsagePlugin extends Plugin {
                 }
             }
             showGraph = form.getBoolean("showGraph");
-//			String histlen = req.getParameter("disk_usage.historyLength");
-//			if(histlen != null ){
-//				try{
-//					historyLength = Integer.parseInt(histlen);
-//				}catch(NumberFormatException ex){
-//					historyLength = 183;
-//				}
-//			}else{
-//				historyLength = 183;
-//			}
+			String histlen = req.getParameter("historyLength");
+			if(histlen != null && !histlen.isEmpty()){
+                            historyLength = Integer.parseInt(histlen);
+                        }
             save();
             req.getView(this, "index.jelly").forward(req, rsp);
         }
@@ -365,27 +361,26 @@ public class DiskUsagePlugin extends Plugin {
         long maxValueWorkspace = 0l;
         //First iteration just to get scale of the y-axis
         for (DiskUsageRecord usage : history ){
-            maxValue = Math.max(maxValue, usage.diskUsageJobsWithoutBuilds + usage.diskUsageBuilds);
-            maxValueWorkspace = Math.max(maxValueWorkspace, diskUsageJobsWithoutBuilds + usage.diskUsageBuilds);
+            maxValue = usage.getAllSpace();
         }
 
         int floor = (int) DiskUsageUtil.getScale(maxValue);
         String unit = DiskUsageUtil.getUnitString(floor);
         double base = Math.pow(1024, floor);
-        floor = (int) DiskUsageUtil.getScale(maxValueWorkspace);
-        String unitWorkspace = DiskUsageUtil.getUnitString(floor);
-        double baseWorkspace = Math.pow(1024, floor);
 
         DataSetBuilder<String, Date> dsb = new DataSetBuilder<String, Date>();
         DataSetBuilder<String, Date> dsb2 = new DataSetBuilder<String, Date>();
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        
         for (DiskUsageRecord usage : history ) {
             Date label = usage.getDate();
-            dsb.add(((Long) usage.diskUsageJobsWithoutBuilds + usage.diskUsageBuilds) / base, "all job directories", label);
-            dsb.add(((Long) usage.diskUsageBuilds) / base, "build direcotires", label);
-            dsb2.add(((Long) usage.diskUsageWorkspaces) / baseWorkspace, "workspaces", label);
+            dataset.addValue(((Long) usage.getAllSpace()) / base, "free space of jobs directory", label);
+            dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
+            dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
+            dsb2.add(((Long) usage.getWorkspacesDiskUsage()) / base, "workspaces", label);
+            
         }
-
-            return new DiskUsageGraph(dsb.build(), unit, dsb2.build(), unitWorkspace);
+            return new DiskUsageGraph(dataset, unit, dsb2.build());
         }  
     
     public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {

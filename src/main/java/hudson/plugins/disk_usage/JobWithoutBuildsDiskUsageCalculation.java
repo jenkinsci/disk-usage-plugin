@@ -50,7 +50,9 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
                     }               
                 }
             }
-            DiskUsageUtil.controlAllJobsExceedSize();
+            if(plugin.warnAboutAllJobsExceetedSize()){
+                DiskUsageUtil.controlAllJobsExceedSize();
+            }
         }
     }
     

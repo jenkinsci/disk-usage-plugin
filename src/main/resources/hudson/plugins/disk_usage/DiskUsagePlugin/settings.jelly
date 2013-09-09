@@ -95,12 +95,15 @@
            </f:optionalBlock>
         </f:optionalBlock>
         </f:section>
-         
+        <f:section title="Graph settings">
          <f:entry title="${%Show disk usage trend graph on the project page}">
           <f:checkbox name="showGraph" checked="${it.isShowGraph()}" />
-          
          </f:entry>
-         <f:submit name="Submit"/>
+         <f:entry title="${%Length of global disk usage history}">
+          <input name="historyLength" checked="${it.getHistoryLength()}" />
+         </f:entry>
+         </f:section>
+         <f:submit name="Submit" value="Submit"/>
       </f:form>   
     </l:main-panel>
 </l:layout>

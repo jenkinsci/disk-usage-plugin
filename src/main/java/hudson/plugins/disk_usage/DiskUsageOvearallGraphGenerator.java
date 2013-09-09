@@ -8,6 +8,7 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.PeriodicWork;
 import hudson.model.TopLevelItem;
+import java.io.File;
 import jenkins.model.Jenkins;
 
 /**
@@ -26,7 +27,10 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 	protected void doRun() throws Exception {
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
             plugin.refreshGlobalInformation();
-            plugin.getHistory().add(new DiskUsageRecord(plugin.getCashedGlobalBuildsDiskUsage(), plugin.getGlobalWorkspacesDiskUsage(), plugin.getCashedGlobalJobsWithoutBuildsDiskUsage()));
+            File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
+            Long freeJobsDirSpace = jobsDir.getTotalSpace();
+            
+            plugin.getHistory().add(new DiskUsageRecord(plugin.getCashedGlobalBuildsDiskUsage(), plugin.getGlobalWorkspacesDiskUsage(), plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), freeJobsDirSpace));
             plugin.save();
 	}
 

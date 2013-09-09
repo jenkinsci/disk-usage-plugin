@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 /**
  * Disk usage of a project
@@ -150,7 +152,6 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
 
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb = new DataSetBuilder<String, NumberOnlyBuildLabel>();
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb2 = new DataSetBuilder<String, NumberOnlyBuildLabel>();
-        
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
         //First iteration just to get scale of the y-axis
@@ -165,15 +166,14 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         int floor = (int) DiskUsageUtil.getScale(maxValue);
         String unit = DiskUsageUtil.getUnitString(floor);
         double base = Math.pow(1024, floor);
-
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
-            dsb.add(((Long) usage[1]) / base, "all job directory", label);  
-            dsb.add(((Long) usage[2]) / base, "build direcotory", label);     
-            dsb2.add(((Long) usage[3]) / base, "workspace", label);
+            dataset.addValue(((Long) usage[1]) / base, "job directory", label);  
+            dataset.addValue(((Long) usage[2]) / base, "build direcotory", label);     
+            dsb2.add(((Long) usage[3]) / base, "all jobs workspaces", label);
         }
-
-        return new DiskUsageGraph(dsb.build(), unit, dsb2.build(), unit);   
+        return new DiskUsageGraph(dataset, unit, dsb2.build());   
     }
 
     /** Shortcut for the jelly view */
