@@ -57,14 +57,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             slaveWorkspacesUsage.put(node.getNodeName(), workspacesInfo);
         }
         
-        public Long getDefaultWorkspaceSize(){
-            return getWorkspaceSize(true);
-        }
-        
-        public Long getNotDefaultWorkspaceSize(){
-            return getWorkspaceSize(false);
-        }
-        
         public Long getWorkspaceSize(Boolean containdedInWorkspace){
             Long size = 0l;
             for(String nodeName: slaveWorkspacesUsage.keySet()){
@@ -87,7 +79,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
             return size;
         }
-        
+                
         public void checkWorkspaces() {
                 List<AbstractBuild> builds = (List<AbstractBuild>) owner.getBuilds();
                     for(AbstractBuild build: builds){

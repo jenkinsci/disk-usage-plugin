@@ -12,16 +12,17 @@ import hudson.util.Graph;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -64,6 +65,7 @@ public class DiskUsagePlugin extends Plugin {
     private Long diskUsageBuilds = 0l;
     private Long diskUsageJobsWithoutBuilds = 0l;
     private Long diskUsageWorkspaces = 0l;
+    private Long diskUsageLockedBuilds = 0l;
     
     private boolean showGraph = true;
     private int historyLength = 183;
@@ -78,16 +80,18 @@ public class DiskUsagePlugin extends Plugin {
     }
     
     public void refreshGlobalInformation(){
-        for(Item item: Jenkins.getInstance().getItems()){
-            diskUsageBuilds = 0l;
+        diskUsageBuilds = 0l;
             diskUsageWorkspaces = 0l;
             diskUsageJobsWithoutBuilds = 0l;
+            diskUsageLockedBuilds = 0l;
+        for(Item item: Jenkins.getInstance().getItems()){
             if(item instanceof AbstractProject){
                 AbstractProject project = (AbstractProject) item;
                 ProjectDiskUsageAction action = (ProjectDiskUsageAction) project.getAction(ProjectDiskUsageAction.class);
-                diskUsageBuilds += action.getBuildsDiskUsage();
+                diskUsageBuilds += action.getBuildsDiskUsage().get("all");
                 diskUsageWorkspaces += action.getAllDiskUsageWorkspace();
                 diskUsageJobsWithoutBuilds += action.getAllDiskUsageWithoutBuilds();
+                diskUsageLockedBuilds += action.getBuildsDiskUsage().get("locked");
             }
         }
     }
@@ -102,6 +106,10 @@ public class DiskUsagePlugin extends Plugin {
     
     public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){
         return diskUsageJobsWithoutBuilds;
+    }
+    
+    public Long getCashedGlobalLockedBuildsDiskUsage(){
+     return diskUsageLockedBuilds;   
     }
     
     public Long getCashedGlobalWorkspacesDiskUsage(){
@@ -209,9 +217,13 @@ public class DiskUsagePlugin extends Plugin {
     /**
      * @return DiskUsage for given project (shortcut for the view). Never null.
      */
-    public static ProjectDiskUsageAction getDiskUsage(Job project) {
+    public ProjectDiskUsageAction getDiskUsage(Job project) {
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         return action;
+    }
+    
+    public String getDiskUsageInString(Long size){
+        return DiskUsageUtil.getSizeString(size);
     }
     
     //Another shortcut
@@ -223,6 +235,7 @@ public class DiskUsagePlugin extends Plugin {
      * @return Project list sorted by occupied disk space
      */
     public List getProjectList() {
+        refreshGlobalInformation();
         Comparator<AbstractProject> comparator = new Comparator<AbstractProject>() {
 
             public int compare(AbstractProject o1, AbstractProject o2) {
@@ -238,15 +251,12 @@ public class DiskUsagePlugin extends Plugin {
             }
         };
 
-        List<AbstractProject> projectList = new ArrayList<AbstractProject>();
-        projectList.addAll(DiskUsageUtil.getAllProjects(Jenkins.getInstance()));
-        Collections.sort(projectList, comparator);
-        
-        for(AbstractProject project: projectList) {
-            diskUsageBuilds =+ getDiskUsage(project).getBuildsDiskUsage();
-            diskUsageJobsWithoutBuilds =+ getDiskUsage(project).getDiskUsageWithoutBuilds();
-            diskUsageWorkspaces =+ getDiskUsage(project).getDiskUsageWorkspace();
+        List<AbstractProject> projectList = new ArrayList();
+        for(Item item: Jenkins.getInstance().getItems()){
+            if(item instanceof AbstractProject)
+                projectList.add((AbstractProject)item);
         }
+        Collections.sort(projectList, comparator);
         
         return projectList;
     }
@@ -350,6 +360,26 @@ public class DiskUsagePlugin extends Plugin {
     public boolean warnAboutJobExceetedSize(){
         return jobSize!=null;
     }
+ 
+    private Date getDate(String timeCount, String timeUnit){
+        Calendar calendar = new GregorianCalendar();
+        if(timeUnit==null || !timeUnit.matches("\\d+") || !timeCount.matches("\\d+"))
+            return null;
+        int unit = Integer.decode(timeUnit);
+        int count = Integer.decode(timeCount);
+        calendar.set(unit, calendar.get(unit)-count);
+        return calendar.getTime();
+    }
+    
+    public void doFilter(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
+        Date older = getDate(req.getParameter("older"), req.getParameter("olderUnit"));
+        Date younger = getDate(req.getParameter("younger"), req.getParameter("youngerUnit"));
+        req.setAttribute("filter", "filter");
+        req.setAttribute("older", older);
+        req.setAttribute("younger", younger);
+        
+        req.getView(this, "index.jelly").forward(req, rsp);     
+    }
     
     public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
         req.getView(this, "settings.jelly").forward(req, rsp);
@@ -358,7 +388,6 @@ public class DiskUsagePlugin extends Plugin {
     
     public Graph getOverallGraph(){
         long maxValue = 0;
-        long maxValueWorkspace = 0l;
         //First iteration just to get scale of the y-axis
         for (DiskUsageRecord usage : history ){
             maxValue = usage.getAllSpace();

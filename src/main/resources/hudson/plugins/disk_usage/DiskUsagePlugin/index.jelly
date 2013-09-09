@@ -24,39 +24,66 @@
 
      <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>
 
-     <j:set var="projects" value="${it.getProjectList()}" />     
+    <j:set var="projects" value="${it.getProjectList()}" />     
      
-     <!-- sum of values -->
-     <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
-     
-     <b>${%Builds}: </b>${diskUsageSum.getBuildUsageString()}, <b> ${%Workspace}: </b>${diskUsageSum.getWsUsageString()}<br/><p/>
+     <p> <b>${%Jobs}: </b>${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())}, 
+         <b>${%Builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalBuildsDiskUsage())},
+         <b>${%Locked builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalLockedBuildsDiskUsage())}, 
+         <b> ${%Workspace}: </b>${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())}<br/></p>
      
      <!-- project table -->
+     <j:new var="calendar" className="java.util.GregorianCalendar" /> 
+     <j:new var="string" className="java.lang.String" /> 
+     <f:form action="filter" method="post">
+         
+         ${%Builds older than }<input type="text" name="older" value="${request.getParameter('older')}"/>
+          <j:set var="olderUnit" value="${request.getParameter('olderUnit')}" />
+         <select name="olderUnit">
+           <f:option value="${calendar.DAY_OF_YEAR}" selected="${olderUnit==null || string.valueOf(calendar.DAY_OF_YEAR).equals(olderUnit)}">day ago</f:option>
+           <f:option value="${calendar.WEEK_OF_YEAR}" selected="${olderUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week ago</f:option>  
+           <f:option value="${calendar.MONTH}" selected="${olderUnit.equals(string.valueOf(calendar.MONTH))}">month ago</f:option> 
+         </select>
+          ${%Builds younger than }<input type="text" name="younger" value="${request.getParameter('younger')}"/>
+         <j:set var="youngerUnit" value="${request.getParameter('youngerUnit')}" /> 
+         <select name="youngerUnit">
+           <f:option value="${calendar.DAY_OF_YEAR}" selected="${youngerUnit==null || youngerUnit.equals(string.valueOf(calendar.DAY_OF_YEAR))}">day ago</f:option>
+           <f:option value="${calendar.WEEK_OF_YEAR}" selected="${youngerUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week ago</f:option>  
+           <f:option value="${calendar.MONTH}" selected="${youngerUnit.equals(string.valueOf(calendar.MONTH))}">month ago</f:option> 
+         </select>
+         <input name="submit" type="submit" value="Filter"/>
+      
+     </f:form> 
      <table id="projectstatus" class="sortable pane bigtable">
       <tr>
-        <th>${%Project name}</th> <th>${%Builds}</th> <th>${%Workspace}</th>
+        <th>${%Project name}</th> <th>${%Jobs}</th> <th>${%Builds all}</th> <th>${%Builds locked}</th> <th>${%Workspace}</th>
       </tr>
-
+      <j:set var="buildsAll" value="0"/>
+      <j:set var="buildsLocked" value="0"/>
       <j:forEach var="p" items="${projects}">
         <tr>
           <td><b><a href="${it.getProjectUrl(p)}">${p.getFullName()}</a></b> </td>
-          
-          <j:set var="usage" value="${it.getDiskUsage(p)}" />
-          <td data="${usage.getBuildUsage()}">${usage.getBuildUsageString()}</td>
-          <td data="${usage.getWsUsage()}">${usage.getWsUsageString()}</td>
+          <j:set var="diskUsage" value="${it.getDiskUsage(p)}" />
+           <j:set var="buildDiskUsage" value="${diskUsage.getBuildsDiskUsage(request.getAttribute('older'), request.getAttribute('younger'))}" />            
+           <j:set var="buildsAll" value="${buildsAll + buildDiskUsage.get('all')}"/>
+           <j:set var="buildsLocked" value="${buildsLocked + buildDiskUsage.get('locked')}"/>
+          <td data="${buildDiskUsage.get('all') + diskUsage.getDiskUsageWithoutBuilds()}">${it.getDiskUsageInString(buildDiskUsage.get('all') + diskUsage.getDiskUsageWithoutBuilds())}</td>
+          <td data="${buildDiskUsage.get('all')}">${it.getDiskUsageInString(buildDiskUsage.get('all'))}</td>
+          <td data="${buildDiskUsage.get('locked')}">${it.getDiskUsageInString(buildDiskUsage.get('locked'))}</td>
+          <td data="${diskUsage.getAllDiskUsageWorkspace()}">${it.getDiskUsageInString(diskUsage.getAllDiskUsageWorkspace())}</td>
         </tr>
       </j:forEach>
       
       <!-- sum of values -->
       <tr class="sortbottom">
-        <j:set var="diskUsageSum" value="${it.diskUsageSum}" />
         <td data="~~~"><b>${%Total}</b> </td>
-        <td data="${diskUsageSum.getBuildUsage()}"><b>${diskUsageSum.getBuildUsageString()}</b></td>
-        <td data="${diskUsageSum.getWsUsage()}"><b>${diskUsageSum.getWsUsageString()}</b></td>
+        <td data="${it.getCashedGlobalJobsDiskUsage()}"><b>${it.getDiskUsageInString(it.getCashedGlobalJobsWithoutBuildsDiskUsage() + buildsAll)}</b></td>
+        <td data="${buildsAll}"><b>${it.getDiskUsageInString(buildsAll)}</b></td>
+        <td data="${buildsLocked}"><b>${it.getDiskUsageInString(buildsLocked)}</b></td>
+        <td data="${it.getCashedGlobalWorkspacesDiskUsage()}"><b>${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())}</b></td>
       </tr>
     </table>
     
-    <p />
+    <p/>
     ${%Interval.Message(it.getCountInterval())}<br/>
     <form action="recordDiskUsage">
       <input type="hidden" name="name" value="${h.name}"/>

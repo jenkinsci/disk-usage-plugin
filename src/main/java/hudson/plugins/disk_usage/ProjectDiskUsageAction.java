@@ -10,7 +10,10 @@ import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import jenkins.model.Jenkins;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -89,49 +92,74 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     
     
     public Long getJobRootDirDiskUsage(){
-        return getBuildsDiskUsage() + getDiskUsageWithoutBuilds();
+        return getBuildsDiskUsage().get("all") + getDiskUsageWithoutBuilds();
     }
     
-    private Long getBuildsDiskUsageAllSubItems(ItemGroup group){
+    private Map<String,Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger){
+        Map<String,Long> diskUsage = new TreeMap<String,Long>();
         Long buildsDiskUsage = 0l;
+        Long locked = 0l;
         for(Object item: group.getItems()){
             if(item instanceof ItemGroup){
                ItemGroup subGroup = (ItemGroup) item;
-               buildsDiskUsage += getBuildsDiskUsageAllSubItems(subGroup);
+               buildsDiskUsage += getBuildsDiskUsageAllSubItems(subGroup, older, yonger).get("all");
+               locked += getBuildsDiskUsageAllSubItems(subGroup, older, yonger).get("locked");
             }
             if(item instanceof AbstractProject){
                 AbstractProject p = (AbstractProject) item;
                 List<AbstractBuild> builds = p.getBuilds();
                 for(AbstractBuild build : builds){
-                   BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
+                    BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
+                    if(older!=null && !build.getTime().before(older))
+                        continue;
+                    if(yonger!=null && !build.getTime().after(yonger))
+                        continue;
                     if (action != null) {
                         buildsDiskUsage += action.diskUsage;
+                        if(build.isKeepLog())
+                            locked += action.diskUsage;
                     } 
                 }
             }
         }
-        return buildsDiskUsage;
+        diskUsage.put("all", buildsDiskUsage);
+        diskUsage.put("locked", locked);
+        return diskUsage;
+    }
+    
+    public Map<String, Long> getBuildsDiskUsage() {
+        return getBuildsDiskUsage(null, null);
     }
     
     /**
      * @return Disk usage for all builds
      */
-    public Long getBuildsDiskUsage() {
+    public Map<String, Long> getBuildsDiskUsage(Date older, Date yonger) {
+        Map<String,Long> diskUsage = new TreeMap<String,Long>();
         Long buildsDiskUsage = 0l;
+        Long locked = 0l;
         if (project != null) {
             for(AbstractBuild build: project.getBuilds()){
+                if(older!=null && !build.getTime().before(older))
+                    continue;
+                if(yonger!=null && !build.getTime().after(yonger))
+                    continue;
                  BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
                  if (action != null) {
                     buildsDiskUsage += action.diskUsage;
+                    if(build.isKeepLog())
+                        locked += action.diskUsage;
                  }
             }  
             if(project instanceof ItemGroup){
                ItemGroup group = (ItemGroup) project;
-               Long sub = getBuildsDiskUsageAllSubItems(group);
-               buildsDiskUsage += sub;
+               buildsDiskUsage += getBuildsDiskUsageAllSubItems(group, older, yonger).get("all");
+               locked += getBuildsDiskUsageAllSubItems(group,older, yonger).get("locked");
             }
         }
-        return buildsDiskUsage;
+        diskUsage.put("all", buildsDiskUsage);
+        diskUsage.put("locked", locked);
+        return diskUsage;
     }
     
     public BuildDiskUsageAction getLastBuildAction() {
