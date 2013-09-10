@@ -62,4 +62,8 @@ public class BuildDiskUsageActionTest {
         assertEquals("BuildDiskUsageAction for build 2 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild2TotalSize, matrixBuild2.getAction(BuildDiskUsageAction.class).getAllDiskUsage());
         
     }
+    
+    public void getAllBuildDiskUsageFiltered(){
+        
+    }
 }
