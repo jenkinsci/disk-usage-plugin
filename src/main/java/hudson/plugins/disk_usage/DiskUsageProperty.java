@@ -9,6 +9,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -34,6 +35,14 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      public void setDiskUsageWithoutBuilds(Long diskUsageWithoutBuilds){
             this.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
         }
+     
+     public void remove(Node node, String path){
+          Map<String,Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
+          workspacesInfo.remove(path);
+          if(workspacesInfo.isEmpty()){
+              slaveWorkspacesUsage.remove(node.getNodeName());
+          }
+     }
         
         public void putSlaveWorkspace(Node node, String path){
             Map<String,Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
@@ -108,7 +117,13 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                         }
                     }
                 }
-
+                //delete name of slaves which do not exist
+                Iterator<String> iterator = slaveWorkspacesUsage.keySet().iterator();
+                while(iterator.hasNext()){
+                    String nodeName = iterator.next();
+                    if(Jenkins.getInstance().getNode(nodeName)==null && !nodeName.isEmpty())//Jenkins master has empty name
+                        slaveWorkspacesUsage.remove(nodeName);
+                }
         }
         
         public Long getAllWorkspaceSize(){

@@ -69,8 +69,9 @@ public class BuildDiskUsageCalculationThread extends AsyncAperiodicWork {
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
+            Thread.sleep(7000);
             return nextExecution.getTimeInMillis() - now.getTimeInMillis();           
-        } catch (ANTLRException ex) {
+        } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
             //it should not happen
             return 1000*60*6;

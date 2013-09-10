@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -293,9 +294,22 @@ public class DiskUsageUtil {
         }
         property.checkWorkspaces();
         for(String nodeName: property.getSlaveWorkspaceUsage().keySet()){
-            Node node = Jenkins.getInstance().getNode(nodeName);
+            Node node = null;
+            if(nodeName.isEmpty()){
+                node = Jenkins.getInstance();
+            }
+            else{
+                node = Jenkins.getInstance().getNode(nodeName);
+            }
+            if(node==null){
+                //probably does not exists yet
+                continue;
+            }
+            
             if(node.toComputer()!=null && node.toComputer().getChannel()!=null){
-                for(String projectWorkspace: property.getSlaveWorkspaceUsage().get(nodeName).keySet()){
+                Iterator<String> iterator = property.getSlaveWorkspaceUsage().get(nodeName).keySet().iterator();
+                while(iterator.hasNext()){
+                    String projectWorkspace = iterator.next();
                     FilePath workspace = new FilePath(node.toComputer().getChannel(), projectWorkspace);
                     if(workspace.exists()){
                         Long diskUsage = property.getSlaveWorkspaceUsage().get(node.getNodeName()).get(workspace.getRemote());
@@ -322,6 +336,9 @@ public class DiskUsageUtil {
                             property.putSlaveWorkspaceSize(node, workspace.getRemote(), diskUsage);
                         }
                         controlorkspaceExceedSize(project);
+                    }
+                    else{
+                        property.remove(node, projectWorkspace);
                     }
                 }
             }
