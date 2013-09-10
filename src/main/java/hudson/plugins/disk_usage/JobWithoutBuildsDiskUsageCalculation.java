@@ -23,7 +23,7 @@ import jenkins.model.Jenkins;
 
 /**
  *
- * @author lucinka
+ * @author Lucie Votypkova
  */
 @Extension
 public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{

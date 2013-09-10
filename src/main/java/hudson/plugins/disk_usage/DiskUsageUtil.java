@@ -34,7 +34,7 @@ import jenkins.model.Jenkins;
 
 /**
  *
- * @author lucinka
+ * @author Lucie Votypkova
  */
 public class DiskUsageUtil {
     

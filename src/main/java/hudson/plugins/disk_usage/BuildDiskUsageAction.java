@@ -3,10 +3,8 @@ package hudson.plugins.disk_usage;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildBadgeAction;
-import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
-import java.util.List;
 
 /**
  * Disk usage information for a single build

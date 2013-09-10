@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author lucinka
+ * @author Lucie Votypkova
  */
 public class DiskUsagePluginTest {
     

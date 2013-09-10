@@ -23,7 +23,7 @@ import jenkins.model.Jenkins;
 
 /**
  *
- * @author lucinka
+ * @author Lucie Votypkova
  */
 public class DiskUsageTestUtil {
     protected static List<File> readFileList(File file) throws FileNotFoundException, IOException{

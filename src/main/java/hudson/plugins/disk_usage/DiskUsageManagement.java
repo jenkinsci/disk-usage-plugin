@@ -7,18 +7,10 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.RootAction;
-import hudson.util.DataSetBuilder;
-import hudson.util.Graph;
-import java.io.IOException;
-import java.util.Date;
-import javax.servlet.ServletException;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  *
- * @author lucinka
+ * @author Lucie Votypkova
  */
 @Extension
 public class DiskUsageManagement extends ManagementLink implements RootAction{

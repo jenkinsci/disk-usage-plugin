@@ -9,7 +9,7 @@ import java.util.Date;
 
 /**
  *
- * @author lucinka
+ * @author Lucie Votypkova
  */
 public class DiskUsageRecord {
 		private Long date;
