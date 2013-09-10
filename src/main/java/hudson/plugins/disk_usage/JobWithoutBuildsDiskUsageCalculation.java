@@ -67,9 +67,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
             String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getCountIntervalForJobs();
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
-            System.out.println("now " + now.getTime());
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
-            System.out.println("nextExecution " + nextExecution.getTime());
             Thread.sleep(7000);
             return nextExecution.getTimeInMillis() - now.getTimeInMillis();           
         } catch (Exception ex) {

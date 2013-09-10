@@ -1,6 +1,7 @@
 package hudson.plugins.disk_usage;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import hudson.model.listeners.RunListener;
@@ -57,7 +58,7 @@ public class DiskUsagePropertyTest {
     }
     
     @Test
-    public void checkWorkspacesTest() throws Exception{
+    public void testCheckWorkspaces() throws Exception{
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -114,4 +115,21 @@ public class DiskUsagePropertyTest {
         assertEquals("DiskUsage workspaces which is configured as slave workspace is wrong.", workspaceSize*2, prop.getWorkspaceSize(true), 0);
         assertEquals("DiskUsage workspaces which is not configured as slave workspace is wrong.", workspaceSize, prop.getWorkspaceSize(false), 0);
     }
+    
+    @Test
+    public void testchcekWorkspacesIfSlaveIsDeleted() throws Exception{
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
+        DiskUsageProperty property = new DiskUsageProperty();
+        project.addProperty(property);
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        property.putSlaveWorkspaceSize(j.jenkins, j.jenkins.getRawWorkspaceDir(), 10495l);
+        property.putSlaveWorkspaceSize(slave1,slave1.getRemoteFS(),5670l);
+        property.putSlaveWorkspaceSize(slave2, slave2.getRemoteFS(), 7987l);
+        j.jenkins.removeNode(slave2);
+        property.checkWorkspaces();
+        assertFalse("Disk usage property should not contains slave which does not exist.", property.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
+        assertTrue("Disk usage property should not slave1.", property.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
+        assertTrue("Disk usage property should contains jenkins master.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
+    }   
 }

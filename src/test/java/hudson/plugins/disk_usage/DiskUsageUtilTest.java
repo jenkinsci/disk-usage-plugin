@@ -22,6 +22,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
+import hudson.model.TopLevelItem;
 import hudson.model.listeners.RunListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
@@ -235,5 +236,22 @@ public class DiskUsageUtilTest extends HudsonTestCase{
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());      
     }
     
+    
+    @Test
+    public void testCalculateDiskUsageWorkspaceUpdateIformationIfSavedWorkspaceDoesNotExists() throws Exception{
+        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        jenkins.getExtensionList(RunListener.class).remove(listener);
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(hudson.getRootDir(),"workspace1").getPath(), jenkins, createComputerLauncher(null));
+        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(hudson.getRootDir(),"workspace2").getPath(), jenkins, createComputerLauncher(null));
+        FreeStyleProject project1 = createFreeStyleProject("project1");
+        project1.setAssignedNode(slave1);
+        buildAndAssertSuccess(project1);
+        DiskUsageProperty prop =new DiskUsageProperty();
+        project1.addProperty(prop);
+        prop.putSlaveWorkspaceSize(slave2, slave2.getWorkspaceFor((TopLevelItem)project1).getRemote(), 54356l);
+        DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
+        assertFalse("Slave slave2 should be removed from disk usage, because a workspace for project1 does not exist on this slave.",prop.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
+        assertTrue("Disk usage should contains slave1, there is a workspace for project1.", prop.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
+    }
    
 }
