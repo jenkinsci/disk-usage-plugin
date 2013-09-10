@@ -110,9 +110,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                 List<AbstractBuild> builds = p.getBuilds();
                 for(AbstractBuild build : builds){
                     BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
-                    if(older!=null && !build.getTime().before(older))
+                    if(older!=null && !build.getTimestamp().getTime().before(older))
                         continue;
-                    if(yonger!=null && !build.getTime().after(yonger))
+                    if(yonger!=null && !build.getTimestamp().getTime().after(yonger))
                         continue;
                     if (action != null) {
                         buildsDiskUsage += action.diskUsage;
@@ -140,9 +140,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         Long locked = 0l;
         if (project != null) {
             for(AbstractBuild build: project.getBuilds()){
-                if(older!=null && !build.getTime().before(older))
+                if(older!=null && !build.getTimestamp().getTime().before(older))
                     continue;
-                if(yonger!=null && !build.getTime().after(yonger))
+                if(yonger!=null && !build.getTimestamp().getTime().after(yonger))
                     continue;
                  BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
                  if (action != null) {
