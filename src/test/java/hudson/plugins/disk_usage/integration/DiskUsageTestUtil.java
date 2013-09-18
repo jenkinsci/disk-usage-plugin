@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package hudson.plugins.disk_usage;
+package hudson.plugins.disk_usage.integration;
 
 import hudson.model.Node.Mode;
 import hudson.model.Slave;

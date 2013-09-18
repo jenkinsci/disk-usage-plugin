@@ -1,5 +1,6 @@
-package hudson.plugins.disk_usage;
+package hudson.plugins.disk_usage.integration;
 
+import hudson.plugins.disk_usage.*;
 import hudson.model.TopLevelItem;
 import hudson.model.Project;
 import hudson.model.Build;
@@ -10,7 +11,6 @@ import java.util.GregorianCalendar;
 import java.util.Calendar;
 import java.io.File;
 import java.io.IOException;
-import hudson.model.FreeStyleBuild;
 import hudson.model.ItemGroup;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixBuild;
@@ -52,9 +52,9 @@ public class ProjectDiskUsageActionTest {
         Long sizeofBuild = 7546l;
         Long sizeOfMatrixBuild1 = 6800l;
         Long sizeOfMatrixBuild2 = 14032l;
-        build.getAction(BuildDiskUsageAction.class).diskUsage = sizeofBuild;
-        matrixBuild1.getAction(BuildDiskUsageAction.class).diskUsage = sizeOfMatrixBuild1;
-        matrixBuild2.getAction(BuildDiskUsageAction.class).diskUsage = sizeOfMatrixBuild2;
+        build.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeofBuild);
+        matrixBuild1.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild1);
+        matrixBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild2);
         long size1 = 5390;
         long size2 = 2390;
         int count = 1;
@@ -62,10 +62,10 @@ public class ProjectDiskUsageActionTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            configurationBuild.getAction(BuildDiskUsageAction.class).diskUsage = count*size1;
+            configurationBuild.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            configurationBuild2.getAction(BuildDiskUsageAction.class).diskUsage = count*size2;
+            configurationBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }
@@ -94,9 +94,9 @@ public class ProjectDiskUsageActionTest {
         Long sizeofBuild = 7546l;
         Long sizeOfMatrixBuild1 = 6800l;
         Long sizeOfMatrixBuild2 = 14032l;
-        build.getAction(BuildDiskUsageAction.class).diskUsage = sizeofBuild;
-        matrixBuild1.getAction(BuildDiskUsageAction.class).diskUsage = sizeOfMatrixBuild1;
-        matrixBuild2.getAction(BuildDiskUsageAction.class).diskUsage = sizeOfMatrixBuild2;
+        build.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeofBuild);
+        matrixBuild1.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild1);
+        matrixBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild2);
         long size1 = 5390;
         long size2 = 2390;
         int count = 1;
@@ -104,10 +104,10 @@ public class ProjectDiskUsageActionTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            configurationBuild.getAction(BuildDiskUsageAction.class).diskUsage = count*size1;
+            configurationBuild.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            configurationBuild2.getAction(BuildDiskUsageAction.class).diskUsage = count*size2;
+            configurationBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }

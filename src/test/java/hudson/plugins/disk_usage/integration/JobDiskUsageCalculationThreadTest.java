@@ -1,5 +1,6 @@
-package hudson.plugins.disk_usage;
+package hudson.plugins.disk_usage.integration;
 
+import hudson.plugins.disk_usage.*;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.model.FreeStyleProject;

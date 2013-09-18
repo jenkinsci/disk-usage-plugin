@@ -265,7 +265,7 @@ public class DiskUsagePlugin extends Plugin {
          Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
             JSONObject form = req.getSubmittedForm();
             //workspaceTimeOut = form.getInt("countInterval");
-            //checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
+            checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
             calculationBuilds = form.containsKey("calculationBuilds");
             calculationJobs = form.containsKey("calculationJobs");
             calculationWorkspace = form.containsKey("calculationWorkspace");
@@ -285,6 +285,8 @@ public class DiskUsagePlugin extends Plugin {
             }
             showGraph = form.getBoolean("showGraph");
 			String histlen = req.getParameter("historyLength");
+                        System.out.println("form " + req.getSubmittedForm());
+                        System.out.println(histlen);
 			if(histlen != null && !histlen.isEmpty()){
                             historyLength = Integer.parseInt(histlen);
                         }
@@ -359,21 +361,11 @@ public class DiskUsagePlugin extends Plugin {
     
     public boolean warnAboutJobExceetedSize(){
         return jobSize!=null;
-    }
- 
-    private Date getDate(String timeCount, String timeUnit){
-        Calendar calendar = new GregorianCalendar();
-        if(timeUnit==null || !timeUnit.matches("\\d+") || !timeCount.matches("\\d+"))
-            return null;
-        int unit = Integer.decode(timeUnit);
-        int count = Integer.decode(timeCount);
-        calendar.set(unit, calendar.get(unit)-count);
-        return calendar.getTime();
-    }
+    }   
     
     public void doFilter(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
-        Date older = getDate(req.getParameter("older"), req.getParameter("olderUnit"));
-        Date younger = getDate(req.getParameter("younger"), req.getParameter("youngerUnit"));
+        Date older = DiskUsageUtil.getDate(req.getParameter("older"), req.getParameter("olderUnit"));
+        Date younger = DiskUsageUtil.getDate(req.getParameter("younger"), req.getParameter("youngerUnit"));
         req.setAttribute("filter", "filter");
         req.setAttribute("older", older);
         req.setAttribute("younger", younger);

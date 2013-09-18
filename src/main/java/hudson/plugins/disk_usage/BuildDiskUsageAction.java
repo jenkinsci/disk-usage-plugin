@@ -20,6 +20,10 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         this.diskUsage = diskUsage;
         this.build = build;
     }
+    
+    public void setDiskUsage(Long diskUsage){
+        this.diskUsage=diskUsage;
+    }
 
         public String getIconFileName() {
         return null;
@@ -50,10 +54,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     }
     
     public String getBuildUsageString(){
-        AbstractProject p = build.getProject();
-        if(p instanceof ItemGroup)
-            return DiskUsageUtil.getSizeString(getBuildsDiskUsageAllSubItems((ItemGroup)build.getProject()));
-        return DiskUsageUtil.getSizeString(diskUsage);
+        return DiskUsageUtil.getSizeString(getAllDiskUsage());
     }
 
     private Long getBuildsDiskUsageAllSubItems(ItemGroup group){

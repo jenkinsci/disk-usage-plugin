@@ -1,11 +1,11 @@
-package hudson.plugins.disk_usage;
+package hudson.plugins.disk_usage.integration;
 
+import hudson.plugins.disk_usage.*;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import java.util.TreeMap;
 import java.util.Map;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.model.FreeStyleProject;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -81,11 +81,11 @@ public class BuildDiskUsageCalculationThreadTest extends HudsonTestCase{
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
         for(AbstractBuild build: buildSizesProject1.keySet()){
-            Long size = build.getAction(BuildDiskUsageAction.class).diskUsage;
+            Long size = build.getAction(BuildDiskUsageAction.class).getDiskUsage();
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject1.get(build), size, 0);
         }
         for(AbstractBuild build: buildSizesProject2.keySet()){
-            Long size = build.getAction(BuildDiskUsageAction.class).diskUsage;
+            Long size = build.getAction(BuildDiskUsageAction.class).getDiskUsage();
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject2.get(build), size, 0);
         }
         
@@ -115,15 +115,15 @@ public class BuildDiskUsageCalculationThreadTest extends HudsonTestCase{
         BuildDiskUsageCalculationThread calculation = new BuildDiskUsageCalculationThread();
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        Long size = project.getBuildByNumber(1).getAction(BuildDiskUsageAction.class).diskUsage;
+        Long size = project.getBuildByNumber(1).getAction(BuildDiskUsageAction.class).getDiskUsage();
         assertEquals("Build " + project.getBuildByNumber(1).getNumber() + " of project " + project.getDisplayName() + " has wrong build size.", matrixProjectBuildSize, size, 0);
         for(AbstractBuild build: buildSizesProject2.keySet()){
-            Long sizeFreeStyle = build.getAction(BuildDiskUsageAction.class).diskUsage;
+            Long sizeFreeStyle = build.getAction(BuildDiskUsageAction.class).getDiskUsage();
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject2.get(build), sizeFreeStyle, 0);
         }
         for(MatrixConfiguration conf: project.getActiveConfigurations()){
             AbstractBuild build = conf.getBuildByNumber(1);
-            assertEquals("Configuration " + conf.getDisplayName() + " has wrong build size for build 1.", matrixConfigurationBuildsSize.get(conf.getDisplayName()), build.getAction(BuildDiskUsageAction.class).diskUsage, 0);           
+            assertEquals("Configuration " + conf.getDisplayName() + " has wrong build size for build 1.", matrixConfigurationBuildsSize.get(conf.getDisplayName()), build.getAction(BuildDiskUsageAction.class).getDiskUsage(), 0);           
         }
         
     }

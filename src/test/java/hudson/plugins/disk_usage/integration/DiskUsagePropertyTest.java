@@ -1,5 +1,6 @@
-package hudson.plugins.disk_usage;
+package hudson.plugins.disk_usage.integration;
 
+import hudson.plugins.disk_usage.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;

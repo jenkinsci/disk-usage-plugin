@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package hudson.plugins.disk_usage;
+package hudson.plugins.disk_usage.integration;
 
+import hudson.plugins.disk_usage.*;
 import org.junit.Test;
 import hudson.model.TopLevelItem;
 import hudson.model.FreeStyleBuild;

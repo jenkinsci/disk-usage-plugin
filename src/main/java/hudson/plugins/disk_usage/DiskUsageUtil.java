@@ -18,7 +18,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,20 @@ import jenkins.model.Jenkins;
  */
 public class DiskUsageUtil {
     
+    public static Date getDate(String timeCount, String timeUnit){
+        if(timeUnit==null || !timeUnit.matches("\\d+") || !timeCount.matches("\\d+"))
+           return null;
+        int unit = Integer.decode(timeUnit);
+        int count = Integer.decode(timeCount);
+        return getDate(unit,count);
+    }
+    
+    public static Date getDate(int unit, int count){
+        Calendar calendar = new GregorianCalendar();
+        calendar.set(unit, calendar.get(unit)-count);
+        return calendar.getTime();
+    }
+    
     public static void sendEmail(String subject, String message) throws MessagingException{
        
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
@@ -52,13 +68,13 @@ public class DiskUsageUtil {
     }
     
     public static Long getSizeInBytes(String stringSize){
-        if(stringSize==null)
-            return null;
+        if(stringSize==null || stringSize.equals("-"))
+            return 0l;
         String []values = stringSize.split(" ");
         int index = getIndex(values[1]);
         Long value = Long.decode(values[0]);
-        Long size = value * 1024 * index;
-        return size;        
+        Double size = value * (Math.pow(1024, index));       
+        return Math.round(size);        
     }
     
     public static void controlAllJobsExceedSize(){
@@ -111,7 +127,7 @@ public class DiskUsageUtil {
         double base = Math.pow(1024, floor);
         String unit = getUnitString(floor);
 
-        return Math.round(size / base) + unit;
+        return Math.round(size / base) + " " + unit;
     }
 
     public static double getScale(long number) {
@@ -192,7 +208,7 @@ public class DiskUsageUtil {
             return size + f.length();
    }
     
-    protected static void calculateDiskUsageForProject(AbstractProject project) throws IOException{
+    public static void calculateDiskUsageForProject(AbstractProject project) throws IOException{
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         List<File> exceededFiles = new ArrayList<File>();
         List<AbstractBuild> builds = project.getBuilds();
@@ -231,7 +247,7 @@ public class DiskUsageUtil {
     }
 
 
-        protected static void calculateDiskUsageForBuild(AbstractBuild build)
+        public static void calculateDiskUsageForBuild(AbstractBuild build)
             throws IOException {
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         //Build disk usage has to be always recalculated to be kept up-to-date 
@@ -272,7 +288,7 @@ public class DiskUsageUtil {
         }
     }
         
-    protected static Long calculateWorkspaceDiskUsageForPath(FilePath workspace, ArrayList<FilePath> exceeded) throws IOException, InterruptedException{
+    public static Long calculateWorkspaceDiskUsageForPath(FilePath workspace, ArrayList<FilePath> exceeded) throws IOException, InterruptedException{
         Long diskUsage = 0l;
         if(workspace.exists()){
             try{
@@ -285,7 +301,7 @@ public class DiskUsageUtil {
         return diskUsage;
     }
     
-    protected static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
+    public static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){

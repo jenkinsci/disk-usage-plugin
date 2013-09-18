@@ -33,7 +33,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
     }
 
     @Override
-    protected void execute(TaskListener listener) throws IOException, InterruptedException {
+    public void execute(TaskListener listener) throws IOException, InterruptedException {
          DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         if(plugin.isCalculationJobsEnabled()){
             List<Item> items = new ArrayList<Item>();
