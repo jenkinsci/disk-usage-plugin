@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -328,13 +329,13 @@ public class DiskUsagePlugin extends Plugin {
         
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record) {
             Date label = usage.getDate();
-            dataset.addValue(((Long) usage.getAllSpace()) / base, "free space of jobs directory", label);
+            dataset.addValue(((Long) usage.getAllSpace()) / base, "space for jobs directory", label);
             dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
             dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
             dsb2.add(((Long) usage.getWorkspacesDiskUsage()) / base, "workspaces", label);
             
         }
-            return new DiskUsageGraph(dataset, unit, dsb2.build());
+           return  new DiskUsageGraph(dataset, unit, dsb2.build());
         }  
     
     public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {

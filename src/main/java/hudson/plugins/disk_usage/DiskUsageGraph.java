@@ -17,6 +17,7 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.AreaRenderer;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.CategoryDataset;
@@ -77,10 +78,23 @@ public class DiskUsageGraph extends Graph{
                 plot.setDataset(1, workspaceDataset);
                 LineAndShapeRenderer renderer = new LineAndShapeRenderer();
                 plot.setRenderer(1, renderer);
+                setColorForArea(plot.getRenderer(), dataset.getRowCount()>2);
                 plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
                 
 		return chart;
 	}
+        
+        public void setColorForArea(CategoryItemRenderer renderer, boolean global){
+            if(global){
+                renderer.setSeriesPaint(0, Color.LIGHT_GRAY);
+                renderer.setSeriesPaint(1, new Color(60,179,113));
+                renderer.setSeriesPaint(2, new Color(106,90,205));
+            }
+            else{
+                renderer.setSeriesPaint(0, new Color(60,179,113));
+                renderer.setSeriesPaint(1, new Color(106,90,205));
+            }
+        }
         
 
 }
