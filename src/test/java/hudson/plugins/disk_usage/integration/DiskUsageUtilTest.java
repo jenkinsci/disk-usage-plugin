@@ -198,7 +198,7 @@ public class DiskUsageUtilTest extends HudsonTestCase{
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         jenkins.getExtensionList(RunListener.class).remove(listener);
         DiskUsagePlugin plugin = jenkins.getPlugin(DiskUsagePlugin.class);
-        plugin.setCheckWorkspaceOnSlave(true); 
+        plugin.getConfiguration().setCheckWorkspaceOnSlave(true); 
         jenkins.setNumExecutors(0);
         Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(hudson.getRootDir(),"workspace1").getPath(), jenkins, createComputerLauncher(null));
         AxisList axes = new AxisList();

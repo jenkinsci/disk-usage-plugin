@@ -34,7 +34,7 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
          DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(plugin.isCalculationWorkspaceEnabled()){
+        if(plugin.getConfiguration().isCalculationWorkspaceEnabled()){
             List<Item> items = new ArrayList<Item>();
             ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
             items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
@@ -60,7 +60,7 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
     @Override
     public long getRecurrencePeriod() {
         try {
-            String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getCountIntervalForWorkspaces();
+            String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForWorkspaces();
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());

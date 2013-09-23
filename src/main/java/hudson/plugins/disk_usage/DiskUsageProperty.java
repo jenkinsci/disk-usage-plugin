@@ -4,6 +4,9 @@ package hudson.plugins.disk_usage;
 import hudson.model.*;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
+import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -101,7 +104,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                         }
                     }
                 //only if it is wanted - can cost a quite long time to do it for all
-                if(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getCheckWorkspaceOnSlave() && owner instanceof TopLevelItem){
+                if(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCheckWorkspaceOnSlave() && owner instanceof TopLevelItem){
                     for(Node node: Jenkins.getInstance().getNodes()){
                         if(node.toComputer()!=null && node.toComputer().isOnline()){
                             FilePath path =null;
@@ -167,9 +170,30 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
         return diskUsage;
     }
+        
+    @Initializer(after = InitMilestone.PLUGINS_STARTED)
+    public static void transitionAuth() throws IOException {
+        DiskUsageDescriptor that = (DiskUsageDescriptor) Hudson.getInstance().getDescriptor(DiskUsageProperty.class);
+        if(that == null){
+            LOGGER.warning("Cannot convert DiskUsageProjectActions, DiskUsageDescripto is null, check log for previous DI error, e.g. Guice errors.");
+            return;
+        }
+        if (!that.converted) {
+            DiskUsageProjectActionFactory.DESCRIPTOR.setShowGraph(that.showGraph);
+            that.converted = true;
+            that.save();
+            DiskUsageProjectActionFactory.DESCRIPTOR.save();
+        }
+    }
 
     @Extension
     public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
+        
+        @Deprecated
+        private boolean showGraph;
+
+        @Deprecated
+        private boolean converted;
 
         public DiskUsageDescriptor() {
             load();
@@ -178,6 +202,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         @Override
         public String getDisplayName() {
             return Messages.DisplayName();
+        }
+        
+        public boolean showGraph(){
+            return showGraph;
         }
 
 

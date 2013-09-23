@@ -57,7 +57,7 @@ public class DiskUsageUtil {
     public static void sendEmail(String subject, String message) throws MessagingException{
        
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        String address = plugin.getEmailAddress();
+        String address = plugin.getConfiguration().getEmailAddress();
         MimeMessage msg = new MimeMessage(Mailer.descriptor().createSession());
         msg.setSubject(subject);
         msg.setText(message, "utf-8");
@@ -81,7 +81,7 @@ public class DiskUsageUtil {
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         plugin.refreshGlobalInformation();
         Long allJobsSize = plugin.getCashedGlobalJobsDiskUsage();
-        Long exceedJobsSize = plugin.getAllJobsExceedSize();
+        Long exceedJobsSize = plugin.getConfiguration().getAllJobsExceedSize();
         if(allJobsSize>exceedJobsSize){
             try {
                 sendEmail("Jobs exeed size", "Jobs exceed size " + getSizeString(exceedJobsSize) + ". Their size is now " + getSizeString(allJobsSize));
@@ -95,7 +95,7 @@ public class DiskUsageUtil {
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         Long size = property.getAllWorkspaceSize();
-                        if(plugin.warnAboutJobWorkspaceExceedSize() && size>plugin.getJobWorkspaceExceedSize()){
+                        if(plugin.getConfiguration().warnAboutJobWorkspaceExceedSize() && size>plugin.getConfiguration().getJobWorkspaceExceedSize()){
                             StringBuilder builder = new StringBuilder();
                             builder.append("Workspaces of Job " + project.getDisplayName() + " have size " + size + ".");
                             builder.append("\n");
@@ -234,7 +234,7 @@ public class DiskUsageUtil {
         		property.setDiskUsageWithoutBuilds(buildSize);
         		update = true;
         	}
-                if(plugin.warnAboutJobExceetedSize() && buildSize>plugin.getJobExceedSize()){
+                if(plugin.getConfiguration().warnAboutJobExceetedSize() && buildSize>plugin.getConfiguration().getJobExceedSize()){
             try {
                 sendEmail("Job " + project.getDisplayName() + " exceeds size", "Job " + project.getDisplayName() + " has size " + getSizeString(buildSize) + ".");
             } catch (MessagingException ex) {
@@ -266,17 +266,17 @@ public class DiskUsageUtil {
         if (action == null) {
             action = new BuildDiskUsageAction(build, buildSize);
             build.addAction(action);
-            action.diskUsage = buildSize;
+            action.setDiskUsage(buildSize);
             updateBuild = true;
         } 
         else {
-            if (( action.diskUsage <= 0 ) ||
-        			( Math.abs(action.diskUsage - buildSize) > 1024 )) {
-        		action.diskUsage = buildSize;
+            if (( action.getDiskUsage() <= 0 ) ||
+        			( Math.abs(action.getDiskUsage() - buildSize) > 1024 )) {
+        		action.setDiskUsage(buildSize);
         		updateBuild = true;
             }
         }
-                if(plugin.warnAboutBuildExceetedSize() && buildSize>plugin.getBuildExceedSize()){
+                if(plugin.getConfiguration().warnAboutBuildExceetedSize() && buildSize>plugin.getConfiguration().getBuildExceedSize()){
                     try {
                         sendEmail("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " exceeds size", "Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has size " + getSizeString(buildSize) + ".");
                     } catch (MessagingException ex) {
@@ -292,7 +292,7 @@ public class DiskUsageUtil {
         Long diskUsage = 0l;
         if(workspace.exists()){
             try{
-                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getWorkspaceTimeOut(), TimeUnit.MILLISECONDS);             
+                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getTimeoutWorkspace(), TimeUnit.MINUTES);             
             }
             catch(Exception e){
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for file path " + workspace.getRemote() + " through channel " + workspace.getChannel(),e);

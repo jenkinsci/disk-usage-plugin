@@ -5,24 +5,28 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
+import hudson.model.Run;
+import hudson.model.RunAction;
 
 /**
  * Disk usage information for a single build
  * @author dvrzalik
  */
 //TODO really implementsProminentProjectAction???
-public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction {
+public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction, RunAction {
 
-    Long diskUsage;
+    Long buildDiskUsage;
     AbstractBuild build;
+    @Deprecated
+    DiskUsage diskUsage;
 
     public BuildDiskUsageAction(AbstractBuild build, long diskUsage) {
-        this.diskUsage = diskUsage;
+        this.buildDiskUsage = diskUsage;
         this.build = build;
     }
-    
+        
     public void setDiskUsage(Long diskUsage){
-        this.diskUsage=diskUsage;
+        this.buildDiskUsage=diskUsage;
     }
 
         public String getIconFileName() {
@@ -41,11 +45,11 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
      * @return Disk usage of the build (included child builds)
      */
     public Long getDiskUsage() {
-        return diskUsage;
+        return buildDiskUsage;
     }
     
     public Long getAllDiskUsage(){
-        Long buildsDiskUsage = diskUsage;
+        Long buildsDiskUsage = buildDiskUsage;
         AbstractProject project = build.getProject();
         if(project instanceof ItemGroup){
            buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup)project);
@@ -67,10 +71,26 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                 AbstractProject project = (AbstractProject) item;
                 AbstractBuild b = (AbstractBuild) project.getBuildByNumber(build.getNumber());
                 if(b!=null && b.getAction(BuildDiskUsageAction.class)!=null)
-                    buildsDiskUsage += b.getAction(BuildDiskUsageAction.class).diskUsage;
+                    buildsDiskUsage += b.getAction(BuildDiskUsageAction.class).buildDiskUsage;
             }
         }
         return buildsDiskUsage;
+    }
+   
+    public void onLoad() {
+        //for keeping backward compatibility
+        if(diskUsage!=null){
+            buildDiskUsage = diskUsage.buildUsage;
+            diskUsage=null;
+        }
+    }
+
+    public void onAttached(Run r) {
+        //nothing
+    }
+
+    public void onBuildComplete() {
+        //nothing (done by BuildListener)
     }
        
 }

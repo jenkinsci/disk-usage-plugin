@@ -115,9 +115,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                     if(yonger!=null && !build.getTimestamp().getTime().after(yonger))
                         continue;
                     if (action != null) {
-                        buildsDiskUsage += action.diskUsage;
+                        buildsDiskUsage += action.getDiskUsage();
                         if(build.isKeepLog())
-                            locked += action.diskUsage;
+                            locked += action.getDiskUsage();
                     } 
                 }
             }
@@ -146,9 +146,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                     continue;
                  BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
                  if (action != null) {
-                    buildsDiskUsage += action.diskUsage;
+                    buildsDiskUsage += action.getDiskUsage();
                     if(build.isKeepLog())
-                        locked += action.diskUsage;
+                        locked += action.getDiskUsage();
                  }
             }  
             if(project instanceof ItemGroup){
@@ -206,6 +206,6 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
 
     /** Shortcut for the jelly view */
     public boolean showGraph() {
-        return Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).isShowGraph();
+        return Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().isShowGraph();
     }
 }
