@@ -19,7 +19,6 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 
-//(basically nothing to see here)
 /**
  * This Property sets DiskUsage action. 
  * 

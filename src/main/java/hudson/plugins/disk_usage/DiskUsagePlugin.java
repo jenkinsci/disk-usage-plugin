@@ -9,21 +9,14 @@ import hudson.security.Permission;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -37,47 +30,12 @@ import org.kohsuke.stapler.StaplerResponse;
 @Extension
 public class DiskUsagePlugin extends Plugin {
     
-//    private String countIntervalBuilds = "0 */6 * * *"; 
-//    
-//    private boolean calculationBuilds = true;
-//    
-//    private String countIntervalJobs = "0 */6 * * *";
-//    
-//    private boolean calculationJobs = true;
-//    
-//    private String countIntervalWorkspace ="0 */6 * * *";
-//    
-//    private boolean calculationWorkspace = true;
-//    
-//    private boolean checkWorkspaceOnSlave = false;
-//    
-//    private String email;
-//    
-//    private String jobSize;
-//    
-//    private String buildSize;
-//    
-//    private String allJobsSize;
-//    
-//    private String jobWorkspaceExceedSize;
-//    
-//    private  int workspaceTimeOut = 1000*60*5;
-    
     private Long diskUsageBuilds = 0l;
     private Long diskUsageJobsWithoutBuilds = 0l;
     private Long diskUsageWorkspaces = 0l;
     private Long diskUsageLockedBuilds = 0l;
     
-//    private boolean showGraph = true;
-//    private int historyLength = 183;
-//    private List<DiskUsageRecord> history = new ArrayList<DiskUsageRecord>();
-    
     public DiskUsagePlugin(){
-//        try {
-//            load();
-//        } catch (IOException ex) {
-//            Logger.getLogger(DiskUsagePlugin.class.getName()).log(Level.SEVERE, null, ex);
-//        }
     }
     
     public void refreshGlobalInformation(){
@@ -136,14 +94,6 @@ public class DiskUsagePlugin extends Plugin {
         refreshGlobalInformation();
         return diskUsageWorkspaces;
     }
-//    
-//    public Long getJobWorkspaceExceedSize(){
-//        return DiskUsageUtil.getSizeInBytes(jobWorkspaceExceedSize);
-//    }
-//    
-//    public String getJobWorkspaceExceedSizeInString(){
-//        return jobWorkspaceExceedSize;
-//    }
     
     public String getUnit(String unit){
         if(unit==null)
@@ -156,44 +106,6 @@ public class DiskUsagePlugin extends Plugin {
             return null;
         return size.split(" ")[0];
     }
-    
-//    public String getEmailAddress(){
-//        return email;
-//    }
-//    
-//    public boolean warningAboutExceededSize(){
-//        return email!=null;
-//    }
-//    
-//    public Long getAllJobsExceedSize(){
-//        return DiskUsageUtil.getSizeInBytes(allJobsSize);
-//    }
-//    
-//    public Long getBuildExceedSize(){
-//        return DiskUsageUtil.getSizeInBytes(buildSize);
-//    }
-//    
-//    public Long getJobExceedSize(){
-//        return DiskUsageUtil.getSizeInBytes(jobSize);
-//    }
-//    
-//    public String getAllJobsExceedSizeInString(){
-//        return allJobsSize;
-//    }
-//    
-//    public String getBuildExceedSizeInString(){
-//        return buildSize;
-//    }
-//    
-//    public String getJobExceedSizeInString(){
-//        return jobSize;
-//    }
-//    
-//    @Override
-//    public XmlFile getConfigXml(){
-//        return new XmlFile(Jenkins.XSTREAM,
-//                new File(Jenkins.getInstance().getRootDir(),"disk-usage.xml"));
-//    }
     
     public BuildDiskUsageCalculationThread getBuildsDiskUsateThread(){
         return AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
@@ -253,41 +165,6 @@ public class DiskUsagePlugin extends Plugin {
         
         return projectList;
     }
-    
-//     public void doDoConfigure(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
-//         Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
-//            JSONObject form = req.getSubmittedForm();
-//            //workspaceTimeOut = form.getInt("countInterval");
-//            checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
-//            calculationBuilds = form.containsKey("calculationBuilds");
-//            calculationJobs = form.containsKey("calculationJobs");
-//            calculationWorkspace = form.containsKey("calculationWorkspace");
-//            countIntervalBuilds = calculationBuilds? form.getJSONObject("calculationBuilds").getString("countIntervalBuilds") : "0 */6 * * *";
-//            countIntervalJobs = calculationJobs? form.getJSONObject("calculationJobs").getString("countIntervalJobs") : "0 */6 * * *";
-//            countIntervalWorkspace = calculationWorkspace? form.getJSONObject("calculationWorkspace").getString("countIntervalWorkspace") : "0 */6 * * *";
-//
-//            if(form.containsKey("warnings")){
-//                JSONObject warnings = form.getJSONObject("warnings");
-//                email = warnings.getString("email");           
-//                if(email!=null){
-//                    allJobsSize = warnings.containsKey("jobsWarning")? (warnings.getJSONObject("jobsWarning").getInt("allJobsSize") + " " + warnings.getJSONObject("jobsWarning").getString("JobsSizeUnit")) : null;
-//                    buildSize = warnings.containsKey("buildWarning")? (warnings.getJSONObject("buildWarning").getInt("buildSize") + " " + warnings.getJSONObject("buildWarning").getString("buildSizeUnit")) : null;
-//                    jobSize = warnings.containsKey("jobWarning")? (warnings.getJSONObject("jobWarning").getInt("jobSize") + " " + warnings.getJSONObject("jobWarning").getString("jobSizeUnit")) : null;
-//                    jobWorkspaceExceedSize = warnings.containsKey("workspaceWarning")? (warnings.getJSONObject("workspaceWarning").getInt("jobWorkspaceExceedSize") + " " + warnings.getJSONObject("workspaceWarning").getString("jobWorkspaceExceedSizeUnit")) : null;
-//                }
-//            }
-//            showGraph = form.getBoolean("showGraph");
-//			String histlen = req.getParameter("historyLength");
-//                        System.out.println("form " + req.getSubmittedForm());
-//                        System.out.println(histlen);
-//			if(histlen != null && !histlen.isEmpty()){
-//                            historyLength = Integer.parseInt(histlen);
-//                        }
-//            save();
-//            req.getView(this, "index.jelly").forward(req, rsp);
-//        }
-     
-     
     
     public void doFilter(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
         Date older = DiskUsageUtil.getDate(req.getParameter("older"), req.getParameter("olderUnit"));

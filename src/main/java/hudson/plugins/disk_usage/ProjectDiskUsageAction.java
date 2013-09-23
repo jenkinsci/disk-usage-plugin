@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import jenkins.model.Jenkins;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 /**

@@ -6,7 +6,7 @@ package hudson.plugins.disk_usage;
 
 /**
  *
- * @author lucinka
+ * @author dvrzalik
  * Due to backward compatibility
  */
 @Deprecated

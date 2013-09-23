@@ -4,7 +4,6 @@
  */
 package hudson.plugins.disk_usage;
 
-import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;

@@ -12,7 +12,6 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
 import hudson.remoting.Callable;
-import hudson.tasks.MailSender;
 import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
