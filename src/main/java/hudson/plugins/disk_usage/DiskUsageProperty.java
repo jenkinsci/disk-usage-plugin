@@ -33,8 +33,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     
      private Long diskUsageWithoutBuilds = 0l;
      private Map<String,Map<String,Long>> slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
-     
+           
      public void setDiskUsageWithoutBuilds(Long diskUsageWithoutBuilds){
+            if(diskUsageWithoutBuilds==null)
+                return;
             this.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
         }
      
@@ -57,10 +59,14 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
         
         public Map<String,Map<String,Long>> getSlaveWorkspaceUsage(){
+            if(slaveWorkspacesUsage==null)
+               slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
             return slaveWorkspacesUsage;
         }
         
         public void putSlaveWorkspaceSize(Node node, String path, Long size){
+            if(slaveWorkspacesUsage==null)
+               slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
             Map<String,Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
             if(workspacesInfo==null)
                 workspacesInfo = new TreeMap<String,Long>();
@@ -70,6 +76,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         
         public Long getWorkspaceSize(Boolean containdedInWorkspace){
             Long size = 0l;
+            if(slaveWorkspacesUsage==null)
+               slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
             for(String nodeName: slaveWorkspacesUsage.keySet()){
                 Node node = Jenkins.getInstance().getNode(nodeName);
                 String workspacePath = null;
@@ -92,6 +100,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
                 
         public void checkWorkspaces() {
+                if(slaveWorkspacesUsage==null)
+                    slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
                 List<AbstractBuild> builds = (List<AbstractBuild>) owner.getBuilds();
                     for(AbstractBuild build: builds){
                         if(!build.isBuilding()){
@@ -129,6 +139,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
         
         public Long getAllWorkspaceSize(){
+            if(slaveWorkspacesUsage==null)
+               slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
             Long size = 0l;
             for(String nodeName: slaveWorkspacesUsage.keySet()){
                 Map<String,Long> paths = slaveWorkspacesUsage.get(nodeName);
@@ -144,6 +156,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
         
         public Long getAllDiskUsageWithoutBuilds(){
+           if(slaveWorkspacesUsage==null)
+               slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
            Long diskUsage = diskUsageWithoutBuilds;
            if(owner instanceof ItemGroup){
                      ItemGroup group = (ItemGroup) owner;
