@@ -156,8 +156,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
         
         public Long getAllDiskUsageWithoutBuilds(){
-           if(slaveWorkspacesUsage==null)
-               slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
+            if(diskUsageWithoutBuilds==null)
+                diskUsageWithoutBuilds=0l;
            Long diskUsage = diskUsageWithoutBuilds;
            if(owner instanceof ItemGroup){
                      ItemGroup group = (ItemGroup) owner;
