@@ -152,6 +152,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
         
         public Long getDiskUsageWithoutBuilds(){
+            if(diskUsageWithoutBuilds==null)
+                diskUsageWithoutBuilds=0l;
             return diskUsageWithoutBuilds;
         }
         
