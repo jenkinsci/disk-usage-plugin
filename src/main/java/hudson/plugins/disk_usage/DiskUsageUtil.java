@@ -198,7 +198,7 @@ public class DiskUsageUtil {
             	if (fileList != null) for (File child : fileList) {
                     if(exceedFiles.contains(child))
                         continue; //do not count exceeded files
-                    if (!Util.isSymlink(child)) size += getFileSize(child, exceedFiles);
+                    if (!isSymlink(child)) size += getFileSize(child, exceedFiles);
                 }
                 else {
             		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
