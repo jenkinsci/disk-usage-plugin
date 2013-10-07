@@ -26,7 +26,7 @@ import jenkins.model.Jenkins;
  */
 @Extension
 public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
-    
+      
     public JobWithoutBuildsDiskUsageCalculation(){
         super("Calculation of job directories (without builds)");       
     }
@@ -60,15 +60,15 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
         return getRecurrencePeriod();
     }
 
-    @Override
+ 
     public long getRecurrencePeriod() {
         try {
             String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForJobs();
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
-            Calendar nextExecution = tab.ceil(now.getTimeInMillis());
-            Thread.sleep(7000);
-            return nextExecution.getTimeInMillis() - now.getTimeInMillis();           
+            Calendar nextExecution = tab.ceil(now.getTimeInMillis()); 
+            long period = nextExecution.getTimeInMillis() - now.getTimeInMillis() + 60000l; // add delay
+            return period;
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
             //it should not happen

@@ -266,6 +266,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 			if(histlen != null && !histlen.isEmpty()){
                             historyLength = Integer.parseInt(histlen);
                         }
+           timeoutWorkspace = form.getInt("timeoutWorkspace");
             save();
             return true;
         }

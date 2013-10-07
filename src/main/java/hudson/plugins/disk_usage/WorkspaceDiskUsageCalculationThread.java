@@ -26,6 +26,7 @@ import jenkins.model.Jenkins;
  */
 @Extension
 public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
+    
     public WorkspaceDiskUsageCalculationThread(){
         super("Calculation of workspace usage");       
     }
@@ -52,8 +53,8 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
     }
     
     @Override
-    public long getInitialDelay(){
-        return getRecurrencePeriod();
+    public long getInitialDelay(){       
+            return getRecurrencePeriod();
     }
 
     @Override
@@ -63,8 +64,8 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
-            Thread.sleep(7000);
-            return nextExecution.getTimeInMillis() - now.getTimeInMillis();           
+            long period = nextExecution.getTimeInMillis() - now.getTimeInMillis() + 60000l;
+            return period;           
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
             //it should not happen
@@ -74,6 +75,6 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
 
     @Override
     public AperiodicWork getNewInstance() {
-        return new JobWithoutBuildsDiskUsageCalculation();
+        return new WorkspaceDiskUsageCalculationThread();
     }
 }

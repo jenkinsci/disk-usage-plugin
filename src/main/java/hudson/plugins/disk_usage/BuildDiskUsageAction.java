@@ -6,14 +6,13 @@ import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
-import hudson.model.RunAction;
 
 /**
  * Disk usage information for a single build
  * @author dvrzalik
  */
 //TODO really implementsProminentProjectAction???
-public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction, RunAction {
+public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction {
 
     Long buildDiskUsage;
     AbstractBuild build;
@@ -76,13 +75,14 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         }
         return buildsDiskUsage;
     }
-   
-    public void onLoad() {
+    
+    public Object readResolve() {
         //for keeping backward compatibility
         if(diskUsage!=null){
             buildDiskUsage = diskUsage.buildUsage;
             diskUsage=null;
         }
+        return this;
     }
 
     public void onAttached(Run r) {
