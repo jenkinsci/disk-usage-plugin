@@ -401,6 +401,5 @@ public class DiskUsageUtil {
        
     }
     
-    public static final Logger LOGGER = Logger
-    		.getLogger(DiskUsageUtil.class.getName());
+    public static final Logger LOGGER = Logger.getLogger(DiskUsageUtil.class.getName());
 }

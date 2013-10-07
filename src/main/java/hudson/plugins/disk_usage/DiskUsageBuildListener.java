@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.mail.MessagingException;
 import jenkins.model.Jenkins;
 
 /**
@@ -40,34 +39,33 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                     ArrayList<FilePath> exceededFiles = new ArrayList<FilePath>();
                     AbstractProject project = build.getProject();
                     Node node = build.getBuiltOn();
-                        if(project instanceof ItemGroup){
-                            List<AbstractProject> projects = DiskUsageUtil.getAllProjects((ItemGroup) project);
-                            for(AbstractProject p: projects){
-                                DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
-                                if(prop==null){
-                                    prop = new DiskUsageProperty();
-                                    p.addProperty(prop);
-                                }
-                                prop.checkWorkspaces();
-                                Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
-                                if(paths!=null && !paths.isEmpty()){
-                                    for(String path: paths.keySet()){
-                                        exceededFiles.add(new FilePath(node.getChannel(),path));
-                                    }
+                    if(project instanceof ItemGroup){
+                        List<AbstractProject> projects = DiskUsageUtil.getAllProjects((ItemGroup) project);
+                        for(AbstractProject p: projects){
+                            DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
+                            if(prop==null){
+                                prop = new DiskUsageProperty();
+                                p.addProperty(prop);
+                            }
+                            prop.checkWorkspaces();
+                            Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
+                            if(paths!=null && !paths.isEmpty()){
+                                for(String path: paths.keySet()){
+                                    exceededFiles.add(new FilePath(node.getChannel(),path));
                                 }
                             }
                         }
+                    }
                     property.checkWorkspaces();
                     Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(),exceededFiles);
                     property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
                     build.getProject().save();
                     DiskUsageUtil.controlorkspaceExceedSize(project);
                 }
- //               DiskUsageUtil.controlAllJobsExceedSize(); I am not sure if it is necessary
+            }
+            catch(Exception ex){
+                listener.getLogger().println("Disk usage plugin fails during calculation disk usage of this build.");
+                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "Disk usage plugin fails during build calculation disk space of job " + build.getParent().getDisplayName(), ex);
+            }
         }
-        catch(Exception ex){
-            listener.getLogger().println("Disk usage plugin fails during calculation disk usage of this build.");
-                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Disk usage plugin fails during build calculation disk space of job " + build.getParent().getDisplayName(), ex);
-        }
-    }
 }

@@ -130,6 +130,10 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return getBuildsDiskUsage(null, null);
     }
     
+    public Long getAllBuildsDiskUsage(){
+        return getBuildsDiskUsage(null, null).get("all");
+    }
+    
     /**
      * @return Disk usage for all builds
      */
@@ -176,7 +180,6 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
      */
     public Graph getGraph() throws IOException {
         //TODO if(nothing_changed) return;
-
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb = new DataSetBuilder<String, NumberOnlyBuildLabel>();
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb2 = new DataSetBuilder<String, NumberOnlyBuildLabel>();
         List<Object[]> usages = new ArrayList<Object[]>();

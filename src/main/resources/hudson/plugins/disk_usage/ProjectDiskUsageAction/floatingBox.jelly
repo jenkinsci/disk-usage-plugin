@@ -3,7 +3,7 @@
 Project disk usage information + trend graph
 
 
-<j:if test="${(from.getAllDiskUsageWorkspace() > 0) || (from.getJobRootDirDiskUsage() > 0) || (from.getBuildsDiskUsage() > 0)}">
+<j:if test="${(from.getAllDiskUsageWorkspace() > 0) || (from.getJobRootDirDiskUsage() > 0) || (from.getAllBuildsDiskUsage() > 0)}">
     
   <div style="width:auto;align:right;margin:12px;">
     <div style="width:auto;margin:0px;margin-left:auto;text-align:right;">

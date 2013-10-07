@@ -84,13 +84,5 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         }
         return this;
     }
-
-    public void onAttached(Run r) {
-        //nothing
-    }
-
-    public void onBuildComplete() {
-        //nothing (done by BuildListener)
-    }
        
 }

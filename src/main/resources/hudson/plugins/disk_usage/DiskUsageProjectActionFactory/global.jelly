@@ -90,7 +90,7 @@
          <f:entry title="${%Length of global disk usage history}">
           <input name="historyLength" value="${descriptor.getHistoryLength()}" />
          </f:entry>
-         <f:entry title="${%Time out for calculation of slave workspace}">
+         <f:entry title="${%Time out for calculation of slave workspace in minutes}">
           <input name="timeoutWorkspace" value="${descriptor.getTimeoutWorkspace()}" />
          </f:entry>
         <!-- </f:section>-->

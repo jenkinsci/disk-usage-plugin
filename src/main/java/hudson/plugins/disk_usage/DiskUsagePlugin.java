@@ -209,11 +209,10 @@ public class DiskUsagePlugin extends Plugin {
             dataset.addValue(((Long) usage.getAllSpace()) / base, "space for jobs directory", label);
             dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
             dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
-            dsb2.add(((Long) usage.getWorkspacesDiskUsage()) / base, "workspaces", label);
-            
+            dsb2.add(((Long) usage.getWorkspacesDiskUsage()) / base, "workspaces", label);     
         }
            return  new DiskUsageGraph(dataset, unit, dsb2.build());
-        }  
+    }  
     
     public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         getBuildsDiskUsateThread().doRun();

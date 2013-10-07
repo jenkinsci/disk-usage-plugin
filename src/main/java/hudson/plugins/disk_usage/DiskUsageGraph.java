@@ -29,7 +29,7 @@ public class DiskUsageGraph extends Graph{
         CategoryDataset workspaceDataset;
 	String unit;
 
-	public DiskUsageGraph(CategoryDataset dataset, String unit, CategoryDataset workspaceDataset){
+        public DiskUsageGraph(CategoryDataset dataset, String unit, CategoryDataset workspaceDataset){
 		super(-1,350,150);
                 this.workspaceDataset = workspaceDataset;
 		this.dataset = dataset;

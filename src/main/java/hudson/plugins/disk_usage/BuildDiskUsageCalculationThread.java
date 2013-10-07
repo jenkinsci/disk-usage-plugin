@@ -32,29 +32,29 @@ public class BuildDiskUsageCalculationThread extends AsyncAperiodicWork {
 
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {       
-            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-            if(plugin.getConfiguration().isCalculationBuildsEnabled()){
-                List<Item> items = new ArrayList<Item>();
-                ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
-                items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        if(plugin.getConfiguration().isCalculationBuildsEnabled()){
+            List<Item> items = new ArrayList<Item>();
+            ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
+            items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
 
-                for (Object item : items) {
-                    if (item instanceof AbstractProject) {
-                        AbstractProject project = (AbstractProject) item;
-                        if (!project.isBuilding()) {
+            for (Object item : items) {
+                if (item instanceof AbstractProject) {
+                    AbstractProject project = (AbstractProject) item;
+                    if (!project.isBuilding()) {
 
-                            List<AbstractBuild> builds = project.getBuilds();
-                            for(AbstractBuild build : builds){
-                                try {                        
-                                    DiskUsageUtil.calculateDiskUsageForBuild(build);                        
-                                } catch (Exception ex) {
-                                logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
-                                }
+                        List<AbstractBuild> builds = project.getBuilds();
+                        for(AbstractBuild build : builds){
+                            try {                        
+                                DiskUsageUtil.calculateDiskUsageForBuild(build);                        
+                            } catch (Exception ex) {
+                            logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
                             }
                         }
                     }
                 }
             }
+        }
     }
     
     @Override

@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.model.*;
 
 import hudson.security.Permission;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -87,7 +86,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         // Timeout for a single Project's workspace analyze (in mn)
         private int timeoutWorkspace = 5;
         
-        public Long getCashedGlobalBuildsDiskUsage(){
+    public Long getCashedGlobalBuildsDiskUsage(){
         return diskUsageBuilds;
     }
     
@@ -114,26 +113,26 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     public String getJobWorkspaceExceedSizeInString(){
         return jobWorkspaceExceedSize;
     }
-     public boolean isShowGraph() {
-            //The graph is shown by default
-            return showGraph;
-        }
+    
+    public boolean isShowGraph() {
+        return showGraph;
+    }
 
-        public void setShowGraph(Boolean showGraph) {
-            this.showGraph = showGraph;
-        }
+    public void setShowGraph(Boolean showGraph) {
+        this.showGraph = showGraph;
+    }
 
-        public int getHistoryLength() {
-            return historyLength;
-        }
+    public int getHistoryLength() {
+        return historyLength;
+    }
 
-        public void setHistoryLength(Integer historyLength) {
-            this.historyLength = historyLength;
-        }
-        
-        public List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> getHistory(){
-            return history;
-        }
+    public void setHistoryLength(Integer historyLength) {
+        this.historyLength = historyLength;
+    }
+
+    public List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> getHistory(){
+        return history;
+    }
 
     public String getCountIntervalForBuilds(){
     	return countIntervalBuilds;
@@ -215,70 +214,72 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         return jobSize;
     }
 
-        public boolean addHistory(DiskUsageOvearallGraphGenerator.DiskUsageRecord e) {
-        return history.add(e);
+    public boolean addHistory(DiskUsageOvearallGraphGenerator.DiskUsageRecord e) {
+        boolean ok = history.add(e);
+        save();
+        return ok;
     }
 
 
-        @Override
-        public String getDisplayName() {
-            return Messages.DisplayName();
-        }
-
-
-        @Override
-        public DiskUsageProjectActionFactory newInstance(StaplerRequest req, JSONObject formData) {
-            return new DiskUsageProjectActionFactory();
-        }
-
-
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) {
-            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
-            JSONObject form;
-            try {
-                form = req.getSubmittedForm();
-            } catch (ServletException ex) {
-                Logger.getLogger(DiskUsageProjectActionFactory.class.getName()).log(Level.SEVERE, null, ex);
-                return false;
-            }
-            //workspaceTimeOut = form.getInt("countInterval");
-            checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
-            calculationBuilds = form.containsKey("calculationBuilds");
-            calculationJobs = form.containsKey("calculationJobs");
-            calculationWorkspace = form.containsKey("calculationWorkspace");
-            countIntervalBuilds = calculationBuilds? form.getJSONObject("calculationBuilds").getString("countIntervalBuilds") : "0 */6 * * *";
-            countIntervalJobs = calculationJobs? form.getJSONObject("calculationJobs").getString("countIntervalJobs") : "0 */6 * * *";
-            countIntervalWorkspace = calculationWorkspace? form.getJSONObject("calculationWorkspace").getString("countIntervalWorkspace") : "0 */6 * * *";
-
-            if(form.containsKey("warnings")){
-                JSONObject warnings = form.getJSONObject("warnings");
-                email = warnings.getString("email");           
-                if(email!=null){
-                    allJobsSize = warnings.containsKey("jobsWarning")? (warnings.getJSONObject("jobsWarning").getInt("allJobsSize") + " " + warnings.getJSONObject("jobsWarning").getString("JobsSizeUnit")) : null;
-                    buildSize = warnings.containsKey("buildWarning")? (warnings.getJSONObject("buildWarning").getInt("buildSize") + " " + warnings.getJSONObject("buildWarning").getString("buildSizeUnit")) : null;
-                    jobSize = warnings.containsKey("jobWarning")? (warnings.getJSONObject("jobWarning").getInt("jobSize") + " " + warnings.getJSONObject("jobWarning").getString("jobSizeUnit")) : null;
-                    jobWorkspaceExceedSize = warnings.containsKey("workspaceWarning")? (warnings.getJSONObject("workspaceWarning").getInt("jobWorkspaceExceedSize") + " " + warnings.getJSONObject("workspaceWarning").getString("jobWorkspaceExceedSizeUnit")) : null;
-                }
-            }
-            showGraph = form.getBoolean("showGraph");
-			String histlen = req.getParameter("historyLength");
-			if(histlen != null && !histlen.isEmpty()){
-                            historyLength = Integer.parseInt(histlen);
-                        }
-           timeoutWorkspace = form.getInt("timeoutWorkspace");
-            save();
-            return true;
-        }
-
-        public int getTimeoutWorkspace() {
-            return timeoutWorkspace;
-        }
-
-        public void setTimeoutWorkspace(Integer timeoutWorkspace) {
-            this.timeoutWorkspace = timeoutWorkspace;
-        }
+    @Override
+    public String getDisplayName() {
+        return Messages.DisplayName();
     }
+
+
+    @Override
+    public DiskUsageProjectActionFactory newInstance(StaplerRequest req, JSONObject formData) {
+        return new DiskUsageProjectActionFactory();
+    }
+
+
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject formData) {
+        Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
+        JSONObject form;
+        try {
+            form = req.getSubmittedForm();
+        } catch (ServletException ex) {
+            Logger.getLogger(DiskUsageProjectActionFactory.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+        //workspaceTimeOut = form.getInt("countInterval");
+        checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
+        calculationBuilds = form.containsKey("calculationBuilds");
+        calculationJobs = form.containsKey("calculationJobs");
+        calculationWorkspace = form.containsKey("calculationWorkspace");
+        countIntervalBuilds = calculationBuilds? form.getJSONObject("calculationBuilds").getString("countIntervalBuilds") : "0 */6 * * *";
+        countIntervalJobs = calculationJobs? form.getJSONObject("calculationJobs").getString("countIntervalJobs") : "0 */6 * * *";
+        countIntervalWorkspace = calculationWorkspace? form.getJSONObject("calculationWorkspace").getString("countIntervalWorkspace") : "0 */6 * * *";
+
+        if(form.containsKey("warnings")){
+            JSONObject warnings = form.getJSONObject("warnings");
+            email = warnings.getString("email");           
+            if(email!=null){
+                allJobsSize = warnings.containsKey("jobsWarning")? (warnings.getJSONObject("jobsWarning").getInt("allJobsSize") + " " + warnings.getJSONObject("jobsWarning").getString("JobsSizeUnit")) : null;
+                buildSize = warnings.containsKey("buildWarning")? (warnings.getJSONObject("buildWarning").getInt("buildSize") + " " + warnings.getJSONObject("buildWarning").getString("buildSizeUnit")) : null;
+                jobSize = warnings.containsKey("jobWarning")? (warnings.getJSONObject("jobWarning").getInt("jobSize") + " " + warnings.getJSONObject("jobWarning").getString("jobSizeUnit")) : null;
+                jobWorkspaceExceedSize = warnings.containsKey("workspaceWarning")? (warnings.getJSONObject("workspaceWarning").getInt("jobWorkspaceExceedSize") + " " + warnings.getJSONObject("workspaceWarning").getString("jobWorkspaceExceedSizeUnit")) : null;
+            }
+        }
+        showGraph = form.getBoolean("showGraph");
+                    String histlen = req.getParameter("historyLength");
+                    if(histlen != null && !histlen.isEmpty()){
+                        historyLength = Integer.parseInt(histlen);
+                    }
+       timeoutWorkspace = form.getInt("timeoutWorkspace");
+        save();
+        return true;
+    }
+
+    public int getTimeoutWorkspace() {
+        return timeoutWorkspace;
+    }
+
+    public void setTimeoutWorkspace(Integer timeoutWorkspace) {
+        this.timeoutWorkspace = timeoutWorkspace;
+    }
+}
 
 
 }
