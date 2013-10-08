@@ -148,7 +148,7 @@ public class DiskUsagePlugin extends Plugin {
                 ProjectDiskUsageAction dua1 = getDiskUsage(o1);
                 ProjectDiskUsageAction dua2 = getDiskUsage(o2);
                 
-                long result = dua2.getJobRootDirDiskUsage() + dua2.getDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() - dua1.getDiskUsageWorkspace();
+                long result = dua2.getJobRootDirDiskUsage() + dua2.getAllDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() - dua1.getAllDiskUsageWorkspace();
                 
                 if(result > 0) return 1;
                 if(result < 0) return -1;
