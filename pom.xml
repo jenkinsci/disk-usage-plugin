@@ -15,8 +15,8 @@
 
   <developers>
     <developer>
-      <id>vjuranek</id>
-      <name>Vojtech Juranek</name>
+      <id>lvotypko</id>
+      <name>Lucie Votypkova</name>
     </developer>
   </developers>
 
@@ -40,12 +40,12 @@
       <artifactId>plexus-utils</artifactId>
       <version>1.5.15</version>
     </dependency>
-    <dependency>
+   <!-- <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>maven-plugin</artifactId>
       <version>1.447</version>
       <scope>compile</scope>
-    </dependency>
+    </dependency>-->
   </dependencies>
   
     <repositories>

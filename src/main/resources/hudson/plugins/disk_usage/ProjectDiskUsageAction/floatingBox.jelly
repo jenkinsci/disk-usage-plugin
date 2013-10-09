@@ -1,17 +1,15 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 
-<!--
 Project disk usage information + trend graph
--->
 
-<j:set var="projectDiskUsage" value="${from.getDiskUsage()}" />
 
-<j:if test="${(projectDiskUsage!=null)  &amp;&amp; ((projectDiskUsage.getBuildUsage() > 0) || (projectDiskUsage.getWsUsage() > 0))}">
+<j:if test="${(from.getAllDiskUsageWorkspace() > 0) || (from.getJobRootDirDiskUsage() > 0) || (from.getAllBuildsDiskUsage() > 0)}">
     
   <div style="width:auto;align:right;margin:12px;">
     <div style="width:auto;margin:0px;margin-left:auto;text-align:right;">
       <img src="${resURL}/plugin/disk-usage/icons/diskusage16.png" /> 
-      <b>${%Disk Usage}: </b> ${%Workspace} ${projectDiskUsage.getWsUsageString()}, ${%Builds} ${projectDiskUsage.getBuildUsageString()}  
+     
+    <b>${%Disk Usage}: </b>  ${%Workspace} ${from.getAllDiskUsageWorkspace()}, ${%Builds} ${from.getBuildsDiskUsage()}, ${%Job direcotory} ${from.getJobRootDirDiskUsage()}
     </div>
   </div>
 
@@ -21,7 +19,7 @@ Project disk usage information + trend graph
     </div>
 
     <div>
-      <img src="disk-usage/graph/png" lazymap="disk-usage/graph/map" />
+      <img src="diskUsage/graph/png" lazymap="diskUsage/graph/map" />
     </div>
   </j:if>
   

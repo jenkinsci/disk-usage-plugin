@@ -4,75 +4,85 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
-import hudson.model.Job;
-import java.util.LinkedList;
-import java.util.List;
+import hudson.model.ProminentProjectAction;
+import hudson.model.Run;
 
 /**
  * Disk usage information for a single build
  * @author dvrzalik
  */
-public class BuildDiskUsageAction extends DiskUsageAction implements BuildBadgeAction {
+//TODO really implementsProminentProjectAction???
+public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction {
 
-    DiskUsage diskUsage;
+    Long buildDiskUsage;
     AbstractBuild build;
+    @Deprecated
+    DiskUsage diskUsage;
 
-    public BuildDiskUsageAction(AbstractBuild build, long wsUsage, long buildUsage) {
-        diskUsage = new DiskUsage(buildUsage, wsUsage);
+    public BuildDiskUsageAction(AbstractBuild build, long diskUsage) {
+        this.buildDiskUsage = diskUsage;
         this.build = build;
     }
-
-    /**
-     * @return Disk usage of the build (included child builds)
-     */
-    public DiskUsage getDiskUsage() {
-        DiskUsage du = (diskUsage != null) ? 
-            new DiskUsage(diskUsage.buildUsage, diskUsage.wsUsage) :
-            new DiskUsage(0,0);
-
-        for (AbstractBuild child : getChildBuilds(build)) {
-            BuildDiskUsageAction bdua = child.getAction(BuildDiskUsageAction.class);
-            if (bdua != null) {
-                du.buildUsage += bdua.diskUsage.getBuildUsage();
-            }
-        }
         
-        //In case there is no workspace size available, refer to the previous result
-        // ?? - du.wsUsage should be up to date all the time, this approach causes wrong results e.g. when workspace is wipe out, old data are still shown
-        /*
-        AbstractBuild previous = build;
-        while((du.wsUsage == 0) && 
-                ((previous = (AbstractBuild) previous.getPreviousBuild()) != null)) {
-            BuildDiskUsageAction bdua = previous.getAction(BuildDiskUsageAction.class);    
-            if (bdua != null) {
-                du.wsUsage = bdua.diskUsage.wsUsage;
-            }
-        }
-        */
-        return du;
+    public void setDiskUsage(Long diskUsage){
+        this.buildDiskUsage=diskUsage;
+    }
+
+        public String getIconFileName() {
+        return null;
+    }
+
+    public String getDisplayName() {
+        return Messages.DisplayName();
+    }
+
+    public String getUrlName() {
+        return Messages.UrlName();
     }
     
     /**
-     * @return Buidls of nested projects (like MavenModuleBuilds and MatrixRuns)
+     * @return Disk usage of the build (included child builds)
      */
-    private static List<AbstractBuild> getChildBuilds(AbstractBuild build) {
-        List<AbstractBuild> result = new LinkedList<AbstractBuild>();
-        Job project = build.getParent();
+    public Long getDiskUsage() {
+        return buildDiskUsage;
+    }
+    
+    public Long getAllDiskUsage(){
+        Long buildsDiskUsage = buildDiskUsage;
+        AbstractProject project = build.getProject();
+        if(project instanceof ItemGroup){
+           buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup)project);
+        }       
+        return buildsDiskUsage;
+    }
+    
+    public String getBuildUsageString(){
+        return DiskUsageUtil.getSizeString(getAllDiskUsage());
+    }
 
-        if (project instanceof ItemGroup) {
-            for (Object child : ((ItemGroup) project).getItems()) {
-                if (child instanceof AbstractProject) {
-                    AbstractBuild childBuild = (AbstractBuild) ((AbstractProject) child).getNearestBuild(build.getNumber());
-                    AbstractBuild nextBuild = (AbstractBuild) build.getNextBuild();
-                    Integer nextBuildNumber = (nextBuild != null) ? nextBuild.getNumber() : Integer.MAX_VALUE;
-                    while ((childBuild != null) && (childBuild.getNumber() < nextBuildNumber)) {
-                        result.add(childBuild);
-                        childBuild = (AbstractBuild) childBuild.getNextBuild();
-                    }
-                }
+    private Long getBuildsDiskUsageAllSubItems(ItemGroup group){
+        Long buildsDiskUsage = 0l;
+        for(Object item: group.getItems()){
+            if(item instanceof ItemGroup){
+                buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup)item);
+            }
+            if(item instanceof AbstractProject){
+                AbstractProject project = (AbstractProject) item;
+                AbstractBuild b = (AbstractBuild) project.getBuildByNumber(build.getNumber());
+                if(b!=null && b.getAction(BuildDiskUsageAction.class)!=null)
+                    buildsDiskUsage += b.getAction(BuildDiskUsageAction.class).buildDiskUsage;
             }
         }
-
-        return result;
+        return buildsDiskUsage;
     }
+    
+    public Object readResolve() {
+        //for keeping backward compatibility
+        if(diskUsage!=null){
+            buildDiskUsage = diskUsage.buildUsage;
+            diskUsage=null;
+        }
+        return this;
+    }
+       
 }

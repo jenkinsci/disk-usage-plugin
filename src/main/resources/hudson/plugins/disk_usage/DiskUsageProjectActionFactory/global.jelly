@@ -1,18 +1,105 @@
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <f:section title="${%Disk usage}">
-      <f:entry title="">
-          <f:checkbox name="disk_usage.showGraph" checked="${descriptor.showGraph}" />
-          ${%Show disk usage trend graph on the project page}
-      </f:entry>
-
-      <f:entry title="">
-          ${%OverallGraphHistoryLength}
-	      <f:textbox name="disk_usage.historyLength" value="${descriptor.historyLength}" />
-      </f:entry>
-
-      <f:entry title="">
-                ${%TimeoutWorkspace}
-      	      <f:textbox name="disk_usage.timeoutWorkspace" value="${descriptor.timeoutWorkspace}" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+      <!--  <f:form method="POST" action="doConfigure">-->
+         
+         <!-- caclulation settings -->
+         <f:section title="${%Disk usage}">
+             
+         <f:optionalBlock name="calculationBuilds" title="${%Enable calculation of builds}" checked="${descriptor.isCalculationBuildsEnabled()}">  
+            <f:entry title="${%Time interval for calculation}">
+	      <f:textbox name="countIntervalBuilds" value="${descriptor.getCountIntervalForBuilds()}" />
             </f:entry>
-  </f:section>
+         </f:optionalBlock>
+         
+         <f:optionalBlock name="calculationJobs" title="${%Enable calculation of jobs}" checked="${descriptor.isCalculationJobsEnabled()}">  
+            <f:entry title="${%Time interval for calculation}">
+	      <f:textbox name="countIntervalJobs" value="${descriptor.getCountIntervalForJobs()}" />
+            </f:entry>
+         </f:optionalBlock>
+         
+         <f:optionalBlock name="calculationWorkspace" title="${%Enable calculation of workspace}" checked="${descriptor.isCalculationWorkspaceEnabled()}">  
+            <f:entry title="${%Time interval for calculation}">
+	      <f:textbox name="countIntervalWorkspace" value="${descriptor.getCountIntervalForWorkspaces()}" />
+            </f:entry>
+         </f:optionalBlock>
+         
+         
+         <!-- Warnings -->
+        <!-- <f:section title="E-mail warnings settings">-->
+         <f:optionalBlock name="warnings" title="${%Warn if some size is exceeded}" checked="${descriptor.warningAboutExceededSize()}">  
+            <f:entry title="${%E-mail}">
+	      <f:textbox name="email" value="${descriptor.getEmailAddress()}" />
+            </f:entry>
+           <f:optionalBlock name="jobsWarning" title="${%Warn if all jobs exceed some size}" checked="${descriptor.warnAboutAllJobsExceetedSize()}">  
+             <f:entry title="${%Exceeded size for all jobs}">
+              <j:set var="allJobsSize" value="${descriptor.getJobExceedSizeInString()}" />
+	      <input name="allJobsSize" value="${descriptor.getValue(allJobsSize)}" />
+              <select name="JobsSizeUnit">
+               <f:option value="B" selected="${allJobsSize==null || (descriptor.getUnit(allJobsSize).equals('B'))}">B</f:option>  
+               <f:option value="KB" selected="${descriptor.getUnit(allJobsSize).equals('KB')}">KB</f:option> 
+               <f:option value="MB" selected="${descriptor.getUnit(allJobsSize).equals('MB')}">MB</f:option> 
+               <f:option value="GB" selected="${descriptor.getUnit(allJobsSize).equals('GB')}">GB</f:option> 
+               <f:option value="TB" selected="${descriptor.getUnit(allJobsSize).equals('TB')}">TB</f:option> 
+              </select>
+             </f:entry>
+           </f:optionalBlock>
+           <f:optionalBlock name="buildWarning" title="${%Warn if build exceeds some size}" checked="${descriptor.warnAboutBuildExceetedSize()}">  
+             <j:set var="buildSize" value="${descriptor.getBuildExceedSizeInString()}" />
+             <f:entry title="${%Exceeded size for one build}">
+	      <input name="buildSize" value="${descriptor.getValue(buildSize)}" />
+            <select name="buildSizeUnit">
+               <f:option value="B" selected="${buildSize==null || (descriptor.getUnit(buildSize).equals('B'))}">B</f:option>  
+               <f:option value="KB" selected="${descriptor.getUnit(buildSize).equals('KB')}">KB</f:option> 
+               <f:option value="MB" selected="${descriptor.getUnit(buildSize).equals('MB')}">MB</f:option> 
+               <f:option value="GB" selected="${descriptor.getUnit(buildSize).equals('GB')}">GB</f:option> 
+               <f:option value="TB" selected="${descriptor.getUnit(buildSize).equals('TB')}">TB</f:option> 
+              </select>
+             </f:entry>
+           </f:optionalBlock>
+           <f:optionalBlock name="jobWarning" title="${%Warn if job exceeds some size}" checked="${descriptor.warnAboutJobExceetedSize()}">  
+             <f:entry title="${%Exceed size for one job}">
+              <j:set var="jobSize" value="${descriptor.getJobExceedSizeInString()}" />
+	      <input name="jobSize" value="${descriptor.getValue(jobSize)}" />
+              <select name="jobSizeUnit">
+               <f:option value="B" selected="${jobSize==null || descriptor.getUnit(jobSize).equals('B')}">B</f:option>  
+               <f:option value="KB" selected="${descriptor.getUnit(jobSize).equals('KB')}">KB</f:option> 
+               <f:option value="MB" selected="${descriptor.getUnit(jobSize).equals('MB')}">MB</f:option> 
+               <f:option value="GB" selected="${descriptor.getUnit(jobSize).equals('GB')}">GB</f:option> 
+               <f:option value="TB" selected="${descriptor.getUnit(jobSize).equals('TB')}">TB</f:option> 
+              </select>
+             </f:entry>
+           </f:optionalBlock>
+           <f:optionalBlock name="workspaceWarning" title="${%Warn if workspaces of one job exceed some size}" checked="${descriptor.warnAboutJobWorkspaceExceedSize()}">  
+             <f:entry title="${%Exceed size for workspaces of one job}">
+              <j:set var="jobWorkspaceExceedSize" value="${descriptor.getJobWorkspaceExceedSizeInString()}" />
+	      <input name="jobWorkspaceExceedSize" value="${descriptor.getValue(jobWorkspaceExceedSize)}" />
+              <select name="jobWorkspaceExceedSizeUnit">
+               <f:option value="B" selected="${jobWorkspaceExceedSize==null || descriptor.getUnit(jobWorkspaceExceedSize).equals('B')}">B</f:option>  
+               <f:option value="KB" selected="${descriptor.getUnit(jobWorkspaceExceedSize).equals('KB')}">KB</f:option> 
+               <f:option value="MB" selected="${descriptor.getUnit(jobWorkspaceExceedSize).equals('MB')}">MB</f:option> 
+               <f:option value="GB" selected="${descriptor.getUnit(jobWorkspaceExceedSize).equals('GB')}">GB</f:option> 
+               <f:option value="TB" selected="${descriptor.getUnit(jobWorkspaceExceedSize).equals('TB')}">TB</f:option> 
+              </select>
+             </f:entry>
+           </f:optionalBlock>
+        </f:optionalBlock>
+      <!--  </f:section>-->
+       <!-- <f:section title="Graph settings">-->
+         <f:entry title="${%Show disk usage trend graph on the project page}">
+          <f:checkbox name="showGraph" checked="${descriptor.isShowGraph()}" />
+         </f:entry>
+         <f:entry title="${%Length of global disk usage history}">
+          <input name="historyLength" value="${descriptor.getHistoryLength()}" />
+         </f:entry>
+         <f:entry title="${%Time out for calculation of slave workspace in minutes}">
+          <input name="timeoutWorkspace" value="${descriptor.getTimeoutWorkspace()}" />
+         </f:entry>
+        <!-- </f:section>-->
+        <!--  <f:section title="General settings">-->
+         <f:entry title="${%Control workspace from slave side too}">
+          <f:checkbox name="checkWorkspaceOnSlave" checked="${descriptor.getCheckWorkspaceOnSlave()}" />
+          </f:entry>
+       <!--  </f:section>-->
+      <!--     <f:submit name="Submit" value="Submit"/>
+      </f:form>   -->
+      </f:section>
 </j:jelly>
