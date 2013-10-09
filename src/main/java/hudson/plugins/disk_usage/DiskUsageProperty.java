@@ -157,7 +157,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
          if(diskUsageWithoutBuilds == null)
              diskUsageWithoutBuilds = 0l;
          if(slaveWorkspacesUsage==null)
-            slaveWorkspacesUsage = new TreeMap<String,Map<String,Long>>();
+            slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
          return this;
      }
 

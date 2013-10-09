@@ -122,6 +122,7 @@ public class DiskUsageUtilTest extends HudsonTestCase{
     @LocalData
     public void testCalculateDiskUsageWorkspaceForMatrixProjectWithConfigurationInSameDirectory() throws Exception{
          //turn off run listener
+        DiskUsageProjectActionFactory.DESCRIPTOR.setCheckWorkspaceOnSlave(false);
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         jenkins.getExtensionList(RunListener.class).remove(listener);
         jenkins.setNumExecutors(0);
