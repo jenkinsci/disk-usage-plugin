@@ -10,7 +10,7 @@
   <artifactId>disk-usage</artifactId>
   <packaging>hpi</packaging>
   <name>Jenkins disk-usage plugin</name>
-  <version>0.22-SNAPSHOT</version>
+  <version>0.22</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Disk+Usage+Plugin</url>
 
   <developers>
