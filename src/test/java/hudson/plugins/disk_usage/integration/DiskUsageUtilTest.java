@@ -122,7 +122,6 @@ public class DiskUsageUtilTest extends HudsonTestCase{
     @LocalData
     public void testCalculateDiskUsageWorkspaceForMatrixProjectWithConfigurationInSameDirectory() throws Exception{
          //turn off run listener
-        DiskUsageProjectActionFactory.DESCRIPTOR.setCheckWorkspaceOnSlave(false);
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         jenkins.getExtensionList(RunListener.class).remove(listener);
         jenkins.setNumExecutors(0);
@@ -222,6 +221,7 @@ public class DiskUsageUtilTest extends HudsonTestCase{
         size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave2.getWorkspaceFor(project1).length() + sizeAxis1 + sizeAxis2 + sizeAxis3;
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());      
+        plugin.getConfiguration().setCheckWorkspaceOnSlave(false);
     }
     
     
