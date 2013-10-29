@@ -83,12 +83,29 @@
     </table>
     
     <p/>
-    ${%Interval.Message(it.getCountInterval())}<br/>
-    <form action="recordDiskUsage">
-      <input type="hidden" name="name" value="${h.name}"/>
-      <f:submit value="${%Record Disk Usage}" />
+    <j:if test="${it.getConfiguration().isCalculationBuildsEnabled()}">
+    <form action="recordBuildDiskUsage">
+       ${%Interval.Message('builds', it.getCountIntervalForBuilds())}<br/>
+       <input type="hidden" name="name" value="${h.name}"/>
+       <f:submit value="${%Record Builds Disk Usage}" /><br/>
     </form>
-
+    <br/>
+    </j:if>
+    <j:if test="${it.getConfiguration().isCalculationJobsEnabled()}">
+    <form action="recordJobDiskUsage">
+      ${%Interval.Message('jobs', it.getCountIntervalForJobs())}<br/>
+          <input type="hidden" name="name" value="${h.name}"/>
+       <f:submit value="${%Record Jobs Disk Usage}" /><br/>
+      </form>
+      <br/>
+      </j:if>
+     <j:if test="${it.getConfiguration().isCalculationWorkspaceEnabled()}">
+    <form action="recordWorkspaceDiskUsage">
+        ${%Interval.Message('workspaces', it.getCountIntervalForWorkspaces())}<br/>
+        <input type="hidden" name="name" value="${h.name}"/>
+        <f:submit value="${%Record Workspaces Disk Usage}" /><br/>
+    </form>
+    </j:if>
     </l:main-panel>
 </l:layout>
 </j:jelly>

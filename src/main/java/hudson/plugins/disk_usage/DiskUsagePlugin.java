@@ -10,10 +10,12 @@ import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
@@ -107,11 +109,11 @@ public class DiskUsagePlugin extends Plugin {
         return size.split(" ")[0];
     }
     
-    public BuildDiskUsageCalculationThread getBuildsDiskUsateThread(){
+    public BuildDiskUsageCalculationThread getBuildsDiskUsageThread(){
         return AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
     }
     
-    public JobWithoutBuildsDiskUsageCalculation getJobsDiskUsateThread(){
+    public JobWithoutBuildsDiskUsageCalculation getJobsDiskUsageThread(){
         return AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
     }
     
@@ -214,11 +216,51 @@ public class DiskUsagePlugin extends Plugin {
            return  new DiskUsageGraph(dataset, unit, dsb2.build());
     }  
     
-    public void doRecordDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
-        getBuildsDiskUsateThread().doRun();
-        getJobsDiskUsateThread().doRun();
-        getWorkspaceDiskUsageThread().doRun();
+    public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
+        if(getConfiguration().isCalculationBuildsEnabled())
+            getBuildsDiskUsageThread().doRun();
         res.forwardToPreviousPage(req);
+    }
+    
+    public void doRecordJobsDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
+        if(getConfiguration().isCalculationJobsEnabled())
+            getJobsDiskUsageThread().doRun();
+        res.forwardToPreviousPage(req);
+    }
+    
+    public void doRecordWorkspaceDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
+        if(getConfiguration().isCalculationWorkspaceEnabled())
+            this.getWorkspaceDiskUsageThread().doRun();
+        res.forwardToPreviousPage(req);
+    }
+    
+    private String formatTimeInMilisec(long time){
+        long inMinutes = time/60000;
+        if(inMinutes<1)
+            return "0 minutes";
+        long hours = inMinutes/60;
+        String formatedTime = "";
+        if(hours>0)
+            formatedTime = hours + " hours";
+        long minutes = inMinutes - hours*60;
+        if(minutes>0)
+            formatedTime = formatedTime+ " " + minutes+ " minutes";
+        return formatedTime;
+    }
+    
+    public String getCountIntervalForBuilds(){
+        long nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();
+        return formatTimeInMilisec(nextExecution);
+    }
+    
+    public String getCountIntervalForJobs(){
+        long nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
+        return formatTimeInMilisec(nextExecution);
+    }
+    
+    public String getCountIntervalForWorkspaces(){
+        long nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
+        return formatTimeInMilisec(nextExecution);
     }
     
 }
