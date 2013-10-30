@@ -31,7 +31,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
             Long freeJobsDirSpace = jobsDir.getTotalSpace();
             
             DiskUsageProjectActionFactory.DESCRIPTOR.addHistory(new DiskUsageOvearallGraphGenerator.DiskUsageRecord(plugin.getCashedGlobalBuildsDiskUsage(), plugin.getGlobalWorkspacesDiskUsage(), plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), freeJobsDirSpace));
-            plugin.save();
+            DiskUsageProjectActionFactory.DESCRIPTOR.save();
 	}
         
         public static class DiskUsageRecord extends DiskUsage{

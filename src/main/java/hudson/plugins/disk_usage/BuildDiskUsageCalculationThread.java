@@ -25,6 +25,8 @@ import jenkins.model.Jenkins;
  */
 @Extension
 public class BuildDiskUsageCalculationThread extends AsyncAperiodicWork {
+    
+    private long nextExecutionTime = 0;
       
     public BuildDiskUsageCalculationThread(){        
         super("Calculation of builds disk usage");        
@@ -62,6 +64,10 @@ public class BuildDiskUsageCalculationThread extends AsyncAperiodicWork {
         return getRecurrencePeriod();
     }
     
+    public long getNextExecutionTime(){
+        return nextExecutionTime;
+    }
+    
     @Override
     public long getRecurrencePeriod() {
         try {
@@ -69,6 +75,7 @@ public class BuildDiskUsageCalculationThread extends AsyncAperiodicWork {
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
+            nextExecutionTime = nextExecution.getTimeInMillis();
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis() + 60000l;
             return period;           
         } catch (Exception ex) {

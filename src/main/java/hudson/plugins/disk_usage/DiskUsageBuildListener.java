@@ -59,7 +59,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                     property.checkWorkspaces();
                     Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(),exceededFiles);
                     property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
-                    build.getProject().save();
+                    property.saveDiskUsage();
                     DiskUsageUtil.controlorkspaceExceedSize(project);
                 }
             }

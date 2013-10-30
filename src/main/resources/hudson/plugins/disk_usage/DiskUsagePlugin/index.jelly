@@ -92,7 +92,7 @@
     <br/>
     </j:if>
     <j:if test="${it.getConfiguration().isCalculationJobsEnabled()}">
-    <form action="recordJobDiskUsage">
+    <form action="recordJobsDiskUsage">
       ${%Interval.Message('jobs', it.getCountIntervalForJobs())}<br/>
           <input type="hidden" name="name" value="${h.name}"/>
        <f:submit value="${%Record Jobs Disk Usage}" /><br/>

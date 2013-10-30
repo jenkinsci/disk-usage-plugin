@@ -241,7 +241,7 @@ public class DiskUsageUtil {
             }
                 }
         if (update) {
-        	project.save();
+        	property.saveDiskUsage();
         }
     }
 
@@ -358,7 +358,7 @@ public class DiskUsageUtil {
                 }
             }
         }
-        project.save();
+        property.saveDiskUsage();
     }
     
     public static List<AbstractProject> getAllProjects(ItemGroup<? extends Item> itemGroup) {

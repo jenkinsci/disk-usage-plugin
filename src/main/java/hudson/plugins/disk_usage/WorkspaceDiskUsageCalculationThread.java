@@ -12,11 +12,14 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
+import hudson.triggers.Trigger;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 
@@ -27,12 +30,14 @@ import jenkins.model.Jenkins;
 @Extension
 public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
     
+    private long nextExecutionTime = 0;
+    
     public WorkspaceDiskUsageCalculationThread(){
         super("Calculation of workspace usage");       
     }
 
     @Override
-    public void execute(TaskListener listener) throws IOException, InterruptedException {
+    public void execute(TaskListener listener) throws IOException, InterruptedException {                
          DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         if(plugin.getConfiguration().isCalculationWorkspaceEnabled()){
             List<Item> items = new ArrayList<Item>();
@@ -56,6 +61,10 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
     public long getInitialDelay(){       
             return getRecurrencePeriod();
     }
+    
+    public long getNextExecutionTime(){
+        return nextExecutionTime;
+    }
 
     @Override
     public long getRecurrencePeriod() {
@@ -64,6 +73,7 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
+            nextExecutionTime = nextExecution.getTimeInMillis();
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis() + 60000l;
             return period;           
         } catch (Exception ex) {
