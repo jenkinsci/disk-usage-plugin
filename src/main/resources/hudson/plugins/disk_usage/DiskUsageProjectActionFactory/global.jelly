@@ -87,6 +87,9 @@
          <f:entry title="${%Show disk usage trend graph on the project page}">
           <f:checkbox name="showGraph" checked="${descriptor.isShowGraph()}" />
          </f:entry>
+         <f:entry title="${%Show free space of job directory in global graph}">
+          <f:checkbox name="showFreeSpaceForJobDirectory" checked="${descriptor.getShowFreeSpaceForJobDirectory()}" />
+         </f:entry>
          <f:entry title="${%Length of global disk usage history}">
           <input name="historyLength" value="${descriptor.getHistoryLength()}" />
          </f:entry>

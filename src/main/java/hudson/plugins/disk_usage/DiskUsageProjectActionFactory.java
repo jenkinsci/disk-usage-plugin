@@ -63,6 +63,8 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         private String allJobsSize;
     
         private String jobWorkspaceExceedSize;    
+        
+        private boolean showFreeSpaceForJobDirectory = true;
     
         private Long diskUsageBuilds = 0l;
         private Long diskUsageJobsWithoutBuilds = 0l;
@@ -266,6 +268,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                         historyLength = Integer.parseInt(histlen);
                     }
        timeoutWorkspace = form.getInt("timeoutWorkspace");
+       showFreeSpaceForJobDirectory = form.getBoolean("showFreeSpaceForJobDirectory");
         save();
         return true;
     }
@@ -302,6 +305,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
     public int getTimeoutWorkspace() {
         return timeoutWorkspace;
+    }
+    
+    public boolean getShowFreeSpaceForJobDirectory(){
+        return showFreeSpaceForJobDirectory;
     }
 
     public void setTimeoutWorkspace(Integer timeoutWorkspace) {

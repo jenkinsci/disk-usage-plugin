@@ -204,7 +204,9 @@ public class DiskUsagePlugin extends Plugin {
         
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record) {
             Date label = usage.getDate();
-            dataset.addValue(((Long) usage.getAllSpace()) / base, "space for jobs directory", label);
+            if(getConfiguration().getShowFreeSpaceForJobDirectory()){
+                dataset.addValue(((Long) usage.getAllSpace()) / base, "space for jobs directory", label);
+            }
             dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
             dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
             dsb2.add(((Long) usage.getWorkspacesDiskUsage()) / base, "workspaces", label);     
@@ -233,7 +235,7 @@ public class DiskUsagePlugin extends Plugin {
     private String formatTimeInMilisec(long time){
         long inMinutes = time/60000;
         if(inMinutes<1)
-            return "0 minutes";
+            return "0 minute";
         long hours = inMinutes/60;
         String formatedTime = "";
         if(hours>0){
