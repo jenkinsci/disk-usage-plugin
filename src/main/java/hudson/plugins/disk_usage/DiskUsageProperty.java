@@ -31,7 +31,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         return Collections.emptyList();
     }
     
-     private transient ProjectDiskUsage diskUsage;
+     private transient ProjectDiskUsage diskUsage = new ProjectDiskUsage();
      @Deprecated
      private Long diskUsageWithoutBuilds;
      @Deprecated
@@ -41,6 +41,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             if(diskUsageWithoutBuilds==null)
                 return;
             this.diskUsage.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
+            saveDiskUsage();
         }
      
      
@@ -50,6 +51,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
           if(workspacesInfo.isEmpty()){
               diskUsage.slaveWorkspacesUsage.remove(node.getNodeName());
           }
+          saveDiskUsage();
      }
      
     @Override
@@ -82,6 +84,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         if(!workspacesInfo.containsKey(path))
             workspacesInfo.put(path, 0l);
         diskUsage.slaveWorkspacesUsage.put(node.getNodeName(), workspacesInfo);
+        saveDiskUsage();
     }
 
     public Map<String,Map<String,Long>> getSlaveWorkspaceUsage(){
@@ -98,6 +101,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             workspacesInfo = new ConcurrentHashMap<String,Long>();
         workspacesInfo.put(path, size);
         diskUsage.slaveWorkspacesUsage.put(node.getNodeName(), workspacesInfo);
+        saveDiskUsage();
     }
 
     public Long getWorkspaceSize(Boolean containdedInWorkspace){
@@ -162,6 +166,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 if(Jenkins.getInstance().getNode(nodeName)==null && !nodeName.isEmpty())//Jenkins master has empty name
                     diskUsage.slaveWorkspacesUsage.remove(nodeName);
             }
+            saveDiskUsage();
     }
 
     public Long getAllWorkspaceSize(){

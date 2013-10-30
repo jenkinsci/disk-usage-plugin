@@ -8,10 +8,12 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.AsyncAperiodicWork;
+import hudson.model.AsyncPeriodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
+import hudson.triggers.Trigger;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,16 +29,36 @@ import jenkins.model.Jenkins;
 @Extension
 public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
     
-    private long nextExecutionTime = 0;
+    //last scheduled task;
+    private static JobWithoutBuildsDiskUsageCalculation currentTask;
       
     public JobWithoutBuildsDiskUsageCalculation(){
         super("Calculation of job directories (without builds)");       
+    }
+    
+    public boolean isExecuting(){
+        for(Thread t: Thread.getAllStackTraces().keySet()){
+            if((name +" thread").equals(t.getName()))
+                return true;
+        }
+        return false;
+    }
+    
+    public void reschedule(){
+        if(currentTask==null){
+            cancel();
+        }
+        else{
+            currentTask.cancel();   
+        }
+        Trigger.timer.purge();
+        Trigger.timer.schedule(getNewInstance(), getRecurrencePeriod());
     }
 
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
          DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(plugin.getConfiguration().isCalculationJobsEnabled()){
+        if(plugin.getConfiguration().isCalculationJobsEnabled() && !isExecuting()){
             List<Item> items = new ArrayList<Item>();
             ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
             items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
@@ -60,12 +82,14 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
     @Override
     public long getInitialDelay(){
         return getRecurrencePeriod();
-    }
+    }  
     
-    public long getNextExecutionTime(){
-        return nextExecutionTime;
+    @Override
+    public long scheduledExecutionTime(){
+        if(currentTask==null || currentTask==this)
+            return super.scheduledExecutionTime();
+        return currentTask.scheduledExecutionTime();
     }
-
  
     public long getRecurrencePeriod() {
         try {
@@ -73,7 +97,6 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis()); 
-            nextExecutionTime = nextExecution.getTimeInMillis();
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis() + 60000l; // add delay
             return period;
         } catch (Exception ex) {
@@ -83,9 +106,10 @@ public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
         }
     }
 
-    @Override
-    public AperiodicWork getNewInstance() {
-        return new JobWithoutBuildsDiskUsageCalculation();
+        @Override
+    public AperiodicWork getNewInstance() {        
+        currentTask =  new JobWithoutBuildsDiskUsageCalculation();
+        return currentTask;
     }
 
 }

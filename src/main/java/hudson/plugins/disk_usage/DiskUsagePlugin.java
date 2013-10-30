@@ -3,19 +3,15 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.Plugin;
 import hudson.Util;
-import hudson.XmlFile;
 import hudson.model.*;
-import hudson.security.Permission;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
@@ -217,20 +213,20 @@ public class DiskUsagePlugin extends Plugin {
     }  
     
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
-        if(getConfiguration().isCalculationBuildsEnabled())
-            getBuildsDiskUsageThread().doRun();
+        if(getConfiguration().isCalculationBuildsEnabled() && !getBuildsDiskUsageThread().isExecuting())
+            getBuildsDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
     
     public void doRecordJobsDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
-        if(getConfiguration().isCalculationJobsEnabled())
-            getJobsDiskUsageThread().doRun();
+        if(getConfiguration().isCalculationJobsEnabled() && !getJobsDiskUsageThread().isExecuting())
+            getJobsDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
     
     public void doRecordWorkspaceDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
-        if(getConfiguration().isCalculationWorkspaceEnabled())
-            this.getWorkspaceDiskUsageThread().doRun();
+        if(getConfiguration().isCalculationWorkspaceEnabled() && !getWorkspaceDiskUsageThread().isExecuting())
+            getWorkspaceDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
     
@@ -240,30 +236,34 @@ public class DiskUsagePlugin extends Plugin {
             return "0 minutes";
         long hours = inMinutes/60;
         String formatedTime = "";
-        if(hours>0)
-            formatedTime = hours + " hours";
+        if(hours>0){
+            String unit = hours>1? "hours" : "hour";
+            formatedTime = hours + " " + unit;
+        }
         long minutes = inMinutes - hours*60;
-        if(minutes>0)
-            formatedTime = formatedTime+ " " + minutes+ " minutes";
+        if(minutes>0){
+            String unit = minutes>1? "minutes" : "minute";
+            formatedTime = formatedTime+ " " + minutes+ " " + unit;
+        }
         return formatedTime;
     }
     
     public String getCountIntervalForBuilds(){
-        long nextExecution = getBuildsDiskUsageThread().getNextExecutionTime() - System.currentTimeMillis();
+        long nextExecution = getBuildsDiskUsageThread().scheduledExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();    
         return formatTimeInMilisec(nextExecution);
     }
     
     public String getCountIntervalForJobs(){
-        long nextExecution = getJobsDiskUsageThread().getNextExecutionTime() - System.currentTimeMillis();
+        long nextExecution = getJobsDiskUsageThread().scheduledExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
         return formatTimeInMilisec(nextExecution);
     }
     
     public String getCountIntervalForWorkspaces(){
-        long nextExecution = getWorkspaceDiskUsageThread().getNextExecutionTime() - System.currentTimeMillis();
+        long nextExecution = getWorkspaceDiskUsageThread().scheduledExecutionTime() - System.currentTimeMillis();
             if(nextExecution<=0) //not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
         return formatTimeInMilisec(nextExecution);

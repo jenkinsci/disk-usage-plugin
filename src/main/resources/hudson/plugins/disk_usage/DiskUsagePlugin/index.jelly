@@ -87,7 +87,14 @@
     <form action="recordBuildDiskUsage">
        ${%Interval.Message('builds', it.getCountIntervalForBuilds())}<br/>
        <input type="hidden" name="name" value="${h.name}"/>
-       <f:submit value="${%Record Builds Disk Usage}" /><br/>
+       <j:choose>
+         <j:when test="${it.getBuildsDiskUsageThread().isExecuting()}">
+           ${%Counting of build disk usage is executing now.} <br/>
+         </j:when>
+         <j:otherwise>
+           <f:submit value="${%Record Builds Disk Usage}" /><br/>
+         </j:otherwise>
+       </j:choose>
     </form>
     <br/>
     </j:if>
@@ -95,7 +102,14 @@
     <form action="recordJobsDiskUsage">
       ${%Interval.Message('jobs', it.getCountIntervalForJobs())}<br/>
           <input type="hidden" name="name" value="${h.name}"/>
-       <f:submit value="${%Record Jobs Disk Usage}" /><br/>
+          <j:choose>
+         <j:when test="${it.getJobsDiskUsageThread().isExecuting()}">
+           ${%Counting of job disk usage is executing now.} <br/>
+         </j:when>
+         <j:otherwise>
+           <f:submit value="${%Record Jobs Disk Usage}" /><br/>
+         </j:otherwise>
+       </j:choose>
       </form>
       <br/>
       </j:if>
@@ -103,7 +117,14 @@
     <form action="recordWorkspaceDiskUsage">
         ${%Interval.Message('workspaces', it.getCountIntervalForWorkspaces())}<br/>
         <input type="hidden" name="name" value="${h.name}"/>
-        <f:submit value="${%Record Workspaces Disk Usage}" /><br/>
+         <j:choose>
+         <j:when test="${it.getWorkspaceDiskUsageThread().isExecuting()}">
+           ${%Counting of workpsace disk usage is executing now.} <br/>
+         </j:when>
+         <j:otherwise>
+           <f:submit value="${%Record Workspaces Disk Usage}" /><br/>
+         </j:otherwise>
+       </j:choose>   
     </form>
     </j:if>
     </l:main-panel>

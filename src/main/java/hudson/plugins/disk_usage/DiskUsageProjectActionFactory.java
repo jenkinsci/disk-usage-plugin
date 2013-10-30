@@ -3,6 +3,7 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.model.*;
 
+import hudson.model.PeriodicWork;
 import hudson.security.Permission;
 import java.util.Collection;
 import java.util.Collections;
@@ -245,13 +246,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         //workspaceTimeOut = form.getInt("countInterval");
         checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
-        calculationBuilds = form.containsKey("calculationBuilds");
-        calculationJobs = form.containsKey("calculationJobs");
-        calculationWorkspace = form.containsKey("calculationWorkspace");
-        countIntervalBuilds = calculationBuilds? form.getJSONObject("calculationBuilds").getString("countIntervalBuilds") : "0 */6 * * *";
-        countIntervalJobs = calculationJobs? form.getJSONObject("calculationJobs").getString("countIntervalJobs") : "0 */6 * * *";
-        countIntervalWorkspace = calculationWorkspace? form.getJSONObject("calculationWorkspace").getString("countIntervalWorkspace") : "0 */6 * * *";
-
+        configureBuildsCalculation(form);
+        configureJobsCalculation(form);
+        configureWorkspacesCalculation(form);        
+        
         if(form.containsKey("warnings")){
             JSONObject warnings = form.getJSONObject("warnings");
             email = warnings.getString("email");           
@@ -270,6 +268,36 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
        timeoutWorkspace = form.getInt("timeoutWorkspace");
         save();
         return true;
+    }
+    
+    private void configureBuildsCalculation(JSONObject form){
+        boolean oldCalculationBuilds = calculationBuilds;
+        String oldCountIntervalBuilds = countIntervalBuilds;
+        calculationBuilds = form.containsKey("calculationBuilds");
+        countIntervalBuilds = calculationBuilds? form.getJSONObject("calculationBuilds").getString("countIntervalBuilds") : "0 */6 * * *";
+        BuildDiskUsageCalculationThread buildCalculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
+        if(!oldCountIntervalBuilds.equals(countIntervalBuilds) || oldCalculationBuilds!=calculationBuilds)
+            buildCalculation.reschedule();
+    }
+    
+    private void configureJobsCalculation(JSONObject form){
+        boolean oldCalculationJobs = calculationJobs;
+        String oldcountIntervalJobs = countIntervalJobs;
+        calculationJobs = form.containsKey("calculationJobs");
+        countIntervalJobs = calculationJobs? form.getJSONObject("calculationJobs").getString("countIntervalJobs") : "0 */6 * * *";
+        JobWithoutBuildsDiskUsageCalculation jobCalculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
+        if(!oldcountIntervalJobs.equals(countIntervalJobs) || oldCalculationJobs!=calculationJobs)
+            jobCalculation.reschedule();
+    }
+    
+    private void configureWorkspacesCalculation(JSONObject form){
+        boolean oldCalculationWorkspace = calculationWorkspace;
+        String oldCountIntervalWorkspace = countIntervalWorkspace;
+        calculationWorkspace = form.containsKey("calculationWorkspace");
+        countIntervalWorkspace = calculationWorkspace? form.getJSONObject("calculationWorkspace").getString("countIntervalWorkspace") : "0 */6 * * *";
+        WorkspaceDiskUsageCalculationThread workspaceCalculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
+        if(!oldCountIntervalWorkspace.equals(countIntervalWorkspace) || oldCalculationWorkspace!=calculationWorkspace)
+            workspaceCalculation.reschedule();
     }
 
     public int getTimeoutWorkspace() {

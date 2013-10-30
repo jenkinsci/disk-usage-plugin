@@ -39,18 +39,18 @@ public class DiskUsagePropertyTest {
         Long sizeOfProject = 7546l;
         Long sizeOfMatrixProject = 6800l;
         DiskUsageProperty projectProperty = new DiskUsageProperty();
-        projectProperty.setDiskUsageWithoutBuilds(sizeOfProject);
         project.addProperty(projectProperty);
+        projectProperty.setDiskUsageWithoutBuilds(sizeOfProject);
         DiskUsageProperty matrixProjectProperty = new DiskUsageProperty();
-        matrixProjectProperty.setDiskUsageWithoutBuilds(sizeOfMatrixProject);
         matrixProject.addProperty(matrixProjectProperty);
+        matrixProjectProperty.setDiskUsageWithoutBuilds(sizeOfMatrixProject);
         long size1 = 5390;
         int count = 1;
         Long matrixProjectTotalSize = sizeOfMatrixProject;
         for(MatrixConfiguration c: matrixProject.getItems()){
             DiskUsageProperty configurationProperty = new DiskUsageProperty();
-            configurationProperty.setDiskUsageWithoutBuilds(count*size1);
-            c.addProperty(configurationProperty);  
+            c.addProperty(configurationProperty);
+            configurationProperty.setDiskUsageWithoutBuilds(count*size1);  
             matrixProjectTotalSize += count*size1;
             count++;
         }

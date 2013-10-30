@@ -8,6 +8,7 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.AsyncAperiodicWork;
+import hudson.model.AsyncPeriodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TaskListener;
@@ -18,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 
@@ -30,10 +29,36 @@ import jenkins.model.Jenkins;
 @Extension
 public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
     
-    private long nextExecutionTime = 0;
+    private static WorkspaceDiskUsageCalculationThread currentTask;
     
     public WorkspaceDiskUsageCalculationThread(){
         super("Calculation of workspace usage");       
+    }
+    
+    public boolean isExecuting(){
+        for(Thread t: Thread.getAllStackTraces().keySet()){
+            if((name +" thread").equals(t.getName()))
+                return true;
+        }
+        return false;
+    }
+    
+    public void reschedule(){
+        if(currentTask==null){
+            cancel();
+        }
+        else{
+            currentTask.cancel();   
+        }
+        Trigger.timer.purge();
+        Trigger.timer.schedule(getNewInstance(), getRecurrencePeriod());
+    }
+    
+    @Override
+    public long scheduledExecutionTime(){
+        if(currentTask==null || currentTask==this)
+            return super.scheduledExecutionTime();
+        return currentTask.scheduledExecutionTime();
     }
 
     @Override
@@ -55,25 +80,24 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
                 }
             }
         }
+        else{
+            cancel(); //it should not be performend until configuration is not changed.
+        }
     }
     
     @Override
     public long getInitialDelay(){       
             return getRecurrencePeriod();
     }
-    
-    public long getNextExecutionTime(){
-        return nextExecutionTime;
-    }
 
     @Override
     public long getRecurrencePeriod() {
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);    
         try {
             String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForWorkspaces();
             CronTab tab = new CronTab(cron);
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
-            nextExecutionTime = nextExecution.getTimeInMillis();
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis() + 60000l;
             return period;           
         } catch (Exception ex) {
@@ -82,9 +106,11 @@ public class WorkspaceDiskUsageCalculationThread extends AsyncAperiodicWork{
             return 1000*60*6;
         }
     }
-
+    
     @Override
-    public AperiodicWork getNewInstance() {
-        return new WorkspaceDiskUsageCalculationThread();
+    public AperiodicWork getNewInstance() {        
+        currentTask =  new WorkspaceDiskUsageCalculationThread();
+        return currentTask;
     }
+    
 }
