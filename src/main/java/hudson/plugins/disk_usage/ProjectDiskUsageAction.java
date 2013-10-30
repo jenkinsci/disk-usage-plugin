@@ -203,7 +203,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
             dataset.addValue(((Long) usage[1]) / base, "job directory", label);  
-            dataset.addValue(((Long) usage[2]) / base, "build direcotory", label);     
+            dataset.addValue(((Long) usage[2]) / base, "build directory", label);
             dsb2.add(((Long) usage[3]) / base, "all jobs workspaces", label);
         }
         return new DiskUsageGraph(dataset, unit, dsb2.build());   

@@ -9,7 +9,7 @@ Project disk usage information + trend graph
     <div style="width:auto;margin:0px;margin-left:auto;text-align:right;">
       <img src="${resURL}/plugin/disk-usage/icons/diskusage16.png" /> 
      
-    <b>${%Disk Usage}: </b>  ${%Workspace} ${from.getAllDiskUsageWorkspace()}, ${%Builds} ${from.getBuildsDiskUsage()}, ${%Job direcotory} ${from.getJobRootDirDiskUsage()}
+    <b>${%Disk Usage}: </b>  ${%Workspace} ${from.getAllDiskUsageWorkspace()}, ${%Builds} ${from.getBuildsDiskUsage()}, ${%Job directory} ${from.getJobRootDirDiskUsage()}
     </div>
   </div>
 
