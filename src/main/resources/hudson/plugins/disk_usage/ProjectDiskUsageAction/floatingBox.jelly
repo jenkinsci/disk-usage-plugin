@@ -19,7 +19,7 @@ Project disk usage information + trend graph
     </div>
 
     <div>
-      <img src="diskUsage/graph/png" lazymap="diskUsage/graph/map" />
+      <img src="diskUsage/graph/png?height=200&amp;width=550" lazymap="diskUsage/graph/map"/>
     </div>
   </j:if>
   

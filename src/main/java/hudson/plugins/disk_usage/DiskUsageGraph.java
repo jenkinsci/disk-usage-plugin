@@ -55,21 +55,19 @@ public class DiskUsageGraph extends Graph{
 		legend.setPosition(RectangleEdge.RIGHT);
 
 		chart.setBackgroundPaint(Color.white);
-
 		CategoryPlot plot = (CategoryPlot) chart.getPlot();
 
 		plot.setBackgroundPaint(Color.WHITE);
 		plot.setOutlinePaint(null);
 		plot.setRangeGridlinesVisible(true);
 		plot.setRangeGridlinePaint(Color.black);
-
 		CategoryAxis domainAxis = new ShiftedCategoryAxis(null);
 		plot.setDomainAxis(domainAxis);
 		domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
 		domainAxis.setLowerMargin(0.0);
 		domainAxis.setUpperMargin(0.0);
 		// voodoo for better spacing between labels with many columns
-		domainAxis.setCategoryMargin(-((double) dataset.getColumnCount() / 10.0));
+		domainAxis.setCategoryMargin(-((double) dataset.getColumnCount() / 6.0));
                 plot.setRangeAxis(1, plot.getRangeAxis(0));
                 plot.setDataset(1, workspaceDataset);
                 LineAndShapeRenderer renderer = new LineAndShapeRenderer();
