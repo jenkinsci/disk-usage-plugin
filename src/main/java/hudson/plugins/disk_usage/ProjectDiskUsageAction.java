@@ -10,9 +10,11 @@ import hudson.model.ProminentProjectAction;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
+import hudson.util.RunList;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -188,7 +190,10 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
         //First iteration just to get scale of the y-axis
-        for (AbstractBuild build : project.getBuilds()) {
+        RunList<? extends AbstractBuild> builds = project.getBuilds();
+        //do it in reverse order
+        for (int i=builds.size()-1; i>=0; i--) {
+            AbstractBuild build = builds.get(i);
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
                 maxValue = Math.max(maxValue, getJobRootDirDiskUsage());
