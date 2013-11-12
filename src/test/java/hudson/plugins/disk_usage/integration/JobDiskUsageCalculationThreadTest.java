@@ -3,9 +3,12 @@ package hudson.plugins.disk_usage.integration;
 import hudson.plugins.disk_usage.*;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
+import hudson.model.AperiodicWork;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.util.RunList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,9 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.mockito.stubbing.Answer;
 
 /**
  *
@@ -27,14 +33,8 @@ import org.jvnet.hudson.test.recipes.LocalData;
 public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     
     private void waitUntilThreadEnds(JobWithoutBuildsDiskUsageCalculation calculation) throws InterruptedException{
-        Thread thread = null;
-        //wait until thread ends
-        for(Thread t : Thread.getAllStackTraces().keySet()){
-            if(calculation.name.equals(t.getName())){
-                while(thread.isAlive())
-                    Thread.sleep(100);
-                break;
-            }
+        while(calculation.isExecuting()){          
+            Thread.sleep(100);
         }
     }
     
@@ -103,6 +103,54 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         for(MatrixConfiguration config: project.getItems()){
             assertEquals("Configuration " + config.getDisplayName() + " has wrong job size.", matrixConfigurationsSize.get(config.getDisplayName()), config.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);           
         }
+    }
+    
+    public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
+        FreeStyleProject project = new FreeStyleProject(jenkins, "execution"){
+            @Override
+           public RunList<FreeStyleBuild> getBuilds(){
+                //is called during disk calculation, to be sure that calculation is in progress I make this operation longer
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+               return new RunList<FreeStyleBuild>();
+           }
+            
+            @Override
+            public void save(){
+                //do not want save
+            }
+        };
+        
+        jenkins.putItem(project);
+        final JobWithoutBuildsDiskUsageCalculation testCalculation = new JobWithoutBuildsDiskUsageCalculation();
+        Thread t = new Thread(){
+            public void run(){
+                try {
+                    testCalculation.execute(TaskListener.NULL);
+                } catch (IOException ex) {
+                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+        t.start();
+        Thread.sleep(1000);
+        testCalculation.execute(TaskListener.NULL);
+        assertNull("Disk usage should not start calculation if preview calculation is in progress.", project.getProperty(DiskUsageProperty.class));
+        t.interrupt();
+    }
+    
+    public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
+        FreeStyleProject projectWithoutDiskUsage = jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
+        DiskUsageProjectActionFactory.DESCRIPTOR.disableJobsDiskUsageCalculation();
+        JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
+        calculation.execute(TaskListener.NULL);
+        assertNull("Disk usage for build should not be counted.", projectWithoutDiskUsage.getProperty(DiskUsageProperty.class));
+        DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
     }
     
 }

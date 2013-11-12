@@ -4,6 +4,7 @@
  */
 package hudson.plugins.disk_usage;
 
+import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
@@ -27,88 +28,74 @@ import jenkins.model.Jenkins;
  * @author Lucie Votypkova
  */
 @Extension
-public class JobWithoutBuildsDiskUsageCalculation extends AsyncAperiodicWork{
+public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
     
     //last scheduled task;
-    private static JobWithoutBuildsDiskUsageCalculation currentTask;
+    private static DiskUsageCalculation currentTask;
+    
+    private static boolean executing;
       
     public JobWithoutBuildsDiskUsageCalculation(){
         super("Calculation of job directories (without builds)");       
-    }
-    
-    public boolean isExecuting(){
-        for(Thread t: Thread.getAllStackTraces().keySet()){
-            if((name +" thread").equals(t.getName()))
-                return true;
-        }
-        return false;
-    }
-    
-    public void reschedule(){
-        if(currentTask==null){
-            cancel();
-        }
-        else{
-            currentTask.cancel();   
-        }
-        Trigger.timer.purge();
-        Trigger.timer.schedule(getNewInstance(), getRecurrencePeriod());
     }
 
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
          DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         if(plugin.getConfiguration().isCalculationJobsEnabled() && !isExecuting()){
-            List<Item> items = new ArrayList<Item>();
-            ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
-            items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
+            executing = true;
+            try{
+                List<Item> items = new ArrayList<Item>();
+                ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
+                items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
 
-            for (Object item : items) {
-                if (item instanceof AbstractProject) {
-                    AbstractProject project = (AbstractProject) item;
-                    try{
-                        DiskUsageUtil.calculateDiskUsageForProject(project);
-                    } catch (Exception ex) {
-                        logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
-                    }               
+                for (Object item : items) {
+                    if (item instanceof AbstractProject) {
+                        AbstractProject project = (AbstractProject) item;
+                        try{
+                            DiskUsageUtil.calculateDiskUsageForProject(project);
+                        } catch (Exception ex) {
+                            logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
+                        }               
+                    }
+                }
+                if(plugin.getConfiguration().warnAboutAllJobsExceetedSize()){
+                    DiskUsageUtil.controlAllJobsExceedSize();
                 }
             }
-            if(plugin.getConfiguration().warnAboutAllJobsExceetedSize()){
-                DiskUsageUtil.controlAllJobsExceedSize();
+            catch(Exception e){
+                logger.log(Level.WARNING, "Error when recording disk usage for jobs.", e);
             }
-        }
-    }
-    
-    @Override
-    public long getInitialDelay(){
-        return getRecurrencePeriod();
-    }  
-    
-    @Override
-    public long scheduledExecutionTime(){
-        if(currentTask==null || currentTask==this)
-            return super.scheduledExecutionTime();
-        return currentTask.scheduledExecutionTime();
-    }
- 
-    public long getRecurrencePeriod() {
-        try {
-            String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForJobs();
-            CronTab tab = new CronTab(cron);
-            GregorianCalendar now = new GregorianCalendar();
-            Calendar nextExecution = tab.ceil(now.getTimeInMillis()); 
-            long period = nextExecution.getTimeInMillis() - now.getTimeInMillis() + 60000l; // add delay
-            return period;
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, null, ex);
-            //it should not happen
-            return 1000*60*6;
+            executing=false;
         }
     }
 
-        @Override
-    public AperiodicWork getNewInstance() {        
-        currentTask =  new JobWithoutBuildsDiskUsageCalculation();
+    @Override
+    public AperiodicWork getNewInstance() {   
+        if(currentTask!=null){
+            currentTask.cancel();
+        }
+        else{
+            cancel();
+        }
+        currentTask = new JobWithoutBuildsDiskUsageCalculation();
+        return currentTask;
+    }
+
+    @Override
+    public CronTab getCronTab() throws ANTLRException {
+        String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForJobs();
+        CronTab tab = new CronTab(cron);
+        return tab;
+    }
+
+    @Override
+    public boolean isExecuting() {
+        return executing;
+    }
+
+    @Override
+    public DiskUsageCalculation getLastTask() {
         return currentTask;
     }
 

@@ -251,21 +251,21 @@ public class DiskUsagePlugin extends Plugin {
     }
     
     public String getCountIntervalForBuilds(){
-        long nextExecution = getBuildsDiskUsageThread().scheduledExecutionTime() - System.currentTimeMillis();
+        long nextExecution = getBuildsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();    
         return formatTimeInMilisec(nextExecution);
     }
     
     public String getCountIntervalForJobs(){
-        long nextExecution = getJobsDiskUsageThread().scheduledExecutionTime() - System.currentTimeMillis();
+        long nextExecution = getJobsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
         return formatTimeInMilisec(nextExecution);
     }
     
     public String getCountIntervalForWorkspaces(){
-        long nextExecution = getWorkspaceDiskUsageThread().scheduledExecutionTime() - System.currentTimeMillis();
+        long nextExecution = getWorkspaceDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
             if(nextExecution<=0) //not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
         return formatTimeInMilisec(nextExecution);

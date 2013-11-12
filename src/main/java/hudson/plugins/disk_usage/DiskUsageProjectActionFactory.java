@@ -222,6 +222,30 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         save();
         return ok;
     }
+    
+    public void enableBuildsDiskUsageCalculation(){
+        calculationBuilds=true;
+    }
+    
+    public void disableBuildsDiskUsageCalculation(){
+        calculationBuilds=false;
+    }
+    
+    public void enableJobsDiskUsageCalculation(){
+        calculationJobs=true;
+    }
+    
+    public void disableJobsDiskUsageCalculation(){
+        calculationJobs=false;
+    }
+    
+    public void enableWorkspacesDiskUsageCalculation(){
+        calculationWorkspace=true;
+    }
+    
+    public void disableWorkspacesDiskUsageCalculation(){
+        calculationWorkspace=false;
+    }
 
 
     @Override

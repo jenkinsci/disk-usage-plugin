@@ -6,11 +6,17 @@ import hudson.matrix.MatrixProject;
 import java.util.TreeMap;
 import java.util.Map;
 import hudson.model.AbstractBuild;
+import hudson.model.AperiodicWork;
+import hudson.model.FreeStyleBuild;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.model.FreeStyleProject;
+import hudson.model.ItemGroup;
 import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.util.RunList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -128,5 +134,67 @@ public class BuildDiskUsageCalculationThreadTest extends HudsonTestCase{
         
     }
     
+    @Test
+    public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
+        FreeStyleProject projectWithoutDiskUsage = jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
+        FreeStyleBuild build = projectWithoutDiskUsage.createExecutable();
+        DiskUsageProjectActionFactory.DESCRIPTOR.disableBuildsDiskUsageCalculation();
+        BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
+        calculation.execute(TaskListener.NULL);
+        assertNull("Disk usage for build should not be counted.", build.getAction(BuildDiskUsageAction.class));
+        DiskUsageProjectActionFactory.DESCRIPTOR.enableBuildsDiskUsageCalculation();
+    }
+    
+    @Test
+    public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
+        TestFreeStyleProject project = new TestFreeStyleProject(jenkins, "project");  
+        FreeStyleBuild build = new FreeStyleBuild(project);
+        project.addBuild(build);
+        jenkins.putItem(project);
+        final BuildDiskUsageCalculationThread testCalculation = new BuildDiskUsageCalculationThread();
+        Thread t = new Thread(){
+            public void run(){
+                try {
+                    testCalculation.execute(TaskListener.NULL);
+                } catch (IOException ex) {
+                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+        t.start();
+        Thread.sleep(1000);
+        testCalculation.execute(TaskListener.NULL);
+        assertNull("Disk usage should not start calculation if preview calculation is in progress.", project.getLastBuild().getAction(BuildDiskUsageAction.class));
+        t.interrupt();
+    }
+    
+    public class TestFreeStyleProject extends FreeStyleProject{
+        
+        public TestFreeStyleProject(ItemGroup group, String name){
+            super(group, name);
+        }
+        
+         @Override
+           public File getBuildDir(){
+                //is called during disk calculation, to be sure that calculation is in progress I make this operation longer
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+               return super.getBuildDir();
+           }
+         
+         public void addBuild(FreeStyleBuild build){
+             builds.put(build);
+         }
+            
+            @Override
+            public void save(){
+                //do not want save
+            }
+    }
     
 }

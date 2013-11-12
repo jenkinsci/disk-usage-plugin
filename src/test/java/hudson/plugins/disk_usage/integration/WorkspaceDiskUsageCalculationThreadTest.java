@@ -8,7 +8,10 @@ import hudson.plugins.disk_usage.*;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import hudson.model.AperiodicWork;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
@@ -25,9 +28,14 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -173,5 +181,62 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project2.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project2.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
        
+    }
+    
+    @Test
+    public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
+        FreeStyleProject projectWithoutDiskUsage = jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
+        FreeStyleBuild build = projectWithoutDiskUsage.createExecutable();
+        DiskUsageProjectActionFactory.DESCRIPTOR.disableWorkspacesDiskUsageCalculation();
+        BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
+        calculation.execute(TaskListener.NULL);
+        assertNull("Disk usage for build should not be counted.", build.getAction(BuildDiskUsageAction.class));
+        DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
+    }
+    
+    @Test
+    @LocalData
+    public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
+        FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, "project1");
+        TestDiskUsageProperty prop = new TestDiskUsageProperty();
+        project.addProperty(prop);
+        Slave slave1 = createSlave("slave1", new File(hudson.getRootDir(),"workspace1").getPath());
+        prop.putSlaveWorkspace(slave1, slave1.getWorkspaceFor(project).getRemote());
+        final WorkspaceDiskUsageCalculationThread testCalculation = new WorkspaceDiskUsageCalculationThread();
+        Thread t = new Thread(){
+            public void run(){
+                try {
+                    testCalculation.execute(TaskListener.NULL);
+                } catch (IOException ex) {
+                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+        t.start();
+        Thread.sleep(1000);
+        testCalculation.execute(TaskListener.NULL);
+        assertEquals("Disk usage should not start calculation if preview calculation is in progress.", 0, project.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
+        t.interrupt();
+    }
+    
+    @TestExtension
+    public static class TestDiskUsageProperty extends DiskUsageProperty{
+        
+        public void putSlaveWorkspaceSize(Node node, String path, Long size){
+            LOGGER.fine("workspace size " + size);
+            try {
+                Thread.sleep(10000); //make this operation longer
+            } catch (InterruptedException ex) {
+                Logger.getLogger(WorkspaceDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            Map<String,Long> workspacesInfo = getSlaveWorkspaceUsage().get(node.getNodeName());
+            if(workspacesInfo==null)
+                workspacesInfo = new ConcurrentHashMap<String,Long>();
+            workspacesInfo.put(path, size);
+            getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
+            saveDiskUsage();
+        }
     }
 }

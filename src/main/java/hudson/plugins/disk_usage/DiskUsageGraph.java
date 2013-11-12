@@ -6,6 +6,7 @@ package hudson.plugins.disk_usage;
 
 import hudson.util.Graph;
 import hudson.util.ShiftedCategoryAxis;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -71,6 +72,8 @@ public class DiskUsageGraph extends Graph{
                 plot.setRangeAxis(1, plot.getRangeAxis(0));
                 plot.setDataset(1, workspaceDataset);
                 LineAndShapeRenderer renderer = new LineAndShapeRenderer();
+                renderer.setBaseShapesVisible(false);
+                renderer.setSeriesStroke(0, new BasicStroke(4f, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_BEVEL));
                 plot.setRenderer(1, renderer);
                 setColorForArea(plot.getRenderer(), dataset.getRowCount()>2);
                 plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
