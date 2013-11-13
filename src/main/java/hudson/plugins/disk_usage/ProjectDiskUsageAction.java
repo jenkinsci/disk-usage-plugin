@@ -80,6 +80,10 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return diskUsage;
     }
     
+    public String getSizeInString(Long size){
+       return DiskUsageUtil.getSizeString(size);
+    }
+    
     public Long getDiskUsageWithoutBuilds(){
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null)
