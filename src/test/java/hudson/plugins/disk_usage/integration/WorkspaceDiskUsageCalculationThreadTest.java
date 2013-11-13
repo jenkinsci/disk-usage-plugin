@@ -190,7 +190,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         DiskUsageProjectActionFactory.DESCRIPTOR.disableWorkspacesDiskUsageCalculation();
         BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
-        assertNull("Disk usage for build should not be counted.", build.getAction(BuildDiskUsageAction.class));
+        assertNull("Disk usage for build should not be counted.", projectWithoutDiskUsage.getProperty(DiskUsageProperty.class));
         DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
     }
     
@@ -219,6 +219,20 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         testCalculation.execute(TaskListener.NULL);
         assertEquals("Disk usage should not start calculation if preview calculation is in progress.", 0, project.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
         t.interrupt();
+    }
+    
+    @Test
+    public void testDoNotCalculateExcludedJobs() throws Exception{
+        FreeStyleProject exludedJob = jenkins.createProject(FreeStyleProject.class, "excludedJob");
+        FreeStyleProject includedJob = jenkins.createProject(FreeStyleProject.class, "incudedJob");
+        List<String> excludes = new ArrayList<String>();
+        excludes.add(exludedJob.getName());
+        DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
+        WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
+        calculation.execute(TaskListener.NULL);
+        assertNull("Disk usage for excluded project should not be counted.", exludedJob.getProperty(DiskUsageProperty.class));
+        assertNotNull("Disk usage for included project should be not be counted.", includedJob.getProperty(DiskUsageProperty.class));
+        excludes.clear();
     }
     
     @TestExtension

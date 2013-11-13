@@ -219,44 +219,27 @@ public class DiskUsagePlugin extends Plugin {
             getWorkspaceDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
-    
-    private String formatTimeInMilisec(long time){
-        long inMinutes = time/60000;
-        if(inMinutes<1)
-            return "0 minute";
-        long hours = inMinutes/60;
-        String formatedTime = "";
-        if(hours>0){
-            String unit = hours>1? "hours" : "hour";
-            formatedTime = hours + " " + unit;
-        }
-        long minutes = inMinutes - hours*60;
-        if(minutes>0){
-            String unit = minutes>1? "minutes" : "minute";
-            formatedTime = formatedTime+ " " + minutes+ " " + unit;
-        }
-        return formatedTime;
-    }
+       
     
     public String getCountIntervalForBuilds(){
         long nextExecution = getBuildsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();    
-        return formatTimeInMilisec(nextExecution);
+        return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
     
     public String getCountIntervalForJobs(){
         long nextExecution = getJobsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
-        return formatTimeInMilisec(nextExecution);
+        return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
     
     public String getCountIntervalForWorkspaces(){
         long nextExecution = getWorkspaceDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
             if(nextExecution<=0) //not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
-        return formatTimeInMilisec(nextExecution);
+        return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
     
 }

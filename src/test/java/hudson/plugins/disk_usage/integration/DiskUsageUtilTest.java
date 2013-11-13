@@ -6,6 +6,7 @@ import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import java.io.IOException;
 import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -17,6 +18,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
 import hudson.model.TopLevelItem;
 import hudson.model.listeners.RunListener;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Test;
 /**
@@ -240,6 +242,28 @@ public class DiskUsageUtilTest extends HudsonTestCase{
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         assertFalse("Slave slave2 should be removed from disk usage, because a workspace for project1 does not exist on this slave.",prop.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
         assertTrue("Disk usage should contains slave1, there is a workspace for project1.", prop.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
+    }
+    
+    @Test
+    public void testParseExcludedJobsFromString() throws Exception{
+        FreeStyleProject projectWithSpace = createFreeStyleProject("Project with space");
+        FreeStyleProject project = createFreeStyleProject("Project");
+        FreeStyleProject project2 = createFreeStyleProject("Project2");
+        FreeStyleProject projectWithSpace2 = createFreeStyleProject(" Project with space");
+        String excluded = "Project with space,Project";
+        List<String> excludedJobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
+        assertTrue("Excluded jobs should contains job without spaces in name", excludedJobs.contains(project.getName()));
+        assertTrue("Excluded jobs should contains job with spaces in name", excludedJobs.contains(projectWithSpace.getName()));
+        excluded = "Project with space, Project";
+        excludedJobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
+        assertTrue("Excluded jobs should parse jobs with spaces even if the space is used as separator.", excludedJobs.contains(projectWithSpace.getName()));
+        assertFalse("Excluded jobs should parse jobs correctly even if the space is used as separator.", excludedJobs.contains(projectWithSpace2.getName()));
+        assertFalse("Excluded jobs should not contains jobs which is not occuren in excluded string.", excludedJobs.contains(project2.getName()));
+        excluded = "Project with space, Project5";
+        excludedJobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
+        assertFalse("Excluded jobs should not contains jobs which does not exists.", excludedJobs.contains("Project5"));
+        excluded = "Project with space, ";
+        assertTrue("Excluded jobs should be parsed correctly even if there additional separator", excludedJobs.contains(projectWithSpace.getName()) && excludedJobs.size()==1);
     }
    
 }

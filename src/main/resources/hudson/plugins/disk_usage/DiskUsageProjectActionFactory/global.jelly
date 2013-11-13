@@ -101,6 +101,10 @@
          <f:entry title="${%Control workspace from slave side too}">
           <f:checkbox name="checkWorkspaceOnSlave" checked="${descriptor.getCheckWorkspaceOnSlave()}" />
           </f:entry>
+          <f:entry title="${%Job excluded for disk usage calcualtion}">
+            <f:textarea name="excludedJobs" value="${descriptor.getExcludedJobsInString()}" />
+          </f:entry>
+       
        <!--  </f:section>-->
       <!--     <f:submit name="Submit" value="Submit"/>
       </f:form>   -->

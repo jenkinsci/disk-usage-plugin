@@ -197,4 +197,20 @@ public class BuildDiskUsageCalculationThreadTest extends HudsonTestCase{
             }
     }
     
+    @Test
+    public void testDoNotCalculateExcludedJobs() throws Exception{
+        FreeStyleProject exludedJob = jenkins.createProject(FreeStyleProject.class, "excludedJob");
+        FreeStyleProject includedJob = jenkins.createProject(FreeStyleProject.class, "incudedJob");
+        List<String> excludes = new ArrayList<String>();
+        excludes.add(exludedJob.getName());
+        DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
+        buildAndAssertSuccess(exludedJob);
+        buildAndAssertSuccess(includedJob);
+        BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
+        calculation.execute(TaskListener.NULL);
+        assertNull("Disk usage for excluded project should not be counted.", exludedJob.getLastBuild().getAction(BuildDiskUsageAction.class));
+        assertNotNull("Disk usage for excluded project should not be counted.", includedJob.getLastBuild().getAction(BuildDiskUsageAction.class));
+        excludes.clear();
+    }
+    
 }

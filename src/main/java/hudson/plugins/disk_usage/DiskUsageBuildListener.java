@@ -25,11 +25,18 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     
     @Override
     public void onCompleted(AbstractBuild build, TaskListener listener){
+        if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(build.getProject())){
+            listener.getLogger().println("This job is excluded form disk usage calculation.");
+            return;
+        }
         try{
             //count build.xml too
             build.save();
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+            listener.getLogger().println("Started calculate disk usage of build");
+            Long startTimeOfBuildCalculation = System.currentTimeMillis();
                 DiskUsageUtil.calculateDiskUsageForBuild(build);
+                listener.getLogger().println("Finished Calculation of disk usage of build in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfBuildCalculation));
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 if(property==null){
                     property = new DiskUsageProperty();
@@ -57,7 +64,10 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                         }
                     }
                     property.checkWorkspaces();
+                    listener.getLogger().println("Started calculate disk usage of workspace");
+                    Long startTimeOfWorkspaceCalculation = System.currentTimeMillis();
                     Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(),exceededFiles);
+                    listener.getLogger().println("Finished Calculation of disk usage of workspace in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfWorkspaceCalculation));
                     property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
                     property.saveDiskUsage();
                     DiskUsageUtil.controlorkspaceExceedSize(project);

@@ -2,9 +2,8 @@ package hudson.plugins.disk_usage;
 
 import hudson.Extension;
 import hudson.model.*;
-
-import hudson.model.PeriodicWork;
 import hudson.security.Permission;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -65,6 +64,8 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         private String jobWorkspaceExceedSize;    
         
         private boolean showFreeSpaceForJobDirectory = true;
+        
+        private List<String> excludedJobs = new ArrayList<String>();
     
         private Long diskUsageBuilds = 0l;
         private Long diskUsageJobsWithoutBuilds = 0l;
@@ -155,6 +156,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     
     public void setCheckWorkspaceOnSlave(boolean check){
         checkWorkspaceOnSlave = check;
+    }
+    
+    public void setExcludedJobs(List<String> excludedJobs){
+        this.excludedJobs = excludedJobs;
     }
     
      public boolean isCalculationWorkspaceEnabled(){
@@ -287,7 +292,8 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         configureBuildsCalculation(form);
         configureJobsCalculation(form);
         configureWorkspacesCalculation(form);        
-        
+        String excluded = form.getString("excludedJobs");
+        excludedJobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
         if(form.containsKey("warnings")){
             JSONObject warnings = form.getJSONObject("warnings");
             email = warnings.getString("email");           
@@ -307,6 +313,39 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
        showFreeSpaceForJobDirectory = form.getBoolean("showFreeSpaceForJobDirectory");
         save();
         return true;
+    }
+    
+    public void onRenameJob(String oldName, String newName){
+        if(excludedJobs.contains(oldName)){
+            excludedJobs.remove(oldName);
+            excludedJobs.add(newName);
+        }      
+    }
+    
+    public void onDeleteJob(AbstractProject project){
+        String name = project.getName();
+        if(excludedJobs.contains(name)){
+            excludedJobs.remove(name);
+        } 
+    }
+    
+    public boolean isExcluded(AbstractProject project){
+        return excludedJobs.contains(project.getName());
+    }
+    
+    public String getExcludedJobsInString(){
+        StringBuilder builder = new StringBuilder();
+        boolean first = true;
+        for(String name: excludedJobs){
+            if(first){
+                first= false;
+            }
+            else{
+                builder.append(", ");
+            }
+            builder.append(name); 
+        }
+        return builder.toString();
     }
     
     private void configureBuildsCalculation(JSONObject form){
