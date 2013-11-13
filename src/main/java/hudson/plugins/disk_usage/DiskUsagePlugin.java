@@ -93,18 +93,6 @@ public class DiskUsagePlugin extends Plugin {
         return diskUsageWorkspaces;
     }
     
-    public String getUnit(String unit){
-        if(unit==null)
-            return null;
-        return unit.split(" ")[1];
-    }
-    
-    public String getValue(String size){
-        if(size==null)
-            return null;
-        return size.split(" ")[0];
-    }
-    
     public BuildDiskUsageCalculationThread getBuildsDiskUsageThread(){
         return AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
     }

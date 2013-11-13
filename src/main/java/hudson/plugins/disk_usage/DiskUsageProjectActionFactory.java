@@ -246,6 +246,18 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     public void disableWorkspacesDiskUsageCalculation(){
         calculationWorkspace=false;
     }
+    
+    public String getUnit(String unit){
+        if(unit==null)
+            return null;
+        return unit.split(" ")[1];
+    }
+    
+    public String getValue(String size){
+        if(size==null)
+            return null;
+        return size.split(" ")[0];
+    }
 
 
     @Override
