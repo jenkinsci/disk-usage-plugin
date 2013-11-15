@@ -73,9 +73,9 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
                 }
                 
                 public Long getWorkspacesDiskUsage(){
-                    if(buildUsage==null)
+                    if(wsUsage==null)
                         return 0l;
-                    return buildUsage;
+                    return wsUsage;
                 }
 
 		Date getDate(){

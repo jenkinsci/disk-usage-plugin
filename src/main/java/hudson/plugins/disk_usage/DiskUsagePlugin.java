@@ -172,20 +172,25 @@ public class DiskUsagePlugin extends Plugin {
     
     public Graph getOverallGraph(){
         long maxValue = 0;
+        long maxValueWorkspace = 0;
         List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> record = DiskUsageProjectActionFactory.DESCRIPTOR.getHistory();
         //First iteration just to get scale of the y-axis
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record){
-            maxValue = usage.getAllSpace();
+            if(getConfiguration().getShowFreeSpaceForJobDirectory()){
+                maxValue = usage.getAllSpace();
+            }
             if(maxValue<=0){
-                maxValue = Math.max(usage.getJobsDiskUsage(),usage.getWorkspacesDiskUsage());
+                maxValue = Math.max(maxValue, usage.getJobsDiskUsage());
+                maxValueWorkspace = Math.max(maxValueWorkspace, usage.getWorkspacesDiskUsage());
             }
             
         }
-
         int floor = (int) DiskUsageUtil.getScale(maxValue);
+        int floorWorkspace = (int) DiskUsageUtil.getScale(maxValueWorkspace);
         String unit = DiskUsageUtil.getUnitString(floor);
+        String unitWorkspace = DiskUsageUtil.getUnitString(floorWorkspace);
         double base = Math.pow(1024, floor);
-
+        double baseWorkspace = Math.pow(1024, floorWorkspace);
         DataSetBuilder<String, Date> dsb = new DataSetBuilder<String, Date>();
         DataSetBuilder<String, Date> dsb2 = new DataSetBuilder<String, Date>();
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -197,9 +202,9 @@ public class DiskUsagePlugin extends Plugin {
             }
             dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
             dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
-            dsb2.add(((Long) usage.getWorkspacesDiskUsage()) / base, "workspaces", label);     
+            dsb2.add(((Long) usage.getWorkspacesDiskUsage()) / baseWorkspace, "workspaces", label);     
         }
-           return  new DiskUsageGraph(dataset, unit, dsb2.build());
+           return  new DiskUsageGraph(dataset, unit, dsb2.build(), unitWorkspace);
     }  
     
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {

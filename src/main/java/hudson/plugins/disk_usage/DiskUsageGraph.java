@@ -12,12 +12,15 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
+import org.jfree.data.Range;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleEdge;
 
@@ -29,12 +32,14 @@ public class DiskUsageGraph extends Graph{
 	CategoryDataset dataset;
         CategoryDataset workspaceDataset;
 	String unit;
+        String workspaceUnit;
 
-        public DiskUsageGraph(CategoryDataset dataset, String unit, CategoryDataset workspaceDataset){
+        public DiskUsageGraph(CategoryDataset dataset, String unit, CategoryDataset workspaceDataset, String workspaceUnit){
 		super(-1,350,150);
                 this.workspaceDataset = workspaceDataset;
 		this.dataset = dataset;
 		this.unit = unit;
+                this.workspaceUnit = workspaceUnit;
 	}
 
 	@Override
@@ -69,12 +74,15 @@ public class DiskUsageGraph extends Graph{
 		domainAxis.setUpperMargin(0.0);
 		// voodoo for better spacing between labels with many columns
 		domainAxis.setCategoryMargin(-((double) dataset.getColumnCount() / 10.0));
-                plot.setRangeAxis(1, plot.getRangeAxis(0));
+                ValueAxis axis = new NumberAxis();
                 plot.setDataset(1, workspaceDataset);
                 LineAndShapeRenderer renderer = new LineAndShapeRenderer();
                 renderer.setBaseShapesVisible(false);
                 renderer.setSeriesStroke(0, new BasicStroke(4f, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_BEVEL));
                 plot.setRenderer(1, renderer);
+                ValueAxis rangeAxis = new NumberAxis(Messages.ProjectDiskUsage() + " (" + workspaceUnit + ")");
+                plot.setRangeAxis(1, rangeAxis);
+                plot.mapDatasetToRangeAxis(1, 1);
                 setColorForArea(plot.getRenderer(), dataset.getRowCount()>2);
                 plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
                 

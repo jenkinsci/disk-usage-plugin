@@ -193,6 +193,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         DataSetBuilder<String, NumberOnlyBuildLabel> dsb2 = new DataSetBuilder<String, NumberOnlyBuildLabel>();
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
+        long maxValueWorkspace = 0;
+        maxValueWorkspace = Math.max(maxValueWorkspace, getAllDiskUsageWorkspace());
+        maxValue = Math.max(maxValue, getJobRootDirDiskUsage());
         //First iteration just to get scale of the y-axis
         RunList<? extends AbstractBuild> builds = project.getBuilds();
         //do it in reverse order
@@ -200,22 +203,24 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
             AbstractBuild build = builds.get(i);
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
-                maxValue = Math.max(maxValue, getJobRootDirDiskUsage());
                 usages.add(new Object[]{build, getJobRootDirDiskUsage(), dua.getAllDiskUsage(), getAllDiskUsageWorkspace()});
             }
         }
 
         int floor = (int) DiskUsageUtil.getScale(maxValue);
         String unit = DiskUsageUtil.getUnitString(floor);
+        int workspaceFloor = (int) DiskUsageUtil.getScale(maxValueWorkspace);
+        String workspaceUnit = DiskUsageUtil.getUnitString(workspaceFloor);
         double base = Math.pow(1024, floor);
+        double workspaceBase = Math.pow(1024, workspaceFloor);
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
             dataset.addValue(((Long) usage[1]) / base, "job directory", label);  
             dataset.addValue(((Long) usage[2]) / base, "build directory", label);
-            dsb2.add(((Long) usage[3]) / base, "all job workspaces", label);
+            dsb2.add(((Long) usage[3]) / workspaceBase, "all job workspaces", label);
         }
-        return new DiskUsageGraph(dataset, unit, dsb2.build());   
+        return new DiskUsageGraph(dataset, unit, dsb2.build(), workspaceUnit);   
     }
 
     /** Shortcut for the jelly view */
