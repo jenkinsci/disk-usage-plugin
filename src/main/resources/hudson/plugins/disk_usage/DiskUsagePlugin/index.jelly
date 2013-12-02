@@ -11,6 +11,7 @@
   </l:side-panel>
 
     <l:main-panel>
+         <j:set var="projects" value="${it.getProjectList()}" />   
 
 	 <div style="width:auto; float:right; margin:12px;">
 		<div class="test-trend-caption">
@@ -21,9 +22,7 @@
 		</div>
 	</div>
 
-     <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>
-
-    <j:set var="projects" value="${it.getProjectList()}" />     
+     <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>  
      
      <p> <b>${%Jobs}: </b>${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())}, 
          <b>${%Builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalBuildsDiskUsage())},

@@ -8,6 +8,7 @@ import hudson.util.Graph;
 import hudson.util.ShiftedCategoryAxis;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.util.logging.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -85,7 +86,7 @@ public class DiskUsageGraph extends Graph{
                 plot.mapDatasetToRangeAxis(1, 1);
                 setColorForArea(plot.getRenderer(), dataset.getRowCount()>2);
                 plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
-                
+          
 		return chart;
 	}
         

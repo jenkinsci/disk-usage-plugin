@@ -7,12 +7,14 @@ import hudson.model.*;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -162,22 +164,19 @@ public class DiskUsagePlugin extends Plugin {
         req.getView(this, "index.jelly").forward(req, rsp);     
     }
     
-    public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
-        req.getView(this, "settings.jelly").forward(req, rsp);
-    }
-    
     public DiskUsageProjectActionFactory.DescriptorImpl getConfiguration(){
         return DiskUsageProjectActionFactory.DESCRIPTOR;
     }
     
     public Graph getOverallGraph(){
-        long maxValue = 0;
-        long maxValueWorkspace = 0;
+        File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
+        long maxValue = jobsDir.getTotalSpace();
+        long maxValueWorkspace = diskUsageWorkspaces;
         List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> record = DiskUsageProjectActionFactory.DESCRIPTOR.getHistory();
         //First iteration just to get scale of the y-axis
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record){
             if(getConfiguration().getShowFreeSpaceForJobDirectory()){
-                maxValue = usage.getAllSpace();
+                maxValue = Math.max(maxValue,usage.getAllSpace());
             }
             if(maxValue<=0){
                 maxValue = Math.max(maxValue, usage.getJobsDiskUsage());
@@ -191,10 +190,8 @@ public class DiskUsagePlugin extends Plugin {
         String unitWorkspace = DiskUsageUtil.getUnitString(floorWorkspace);
         double base = Math.pow(1024, floor);
         double baseWorkspace = Math.pow(1024, floorWorkspace);
-        DataSetBuilder<String, Date> dsb = new DataSetBuilder<String, Date>();
-        DataSetBuilder<String, Date> dsb2 = new DataSetBuilder<String, Date>();
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        
+        DefaultCategoryDataset datasetW = new DefaultCategoryDataset();
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record) {
             Date label = usage.getDate();
             if(getConfiguration().getShowFreeSpaceForJobDirectory()){
@@ -202,9 +199,17 @@ public class DiskUsagePlugin extends Plugin {
             }
             dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
             dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
-            dsb2.add(((Long) usage.getWorkspacesDiskUsage()) / baseWorkspace, "workspaces", label);     
+            datasetW.addValue(((Long) usage.getWorkspacesDiskUsage()) / baseWorkspace, "workspaces", label);     
         }
-           return  new DiskUsageGraph(dataset, unit, dsb2.build(), unitWorkspace);
+        
+        //add current state
+        if(getConfiguration().getShowFreeSpaceForJobDirectory()){
+                dataset.addValue(((Long) jobsDir.getTotalSpace()) / base, "space for jobs directory", "current");
+        }
+        dataset.addValue(((Long) getCashedGlobalJobsDiskUsage()) / base, "all jobs", "current");
+        dataset.addValue(((Long) getCashedGlobalBuildsDiskUsage()) / base, "all builds", "current");
+        datasetW.addValue(((Long) getCashedGlobalWorkspacesDiskUsage()) / baseWorkspace, "workspaces", "current");
+        return  new DiskUsageGraph(dataset, unit, datasetW, unitWorkspace);
     }  
     
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
