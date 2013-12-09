@@ -17,12 +17,14 @@ public class DiskUsageRecord {
     private Long diskUsageJobsWithoutBuilds = 0l;
     private Long diskUsageWorkspaces = 0l;
     private Long allSpace = 0l;
+    private Long diskUsageNonSlaveWorkspaces = 0l;
 
-    public DiskUsageRecord(Long diskUsageBuilds, Long diskUsageWorkspaces, Long diskUsageJobsWithoutBuilds, Long allSpace){
+    public DiskUsageRecord(Long diskUsageBuilds, Long diskUsageWorkspaces, Long diskUsageJobsWithoutBuilds, Long allSpace, Long diskUsageNonSlaveWorkspaces){
             this.diskUsageBuilds = diskUsageBuilds;
             this.diskUsageJobsWithoutBuilds = diskUsageJobsWithoutBuilds;
             this.diskUsageWorkspaces = diskUsageWorkspaces;
             this.allSpace = allSpace;
+            this.diskUsageNonSlaveWorkspaces = diskUsageNonSlaveWorkspaces;
             date = System.currentTimeMillis();
     }
 
@@ -30,6 +32,14 @@ public class DiskUsageRecord {
         if(diskUsageBuilds==null)
             return 0l;
         return diskUsageBuilds;
+    }
+    
+    public Long getNonSlaveWorkspacesUsage(){
+        return diskUsageNonSlaveWorkspaces;
+    }
+    
+    public Long getSlaveWorkspacesUsage(){
+        return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
     }
 
     public Long getJobsDiskUsage(){

@@ -1,9 +1,7 @@
 package hudson.plugins.disk_usage;
 
-import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
@@ -11,10 +9,8 @@ import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 import hudson.util.RunList;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +48,31 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         if(property==null)
             return 0l;
         return property.getAllWorkspaceSize();
+    }
+    
+    public Long getAllSlaveWorkspaces(){
+        return getAllDiskUsageWorkspace() - getAllCustomOrNonSlaveWorkspaces();
+    }
+    
+    public Long getAllCustomOrNonSlaveWorkspaces(){
+        Long diskUsage = 0l;
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        if(property!=null){
+            diskUsage += property.getAllNonSlaveOrCustomWorkspaceSize();
+        }
+        if(project instanceof ItemGroup){
+            ItemGroup group = (ItemGroup) project;
+            for(Object i:group.getItems()){
+                if(i instanceof AbstractProject){
+                    AbstractProject p = (AbstractProject) i;
+                    DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
+                    if(prop!=null){
+                        diskUsage += prop.getAllNonSlaveOrCustomWorkspaceSize();
+                    } 
+                }
+            }
+        }
+        return diskUsage;
     }
     
     /**
@@ -189,13 +210,11 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
      */
     public Graph getGraph() throws IOException {
         //TODO if(nothing_changed) return;
-        DataSetBuilder<String, NumberOnlyBuildLabel> dsb = new DataSetBuilder<String, NumberOnlyBuildLabel>();
-        DataSetBuilder<String, NumberOnlyBuildLabel> dsb2 = new DataSetBuilder<String, NumberOnlyBuildLabel>();
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
         long maxValueWorkspace = 0;
-        maxValueWorkspace = Math.max(maxValueWorkspace, getAllDiskUsageWorkspace());
-        maxValue = Math.max(maxValue, getJobRootDirDiskUsage());
+        maxValueWorkspace = Math.max(getAllCustomOrNonSlaveWorkspaces(), getAllSlaveWorkspaces());
+        maxValue =  getJobRootDirDiskUsage();
         //First iteration just to get scale of the y-axis
         RunList<? extends AbstractBuild> builds = project.getBuilds();
         //do it in reverse order
@@ -203,8 +222,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
             AbstractBuild build = builds.get(i);
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
-                usages.add(new Object[]{build, getJobRootDirDiskUsage(), dua.getAllDiskUsage(), getAllDiskUsageWorkspace()});
+                usages.add(new Object[]{build, getJobRootDirDiskUsage(), dua.getAllDiskUsage(), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
             }
+            maxValue = Math.max(maxValue, dua.getAllDiskUsage());
         }
 
         int floor = (int) DiskUsageUtil.getScale(maxValue);
@@ -214,13 +234,15 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         double base = Math.pow(1024, floor);
         double workspaceBase = Math.pow(1024, workspaceFloor);
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        DefaultCategoryDataset dataset2 = new DefaultCategoryDataset();
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
             dataset.addValue(((Long) usage[1]) / base, "job directory", label);  
             dataset.addValue(((Long) usage[2]) / base, "build directory", label);
-            dsb2.add(((Long) usage[3]) / workspaceBase, "all job workspaces", label);
+            dataset2.addValue(((Long) usage[3]) / workspaceBase, "all slave workspaces of job", label);
+            dataset2.addValue(((Long) usage[4]) / workspaceBase, "all non slave workspaces of job", label);
         }
-        return new DiskUsageGraph(dataset, unit, dsb2.build(), workspaceUnit);   
+        return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);   
     }
 
     /** Shortcut for the jelly view */

@@ -1,8 +1,8 @@
 package hudson.plugins.disk_usage.integration;
 
+import hudson.tasks.Shell;
 import hudson.plugins.disk_usage.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import hudson.model.listeners.RunListener;
@@ -13,6 +13,7 @@ import hudson.matrix.AxisList;
 import hudson.matrix.TextAxis;
 import hudson.matrix.MatrixProject;
 import hudson.model.FreeStyleProject;
+import hudson.slaves.OfflineCause;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
@@ -133,5 +134,61 @@ public class DiskUsagePropertyTest {
         assertFalse("Disk usage property should not contains slave which does not exist.", property.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
         assertTrue("Disk usage property should not slave1.", property.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
         assertTrue("Disk usage property should contains jenkins master.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
-    }   
+    }  
+    
+    @Test
+    public void testGetAllNonSlaveOrCustomWorkspaceSizeWithOnlySlaves() throws Exception{
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
+        project.getBuildersList().add(new Shell("echo hello > log"));
+        Slave slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"SlaveWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave1 = j.createOnlineSlave();
+        Slave slave2= j.createOnlineSlave();
+        File workspaceSlave1 = new File(slave3.getRemoteFS(), project.getName()+ "/log");
+        File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
+        File customWorkspaceSlave1 = new File(j.jenkins.getRootDir(),"custom2/log");
+        File customWorkspaceSlave2 = new File(j.jenkins.getRootDir(),"custom1/log");
+        project.setAssignedLabel(slave3.getSelfLabel());
+        j.buildAndAssertSuccess(project);
+        project.setCustomWorkspace(customWorkspaceSlave1.getParentFile().getAbsolutePath());
+        j.buildAndAssertSuccess(project);
+        project.setCustomWorkspace(null);
+        project.setAssignedLabel(slave2.getSelfLabel());
+        j.buildAndAssertSuccess(project);
+        project.setCustomWorkspace(customWorkspaceSlave2.getParentFile().getAbsolutePath());
+        j.buildAndAssertSuccess(project);
+        Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
+        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
+        //take one slave offline
+        slave1.toComputer().disconnect(new OfflineCause.ByCLI("test disconnection"));
+        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
+        //change remote fs
+        slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"ChangedWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
+        customWorkspaceSlaveSize = customWorkspaceSlaveSize + workspaceSlave1.length();
+        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
+    }
+    
+    @Test
+    public void testGetAllNonSlaveOrCustomWorkspaceSizeWithMaster() throws Exception{
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
+        project.getBuildersList().add(new Shell("echo hello > log"));
+        Slave slave1 = j.createOnlineSlave();
+        File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
+        File customWorkspaceSlave1 = new File(j.jenkins.getRootDir(),"custom2/log");
+        File customWorkspaceSlave2 = new File(j.jenkins.getRootDir(),"custom1/log");
+        j.jenkins.setNumExecutors(1);
+        project.setAssignedLabel(j.jenkins.getSelfLabel());
+        j.buildAndAssertSuccess(project);
+        project.setCustomWorkspace(customWorkspaceSlave1.getParentFile().getAbsolutePath());
+        j.buildAndAssertSuccess(project);
+        project.setCustomWorkspace(null);
+        project.setAssignedLabel(slave1.getSelfLabel());
+        j.buildAndAssertSuccess(project);
+        project.setCustomWorkspace(customWorkspaceSlave2.getParentFile().getAbsolutePath());
+        j.buildAndAssertSuccess(project);
+        Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
+        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
+        //take one slave offline
+        j.jenkins.setNumExecutors(0);
+        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
+    }
 }

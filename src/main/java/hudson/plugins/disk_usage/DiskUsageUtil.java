@@ -166,6 +166,8 @@ public class DiskUsageUtil {
     }
 
     public static double getScale(long number) {
+        if(number==0)
+            return 0;
         return Math.floor(Math.log(number) / Math.log(1024));
     }
     
@@ -220,8 +222,12 @@ public class DiskUsageUtil {
             try{
                 symlink = Util.isSymlink(f);
             }
-            catch(Exception e2){
+            catch(NoClassDefFoundError error){
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage can not determine if file " + f.getAbsolutePath() + " is symlink.");
                 //native fails
+            }
+            catch (IOException ex) {
+                    Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return symlink;

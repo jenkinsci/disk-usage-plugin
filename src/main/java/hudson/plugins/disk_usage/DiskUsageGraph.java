@@ -8,7 +8,6 @@ import hudson.util.Graph;
 import hudson.util.ShiftedCategoryAxis;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.util.logging.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -80,13 +79,14 @@ public class DiskUsageGraph extends Graph{
                 LineAndShapeRenderer renderer = new LineAndShapeRenderer();
                 renderer.setBaseShapesVisible(false);
                 renderer.setSeriesStroke(0, new BasicStroke(4f, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_BEVEL));
+                renderer.setSeriesStroke(1, new BasicStroke(4f, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_BEVEL));
                 plot.setRenderer(1, renderer);
                 ValueAxis rangeAxis = new NumberAxis(Messages.ProjectDiskUsage() + " (" + workspaceUnit + ")");
                 plot.setRangeAxis(1, rangeAxis);
                 plot.mapDatasetToRangeAxis(1, 1);
                 setColorForArea(plot.getRenderer(), dataset.getRowCount()>2);
                 plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
-          
+                renderer.setSeriesPaint(1, new Color(255,204,0));
 		return chart;
 	}
         

@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 
@@ -168,12 +169,74 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
             saveDiskUsage();
     }
+    
+    public Long getAllNonSlaveOrCustomWorkspaceSize(){
+        if(diskUsage.slaveWorkspacesUsage==null)
+           diskUsage.slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
+        Long size = 0l;
+        for(String nodeName: diskUsage.slaveWorkspacesUsage.keySet()){
+            Node node = null;  
+            if(nodeName.isEmpty()){
+                node = Jenkins.getInstance();
+            }
+            else{
+                node = Jenkins.getInstance().getNode(nodeName);
+            }            
+            if(node==null) //slave does not exist
+                continue;
+            Map<String,Long> paths = diskUsage.slaveWorkspacesUsage.get(nodeName);
+            for(String path: paths.keySet()){
+                TopLevelItem item = null;
+                if(owner instanceof TopLevelItem){
+                    item = (TopLevelItem) owner;
+                }
+                else{
+                    item = (TopLevelItem) owner.getParent();
+                }
+                System.out.println("path " + path + " node " + node.getDisplayName());
+                try{
+                    if(!isContainedInWorkspace(item, node, path)){      
+                        size += paths.get(path);
+                        System.out.println(size);
+                    }
+                }
+                catch(Exception e){
+                    LOGGER.log(Level.WARNING, "Can not get workspace for " + item.getDisplayName() + " on " + node.getDisplayName(), e);
+                }
+            }
+        }
+        return size;
+    }
+    
+    private boolean isContainedInWorkspace(TopLevelItem item, Node node, String path){
+        if(node instanceof Slave){
+            Slave slave = (Slave) node;
+            return path.contains(slave.getRemoteFS());
+        }
+        else{
+            if(node instanceof Jenkins){
+               FilePath file = Jenkins.getInstance().getWorkspaceFor(item);
+               return path.contains(file.getRemote());
+            }
+            else{
+                try{
+                    return path.contains(node.getWorkspaceFor(item).getRemote());
+                }
+                catch(Exception e){
+                    return false;
+                }
+            }
+        }
+    }
 
     public Long getAllWorkspaceSize(){
         if(diskUsage.slaveWorkspacesUsage==null)
            diskUsage.slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
         Long size = 0l;
         for(String nodeName: diskUsage.slaveWorkspacesUsage.keySet()){
+            Node slave = Jenkins.getInstance().getNode(nodeName);
+            if(slave==null && !nodeName.isEmpty()) //slave does not exist
+                continue;
             Map<String,Long> paths = diskUsage.slaveWorkspacesUsage.get(nodeName);
             for(String path: paths.keySet()){
                     size += paths.get(path);

@@ -30,7 +30,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
             File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
             Long freeJobsDirSpace = jobsDir.getTotalSpace();
             
-            DiskUsageProjectActionFactory.DESCRIPTOR.addHistory(new DiskUsageOvearallGraphGenerator.DiskUsageRecord(plugin.getCashedGlobalBuildsDiskUsage(), plugin.getGlobalWorkspacesDiskUsage(), plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), freeJobsDirSpace));
+            DiskUsageProjectActionFactory.DESCRIPTOR.addHistory(new DiskUsageOvearallGraphGenerator.DiskUsageRecord(plugin.getCashedGlobalBuildsDiskUsage(), plugin.getGlobalSlaveDiskUsageWorkspace(), plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), freeJobsDirSpace, plugin.getCashedNonSlaveDiskUsageWorkspace()));
             DiskUsageProjectActionFactory.DESCRIPTOR.save();
 	}
         
@@ -39,12 +39,14 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 		Date date;
                 private Long jobsWithoutBuildsUsage = 0l;
                 private Long allSpace = 0l;
+                private Long diskUsageNonSlaveWorkspaces = 0l;
                 
 
-		public DiskUsageRecord(Long diskUsageBuilds, Long diskUsageWorkspaces, Long diskUsageJobsWithoutBuilds, Long allSpace){
+		public DiskUsageRecord(Long diskUsageBuilds, Long diskUsageWorkspaces, Long diskUsageJobsWithoutBuilds, Long allSpace, Long diskUsageNonSlaveWorkspaces){
                         super(diskUsageBuilds, diskUsageWorkspaces);
                         this.jobsWithoutBuildsUsage = diskUsageJobsWithoutBuilds;
                         this.allSpace = allSpace;
+                        this.diskUsageNonSlaveWorkspaces = diskUsageNonSlaveWorkspaces;
 			date = new Date(){
 				private static final long serialVersionUID = 1L;
 				@Override
@@ -53,6 +55,18 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 				}
 			};
 		}
+                
+                public Long getNonSlaveWorkspacesUsage(){
+                    if(diskUsageNonSlaveWorkspaces==null)
+                        return 0l;
+                    return diskUsageNonSlaveWorkspaces;
+                }
+    
+                public Long getSlaveWorkspacesUsage(){
+                    if(diskUsageNonSlaveWorkspaces==null)
+                        return getWorkspacesDiskUsage();
+                    return getWorkspacesDiskUsage() - diskUsageNonSlaveWorkspaces;
+                }
                 
                 public Long getBuildsDiskUsage(){
                     if(buildUsage==null)
