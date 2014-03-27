@@ -6,7 +6,6 @@ import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
-import java.io.IOException;
 import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -19,8 +18,8 @@ import hudson.model.Slave;
 import hudson.model.TopLevelItem;
 import hudson.model.listeners.RunListener;
 import java.util.List;
-import jenkins.model.Jenkins;
 import org.junit.Test;
+
 /**
  *
  * @author Lucie Votypkova

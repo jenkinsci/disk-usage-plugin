@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
-import hudson.model.AperiodicWork;
 import hudson.model.AsyncAperiodicWork;
 import hudson.scheduler.CronTab;
 import hudson.triggers.Trigger;

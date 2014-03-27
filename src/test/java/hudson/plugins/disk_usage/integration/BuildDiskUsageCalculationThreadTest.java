@@ -16,7 +16,6 @@ import hudson.model.ItemGroup;
 import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
-import hudson.util.RunList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;

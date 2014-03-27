@@ -2,6 +2,7 @@ package hudson.plugins.disk_usage;
 
 import org.junit.Assert;
 import org.junit.Test;
+
 /**
  *
  * @author Lucie Votypkova

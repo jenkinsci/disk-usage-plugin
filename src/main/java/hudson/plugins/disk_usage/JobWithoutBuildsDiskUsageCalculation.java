@@ -1,24 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
-import hudson.model.AsyncAperiodicWork;
-import hudson.model.AsyncPeriodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
-import hudson.triggers.Trigger;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;

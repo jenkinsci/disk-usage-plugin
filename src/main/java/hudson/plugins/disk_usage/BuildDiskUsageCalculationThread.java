@@ -12,13 +12,8 @@ import hudson.scheduler.CronTab;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;import jenkins.model.Jenkins;import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;import jenkins.model.Jenkins;
-
 
 /**
  * A Thread responsible for gathering disk usage information

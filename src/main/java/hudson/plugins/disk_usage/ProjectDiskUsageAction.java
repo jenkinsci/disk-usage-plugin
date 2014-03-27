@@ -6,7 +6,6 @@ import hudson.model.Run;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
-import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 import hudson.util.RunList;
 import java.io.IOException;
