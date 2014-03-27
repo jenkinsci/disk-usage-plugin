@@ -8,10 +8,14 @@
   </parent>
 
   <artifactId>disk-usage</artifactId>
+  <version>0.24-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins disk-usage plugin</name>
-  <version>0.24-SNAPSHOT</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Disk+Usage+Plugin</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
   <developers>
     <developer>
@@ -29,56 +33,24 @@
   <distributionManagement>
     <repository>
       <id>java.net-m2-repository</id>
-      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/
-      </url>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
     </repository>
   </distributionManagement>
 
   <dependencies>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <version>1.5.15</version>
-    </dependency>
-   <!-- <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>1.447</version>
-      <scope>compile</scope>
-    </dependency>-->
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>1.9.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-core</artifactId>
-      <version>1.4.12</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
-      <version>1.4.12</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
-  
-    <repositories>
-        <repository>
-            <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
-        </repository>
-    </repositories>
-    
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
-</project>  
-  
 
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
+  
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+</project>  
