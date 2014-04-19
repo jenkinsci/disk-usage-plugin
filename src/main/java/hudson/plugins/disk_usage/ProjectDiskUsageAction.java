@@ -223,8 +223,8 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
             BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
             if (dua != null) {
                 usages.add(new Object[]{build, getJobRootDirDiskUsage(), dua.getAllDiskUsage(), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
+                maxValue = Math.max(maxValue, dua.getAllDiskUsage());
             }
-            maxValue = Math.max(maxValue, dua.getAllDiskUsage());
         }
 
         int floor = (int) DiskUsageUtil.getScale(maxValue);
