@@ -237,12 +237,17 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         DefaultCategoryDataset dataset2 = new DefaultCategoryDataset();
         for (Object[] usage : usages) {
             NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
-            dataset.addValue(((Long) usage[1]) / base, "job directory", label);  
-            dataset.addValue(((Long) usage[2]) / base, "build directory", label);
-            dataset2.addValue(((Long) usage[3]) / workspaceBase, "all slave workspaces of job", label);
-            dataset2.addValue(((Long) usage[4]) / workspaceBase, "all non slave workspaces of job", label);
+
+            dataset.addValue(((Long) usage[1]) / base,
+                    Messages.DiskUsage_Graph_JobDirectory(), label);
+            dataset.addValue(((Long) usage[2]) / base,
+                    Messages.DiskUsage_Graph_BuildDirectory(), label);
+            dataset2.addValue(((Long) usage[3]) / workspaceBase,
+                    Messages.DiskUsage_Graph_SlaveWorkspaces(), label);
+            dataset2.addValue(((Long) usage[4]) / workspaceBase,
+                    Messages.DiskUsage_Graph_NonSlaveWorkspaces(), label);
         }
-        return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);   
+        return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);
     }
 
     /** Shortcut for the jelly view */

@@ -1,27 +1,12 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-
-Project disk usage information + trend graph
-
-
-<j:if test="${(from.getAllDiskUsageWorkspace() > 0) || (from.getJobRootDirDiskUsage() > 0) || (from.getAllBuildsDiskUsage() > 0)}">
-    
-  <div style="width:auto;align:right;margin:12px;">
-    <div style="width:auto;margin:0px;margin-left:auto;text-align:right;">
-      <img src="${resURL}/plugin/disk-usage/icons/diskusage16.png" /> 
-     
-    <b>${%Disk Usage}: </b>  ${%Workspace} ${from.getSizeInString(from.getAllDiskUsageWorkspace())} (${%On slaves} ${from.getSizeInString(from.getAllSlaveWorkspaces())}, ${%Non slave workspaces} ${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces())}),  ${%Builds} ${from.getSizeInString(from.getBuildsDiskUsage().get('all'))} (${%Locked} ${from.getSizeInString(from.getBuildsDiskUsage().get('locked'))}), ${%Job directory} ${from.getSizeInString(from.getJobRootDirDiskUsage())}
-    </div>
-  </div>
-
-  <j:if test="${from.showGraph()}">
-    <div class="test-trend-caption">
-      ${%Disk Usage Trend}
-    </div>
-
-    <div>
-      <img src="diskUsage/graph/png?height=200&amp;width=550" lazymap="diskUsage/graph/map"/>
-    </div>
-  </j:if>
-  
-</j:if>
+<j:jelly xmlns:j="jelly:core">
+    <j:if test="${(from.getAllDiskUsageWorkspace() > 0) || (from.getJobRootDirDiskUsage() > 0) || (from.getAllBuildsDiskUsage() > 0)}">
+        <j:if test="${from.showGraph()}">
+            <div class="test-trend-caption">
+                ${%Disk Usage Trend}
+            </div>
+            <div>
+                <img src="diskUsage/graph/png?height=200&amp;width=500" lazymap="diskUsage/graph/map" alt="${%Disk Usage Trend}" />
+            </div>
+        </j:if>
+    </j:if>
 </j:jelly>
