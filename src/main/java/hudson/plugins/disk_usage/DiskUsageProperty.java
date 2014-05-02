@@ -1,6 +1,5 @@
 package hudson.plugins.disk_usage;
 
-
 import hudson.model.*;
 import hudson.Extension;
 import hudson.FilePath;

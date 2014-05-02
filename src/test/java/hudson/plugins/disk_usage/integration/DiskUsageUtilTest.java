@@ -19,6 +19,7 @@ import hudson.model.TopLevelItem;
 import hudson.model.listeners.RunListener;
 import java.util.List;
 import org.junit.Test;
+
 /**
  *
  * @author Lucie Votypkova

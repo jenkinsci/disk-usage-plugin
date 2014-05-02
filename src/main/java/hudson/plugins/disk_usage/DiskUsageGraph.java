@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hudson.plugins.disk_usage;
 
 import hudson.util.Graph;
@@ -20,7 +16,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
-import org.jfree.data.Range;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleEdge;
 
