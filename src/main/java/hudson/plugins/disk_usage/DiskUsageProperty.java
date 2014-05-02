@@ -193,7 +193,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 else{
                     item = (TopLevelItem) owner.getParent();
                 }
-                System.out.println("path " + path + " node " + node.getDisplayName());
+                LOGGER.log(Level.FINER, "path " + path + " node " + node.getDisplayName());
                 try{
                     if(!isContainedInWorkspace(item, node, path)){      
                         size += paths.get(path);
