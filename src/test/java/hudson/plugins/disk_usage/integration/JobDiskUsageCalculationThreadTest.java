@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.mockito.stubbing.Answer;
 
 /**
  *
