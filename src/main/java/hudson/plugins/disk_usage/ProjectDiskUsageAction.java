@@ -10,11 +10,17 @@ import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
 import hudson.util.RunList;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.jfree.data.category.DefaultCategoryDataset;
 
@@ -107,91 +113,162 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     
     public Long getDiskUsageWithoutBuilds(){
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        if(property==null)
-            return 0l;
+        if(property==null){
+            property = new DiskUsageProperty();
+            try {
+                project.addProperty(property);
+            } catch (IOException ex) {
+                Logger.getLogger(ProjectDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         return property.getDiskUsageWithoutBuilds();
     }
     
     public Long getAllDiskUsageWithoutBuilds(){
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        if(property==null)
+        if(property==null){
             return 0l;
+        }
         return property.getAllDiskUsageWithoutBuilds();
     }
     
     
-    public Long getJobRootDirDiskUsage(){
-        return getBuildsDiskUsage().get("all") + getDiskUsageWithoutBuilds();
+    public Long getJobRootDirDiskUsage() {
+        try {
+            return getBuildsDiskUsage().get("all") + getDiskUsageWithoutBuilds();
+        } catch (IOException ex) {
+            Logger.getLogger(ProjectDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
+            return 0L;
+        }
     }
     
-    private Map<String,Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger){
+    private Map<String,Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger) throws IOException{
         Map<String,Long> diskUsage = new TreeMap<String,Long>();
         Long buildsDiskUsage = 0l;
         Long locked = 0l;
+        Long notLoaded = 0L;
         for(Object item: group.getItems()){
             if(item instanceof ItemGroup){
                ItemGroup subGroup = (ItemGroup) item;
                buildsDiskUsage += getBuildsDiskUsageAllSubItems(subGroup, older, yonger).get("all");
                locked += getBuildsDiskUsageAllSubItems(subGroup, older, yonger).get("locked");
+               notLoaded += getBuildsDiskUsageAllSubItems(subGroup, older, yonger).get("notLoaded");
             }
-            if(item instanceof AbstractProject){
-                AbstractProject p = (AbstractProject) item;
-                List<AbstractBuild> builds = p.getBuilds();
-                for(AbstractBuild build : builds){
-                    BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
-                    if(older!=null && !build.getTimestamp().getTime().before(older))
-                        continue;
-                    if(yonger!=null && !build.getTimestamp().getTime().after(yonger))
-                        continue;
-                    if (action != null) {
-                        buildsDiskUsage += action.getDiskUsage();
-                        if(build.isKeepLog())
-                            locked += action.getDiskUsage();
-                    } 
+            else{
+                if(group instanceof AbstractProject){
+                    AbstractProject p = (AbstractProject) item;
+                    DiskUsageProperty property = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
+                    if(property==null){
+                        property = new DiskUsageProperty();
+                        p.addProperty(property);
+                        property.loadDiskUsage();
+                    }
+                    Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
+                    for(DiskUsageBuildInformation information: informations){
+                        Date date = null;
+                        try {
+                            date = Run.getIDFormatter().parse(information.getId());
+                        } catch (ParseException ex) {
+                            Logger.getLogger(ProjectDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
+                            continue;
+                        }
+                        if(older!=null && !date.before(older))
+                            continue;
+                        if(yonger!=null && !date.after(yonger))
+                            continue;
+                        Long size = information.getSize();
+                        buildsDiskUsage += size;
+                        Collection<AbstractBuild> loadedBuilds = (Collection<AbstractBuild>) p._getRuns().getLoadedBuilds().values();
+                        AbstractBuild build = null;
+                        for (AbstractBuild b : loadedBuilds){
+                            if(b.getId().equals(information.getId())){
+                                build = b;
+                            }
+                        }
+                        if(build!=null){
+                            if(build.isKeepLog()){
+                                locked += size;
+                            }
+                        }
+                        else{
+                            notLoaded += size;
+                        }
+                    }
                 }
             }
+            
         }
         diskUsage.put("all", buildsDiskUsage);
         diskUsage.put("locked", locked);
+        diskUsage.put("notLoaded", notLoaded);
         return diskUsage;
     }
     
-    public Map<String, Long> getBuildsDiskUsage() {
+    public Map<String, Long> getBuildsDiskUsage() throws IOException {
         return getBuildsDiskUsage(null, null);
     }
     
-    public Long getAllBuildsDiskUsage(){
+    public Long getAllBuildsDiskUsage() throws IOException{
         return getBuildsDiskUsage(null, null).get("all");
     }
     
     /**
      * @return Disk usage for all builds
      */
-    public Map<String, Long> getBuildsDiskUsage(Date older, Date yonger) {
+    public Map<String, Long> getBuildsDiskUsage(Date older, Date yonger) throws IOException {
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        if(property==null){
+            property = new DiskUsageProperty();
+            project.addProperty(property);
+            property.loadDiskUsage();
+        }
         Map<String,Long> diskUsage = new TreeMap<String,Long>();
         Long buildsDiskUsage = 0l;
         Long locked = 0l;
+        Long notLoaded = 0l;
         if (project != null) {
-            for(AbstractBuild build: project.getBuilds()){
-                if(older!=null && !build.getTimestamp().getTime().before(older))
-                    continue;
-                if(yonger!=null && !build.getTimestamp().getTime().after(yonger))
-                    continue;
-                 BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
-                 if (action != null) {
-                    buildsDiskUsage += action.getDiskUsage();
-                    if(build.isKeepLog())
-                        locked += action.getDiskUsage();
-                 }
-            }  
             if(project instanceof ItemGroup){
                ItemGroup group = (ItemGroup) project;
-               buildsDiskUsage += getBuildsDiskUsageAllSubItems(group, older, yonger).get("all");
-               locked += getBuildsDiskUsageAllSubItems(group,older, yonger).get("locked");
+               Map<String,Long> sizes = getBuildsDiskUsageAllSubItems(group, older, yonger);
+               buildsDiskUsage += sizes.get("all");
+               locked += sizes.get("locked");
+               notLoaded += sizes.get("notLoaded");
             }
+          Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
+          for(DiskUsageBuildInformation information: informations){
+            Date date = null;
+                try {
+                    date = Run.getIDFormatter().parse(information.getId());
+                } catch (ParseException ex) {
+                    Logger.getLogger(ProjectDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
+                    continue;
+                }
+            if(older!=null && !date.before(older))
+                continue;
+            if(yonger!=null && !date.after(yonger))
+                continue;
+            Long size = information.getSize();
+            buildsDiskUsage += size;
+            Collection<AbstractBuild> loadedBuilds = (Collection<AbstractBuild>) project._getRuns().getLoadedBuilds().values();
+            AbstractBuild build = null;
+            for (AbstractBuild b : loadedBuilds){
+                if(b.getId().equals(information.getId())){
+                    build = b;
+                }
+            }
+            if(build!=null){
+                if(build.isKeepLog()){
+                    locked += size;
+                }
+            }
+            else{
+                notLoaded += size;
+            }
+          }
         }
         diskUsage.put("all", buildsDiskUsage);
         diskUsage.put("locked", locked);
+        diskUsage.put("notLoaded", notLoaded);
         return diskUsage;
     }
     
@@ -202,6 +279,15 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         }
 
         return null;
+    }
+    
+    public Set<DiskUsageBuildInformation> getBuildsInformation() throws IOException{
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        if(property==null){
+            property = new DiskUsageProperty();
+            project.addProperty(property);
+        }
+        return property.getDiskUsageOfBuilds();
     }
 
     /**

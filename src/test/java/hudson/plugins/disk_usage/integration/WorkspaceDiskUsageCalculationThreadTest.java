@@ -8,6 +8,7 @@ import hudson.plugins.disk_usage.*;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -19,6 +20,7 @@ import hudson.model.listeners.RunListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
+import hudson.tasks.Shell;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -190,25 +192,25 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         DiskUsageProjectActionFactory.DESCRIPTOR.disableWorkspacesDiskUsageCalculation();
         BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
-        assertNull("Disk usage for build should not be counted.", projectWithoutDiskUsage.getProperty(DiskUsageProperty.class));
+        assertEquals("Disk usage for build should not be counted.", 0, projectWithoutDiskUsage.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
     }
     
     @Test
     @LocalData
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
+        WorkspaceDiskUsageCalculationThread testCalculation = new WorkspaceDiskUsageCalculationThread();
+        DiskUsageTestUtil.cancelCalculation(testCalculation);
         FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, "project1");
         TestDiskUsageProperty prop = new TestDiskUsageProperty();
         project.addProperty(prop);
         Slave slave1 = createSlave("slave1", new File(hudson.getRootDir(),"workspace1").getPath());
         prop.putSlaveWorkspace(slave1, slave1.getWorkspaceFor(project).getRemote());
-        final WorkspaceDiskUsageCalculationThread testCalculation = new WorkspaceDiskUsageCalculationThread();
-        Thread t = new Thread(){
+        Thread t = new Thread(testCalculation.getThreadName()){
+            
             public void run(){
                 try {
-                    testCalculation.execute(TaskListener.NULL);
-                } catch (IOException ex) {
-                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
+                    Thread.sleep(10000);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -216,22 +218,42 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         };
         t.start();
         Thread.sleep(1000);
-        testCalculation.execute(TaskListener.NULL);
+        testCalculation.doRun();
         assertEquals("Disk usage should not start calculation if preview calculation is in progress.", 0, project.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
         t.interrupt();
     }
     
     @Test
-    public void testDoNotCalculateExcludedJobs() throws Exception{
-        FreeStyleProject exludedJob = jenkins.createProject(FreeStyleProject.class, "excludedJob");
-        FreeStyleProject includedJob = jenkins.createProject(FreeStyleProject.class, "incudedJob");
-        List<String> excludes = new ArrayList<String>();
-        excludes.add(exludedJob.getName());
-        DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
+    @LocalData
+    public void testDoNotBreakLazyLoading() throws Exception{
+        AbstractProject project = (AbstractProject) jenkins.getItem("project1");
+        project.isBuilding();
+        int loadedBuilds = project._getRuns().getLoadedBuilds().size();
+        assertTrue("This test does not have sense if there is loaded all builds", 8 > loadedBuilds);
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
-        assertNull("Disk usage for excluded project should not be counted.", exludedJob.getProperty(DiskUsageProperty.class));
-        assertNotNull("Disk usage for included project should be not be counted.", includedJob.getProperty(DiskUsageProperty.class));
+        assertTrue("WorkspaceCalculation should not cause loading of builds (only if the plugin is used for first time).", project._getRuns().getLoadedBuilds().size() <= loadedBuilds );
+        
+    }
+    
+    @Test
+    @LocalData
+    public void testDoNotCalculateExcludedJobs() throws Exception{
+        List<String> excludes = new ArrayList<String>();
+        excludes.add("excludedJob");
+        DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
+        DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
+        FreeStyleProject excludedJob = jenkins.createProject(FreeStyleProject.class, "excludedJob");
+        FreeStyleProject includedJob = jenkins.createProject(FreeStyleProject.class, "incudedJob");
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(jenkins.getRootDir(),"workspace1").getPath(), jenkins, createComputerLauncher(null));
+        excludedJob.setAssignedLabel(slave1.getSelfLabel());
+        includedJob.setAssignedLabel(slave1.getSelfLabel());
+        buildAndAssertSuccess(excludedJob);
+        buildAndAssertSuccess(includedJob);
+        WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
+        calculation.execute(TaskListener.NULL);
+        assertEquals("Disk usage for excluded project should not be counted.", 0, excludedJob.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
+        assertTrue("Disk usage for included project should be counted.", includedJob.getProperty(DiskUsageProperty.class).getAllWorkspaceSize() > 0);
         excludes.clear();
     }
     

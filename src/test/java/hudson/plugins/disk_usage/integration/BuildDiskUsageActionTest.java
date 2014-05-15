@@ -1,5 +1,7 @@
 package hudson.plugins.disk_usage.integration;
 
+import hudson.model.Action;
+import java.util.List;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
 import org.junit.Test;
 import hudson.matrix.MatrixConfiguration;
@@ -41,9 +43,9 @@ public class BuildDiskUsageActionTest {
         Long sizeofBuild = 7546l;
         Long sizeOfMatrixBuild1 = 6800l;
         Long sizeOfMatrixBuild2 = 14032l;
-        build.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeofBuild);
-        matrixBuild1.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild1);
-        matrixBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild2);
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
+        DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
+        DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
         long size1 = 5390;
         long size2 = 2390;
         int count = 1;
@@ -51,16 +53,16 @@ public class BuildDiskUsageActionTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            configurationBuild.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size1);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            configurationBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size2);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }
-        assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, build.getAction(BuildDiskUsageAction.class).getAllDiskUsage());
-        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, matrixBuild1.getAction(BuildDiskUsageAction.class).getAllDiskUsage());
-        assertEquals("BuildDiskUsageAction for build 2 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild2TotalSize, matrixBuild2.getAction(BuildDiskUsageAction.class).getAllDiskUsage());
+        assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, DiskUsageTestUtil.getBuildDiskUsageAction(build).getAllDiskUsage());
+        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).getAllDiskUsage());
+        assertEquals("BuildDiskUsageAction for build 2 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild2TotalSize, DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).getAllDiskUsage());
         
     }
     
@@ -80,13 +82,26 @@ public class BuildDiskUsageActionTest {
         int count = 0;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-             configurationBuild.getAction(BuildDiskUsageAction.class).setDiskUsage(kiloBytes);
+            List<Action> actions = configurationBuild.getTransientActions();
+            for(Action action : actions){
+                if(action instanceof BuildDiskUsageAction){
+                    BuildDiskUsageAction a = (BuildDiskUsageAction) action;
+                    a.setDiskUsage(kiloBytes);
+                }
+            }
             count++;
         }
-        matrixBuild.getAction(BuildDiskUsageAction.class).setDiskUsage(kiloBytes);
+        BuildDiskUsageAction action = null;
+        for(Action a: matrixBuild.getTransientActions()){
+            if(a instanceof BuildDiskUsageAction){
+                action = (BuildDiskUsageAction) a ;
+                action.setDiskUsage(kiloBytes);
+                break;
+            }
+        }
         count ++;
         String size = (kiloBytes*count/1024) + " KB";
-        assertEquals("String representation of build disk usage which has "  + size + " is wrong.", size, matrixBuild.getAction(BuildDiskUsageAction.class).getBuildUsageString());
+        assertEquals("String representation of build disk usage which has "  + size + " is wrong.", size, action.getBuildUsageString());
         }
     
     @Test
@@ -99,16 +114,16 @@ public class BuildDiskUsageActionTest {
         Long megaBytes = kiloBytes*1024;
         Long gygaBytes = megaBytes*1024;
         Long teraBytes = gygaBytes*1024;
-        build.getAction(BuildDiskUsageAction.class).setDiskUsage(bytes);
-        assertEquals("String representation of build disk usage is wrong which has 100 B is wrong.", "100 B", build.getAction(BuildDiskUsageAction.class).getBuildUsageString());
-        build.getAction(BuildDiskUsageAction.class).setDiskUsage(kiloBytes);
-        assertEquals("String representation of build disk usage is wrong which has 2 KB is wrong.", "2 KB", build.getAction(BuildDiskUsageAction.class).getBuildUsageString());
-        build.getAction(BuildDiskUsageAction.class).setDiskUsage(megaBytes);
-        assertEquals("String representation of build disk usage is wrong which has 2 MB is wrong.", "2 MB", build.getAction(BuildDiskUsageAction.class).getBuildUsageString());
-        build.getAction(BuildDiskUsageAction.class).setDiskUsage(gygaBytes);
-        assertEquals("String representation of build disk usage is wrong which has 2 GB is wrong.", "2 GB", build.getAction(BuildDiskUsageAction.class).getBuildUsageString());
-        build.getAction(BuildDiskUsageAction.class).setDiskUsage(teraBytes);
-        assertEquals("String representation of build disk usage is wrong which has 2T B is wrong.", "2 TB", build.getAction(BuildDiskUsageAction.class).getBuildUsageString());
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(bytes);
+        assertEquals("String representation of build disk usage is wrong which has 100 B is wrong.", "100 B", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(kiloBytes);
+        assertEquals("String representation of build disk usage is wrong which has 2 KB is wrong.", "2 KB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(megaBytes);
+        assertEquals("String representation of build disk usage is wrong which has 2 MB is wrong.", "2 MB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(gygaBytes);
+        assertEquals("String representation of build disk usage is wrong which has 2 GB is wrong.", "2 GB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(teraBytes);
+        assertEquals("String representation of build disk usage is wrong which has 2T B is wrong.", "2 TB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
     }
  
 }

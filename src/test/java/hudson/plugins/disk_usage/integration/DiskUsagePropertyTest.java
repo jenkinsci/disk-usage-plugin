@@ -1,5 +1,8 @@
 package hudson.plugins.disk_usage.integration;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import hudson.FilePath;
 import hudson.tasks.Shell;
 import hudson.plugins.disk_usage.*;
 import java.io.File;
@@ -39,11 +42,10 @@ public class DiskUsagePropertyTest {
         matrixProject.setAxes(list);       
         Long sizeOfProject = 7546l;
         Long sizeOfMatrixProject = 6800l;
-        DiskUsageProperty projectProperty = new DiskUsageProperty();
-        project.addProperty(projectProperty);
+        DiskUsageProperty projectProperty = project.getProperty(DiskUsageProperty.class);
+        //project.addProperty(projectProperty);
         projectProperty.setDiskUsageWithoutBuilds(sizeOfProject);
-        DiskUsageProperty matrixProjectProperty = new DiskUsageProperty();
-        matrixProject.addProperty(matrixProjectProperty);
+        DiskUsageProperty matrixProjectProperty = matrixProject.getProperty(DiskUsageProperty.class);
         matrixProjectProperty.setDiskUsageWithoutBuilds(sizeOfMatrixProject);
         long size1 = 5390;
         int count = 1;
@@ -53,6 +55,7 @@ public class DiskUsagePropertyTest {
             c.addProperty(configurationProperty);
             configurationProperty.setDiskUsageWithoutBuilds(count*size1);  
             matrixProjectTotalSize += count*size1;
+            //matrixProjectTotalSize += c.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
             count++;
         }
         assertEquals("DiskUsageProperty for FreeStyleProject " + project.getDisplayName() + " returns wrong value its size without builds and including sub-projects.", sizeOfProject, project.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds());
@@ -126,15 +129,39 @@ public class DiskUsagePropertyTest {
         project.addProperty(property);
         Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
         Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
-        property.putSlaveWorkspaceSize(j.jenkins, j.jenkins.getRawWorkspaceDir(), 10495l);
+        FilePath path = j.jenkins.getWorkspaceFor(project);
+        path.mkdirs();
+        property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
         property.putSlaveWorkspaceSize(slave1,slave1.getRemoteFS(),5670l);
         property.putSlaveWorkspaceSize(slave2, slave2.getRemoteFS(), 7987l);
         j.jenkins.removeNode(slave2);
         property.checkWorkspaces();
         assertFalse("Disk usage property should not contains slave which does not exist.", property.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
         assertTrue("Disk usage property should not slave1.", property.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
-        assertTrue("Disk usage property should contains jenkins master.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
+        assertTrue("Disk usage property should contains jenkins master.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));       
     }  
+    
+    @Test
+    public void testchcekWorkspacesIfDoesNotExistsIsDeleted() throws Exception{
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
+        DiskUsageProperty property = new DiskUsageProperty();
+        project.addProperty(property);
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        FilePath path = j.jenkins.getWorkspaceFor(project);
+        path.mkdirs();
+        property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
+        property.putSlaveWorkspaceSize(slave1, slave1.getRemoteFS() + "/project", 5670l);
+        property.putSlaveWorkspaceSize(slave2, slave2.getRemoteFS(), 7987l);
+        property.checkWorkspaces();
+        assertFalse("Disk usage property should not contains slave which does not have any workspace for its project.", property.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
+        assertTrue("Disk usage property should contains slave2.", property.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
+        assertTrue("Disk usage property should contains jenkins master.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));       
+        path.delete();
+        property.checkWorkspaces();
+        assertFalse("Disk usage property should contains jenkins master, because workspace for its project was deleted.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));       
+        
+    }
     
     @Test
     public void testGetAllNonSlaveOrCustomWorkspaceSizeWithOnlySlaves() throws Exception{
@@ -144,18 +171,33 @@ public class DiskUsagePropertyTest {
         Slave slave1 = j.createOnlineSlave();
         Slave slave2= j.createOnlineSlave();
         File workspaceSlave1 = new File(slave3.getRemoteFS(), project.getName()+ "/log");
+        //DiskUsageTestUtil.createFileWithContent(workspaceSlave1);
         File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
+        //DiskUsageTestUtil.createFileWithContent(workspaceSlave2);
         File customWorkspaceSlave1 = new File(j.jenkins.getRootDir(),"custom2/log");
+        //DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave1);
         File customWorkspaceSlave2 = new File(j.jenkins.getRootDir(),"custom1/log");
+        //DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave2);
         project.setAssignedLabel(slave3.getSelfLabel());
         j.buildAndAssertSuccess(project);
+        System.out.println("workspace1 " + project.getSomeWorkspace());
+        System.out.println(" PROPERTY " + project.getProperty(DiskUsageProperty.class).getSlaveWorkspaceUsage());
+        
         project.setCustomWorkspace(customWorkspaceSlave1.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
+        System.out.println("workspace2 " + project.getSomeWorkspace());
+        System.out.println(" PROPERTY " + project.getProperty(DiskUsageProperty.class).getSlaveWorkspaceUsage());
+        
         project.setCustomWorkspace(null);
         project.setAssignedLabel(slave2.getSelfLabel());
         j.buildAndAssertSuccess(project);
+        System.out.println("workspace3 " + project.getSomeWorkspace());
+        System.out.println(" PROPERTY " + project.getProperty(DiskUsageProperty.class).getSlaveWorkspaceUsage());
+        
         project.setCustomWorkspace(customWorkspaceSlave2.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
+        System.out.println("workspace4 " + project.getSomeWorkspace());
+        System.out.println(" PROPERTY " + project.getProperty(DiskUsageProperty.class).getSlaveWorkspaceUsage());
         Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
         //take one slave offline
@@ -191,4 +233,6 @@ public class DiskUsagePropertyTest {
         j.jenkins.setNumExecutors(0);
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
     }
+    
+    
 }

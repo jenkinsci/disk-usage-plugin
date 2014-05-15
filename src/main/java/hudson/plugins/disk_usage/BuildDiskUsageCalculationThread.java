@@ -7,17 +7,28 @@ import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.logging.Level;;
 import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;import jenkins.model.Jenkins;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;import jenkins.model.Jenkins;import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;import jenkins.model.Jenkins;
+import jenkins.model.Jenkins;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.model.Jenkins;
+import jenkins.model.Jenkins;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.model.Jenkins;
+import jenkins.model.Jenkins;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.model.Jenkins;
 
 
 /**
@@ -30,44 +41,49 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     
     //last scheduled task;
     private static DiskUsageCalculation currentTask;
-    
-    private static boolean executing;
       
     public BuildDiskUsageCalculationThread(){        
         super("Calculation of builds disk usage"); 
     }   
     
     @Override
-    public void execute(TaskListener listener) throws IOException, InterruptedException { 
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(plugin.getConfiguration().isCalculationBuildsEnabled()  && !isExecuting()){
-            executing = true;
+    public void execute(TaskListener listener) throws IOException, InterruptedException {
+        if(startExecution()){
             try{
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
                 items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
-
+                
                 for (Object item : items) {
                     if (item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
-                        if (!project.isBuilding()) {
-
-                            List<AbstractBuild> builds = project.getBuilds();
-                            for(AbstractBuild build : builds){  
+                      //  if (!project.isBuilding()) {
+                            DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                            if(property==null){
+                                property = new DiskUsageProperty();
+                                project.addProperty(property);
+                            }
+                            ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
+                            for(DiskUsageBuildInformation information: diskUsage.buildDiskUsage){  
+                                Map<Integer,AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
+                                AbstractBuild build = loadedBuilds.get(information.getNumber());
+                                //do not calculat builds in progress
+                                if(build!=null && build.isBuilding()){
+                                    continue;
+                                }
                                 try{
-                                    DiskUsageUtil.calculateDiskUsageForBuild(build);  
+                                    DiskUsageUtil.calculateDiskUsageForBuild(information.getId(), project);
                                 }
                                 catch(Exception e){
                                     logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), e);
                                 }
                             }
-                        }
+                       // } 
                     }
                 }
             } catch (Exception ex) {
                 logger.log(Level.WARNING, "Error when recording disk usage for builds", ex);
             }
-            executing=false;
         }
     }
     
@@ -93,10 +109,12 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     public DiskUsageCalculation getLastTask() {
         return currentTask;
     }
-
-    @Override
-    public boolean isExecuting() {
-        return executing;
+    
+    private synchronized boolean startExecution(){
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        if(!plugin.getConfiguration().isCalculationBuildsEnabled())
+          return false;
+        return !isExecutingMoreThenOneTimes();
     }
     
 }

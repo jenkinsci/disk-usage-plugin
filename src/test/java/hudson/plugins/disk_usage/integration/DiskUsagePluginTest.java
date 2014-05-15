@@ -32,14 +32,17 @@ public class DiskUsagePluginTest {
         Long sizeofBuild1 = 7546l;
         Long sizeofBuild2 = 6800l;
         Long sizeofBuild3 = 14032l;
-        build1.addAction(new BuildDiskUsageAction(build1, sizeofBuild1));
-        build2.addAction(new BuildDiskUsageAction(build2, sizeofBuild2));
-        build3.addAction(new BuildDiskUsageAction(build3, sizeofBuild3));
+        DiskUsageTestUtil.getBuildDiskUsageAction(build1).setDiskUsage(sizeofBuild1);
+        DiskUsageTestUtil.getBuildDiskUsageAction(build2).setDiskUsage(sizeofBuild2);
+        DiskUsageTestUtil.getBuildDiskUsageAction(build3).setDiskUsage(sizeofBuild3);
         DiskUsagePlugin plugin = j.jenkins.getPlugin(DiskUsagePlugin.class);
         Long workspaceUsage = 20345l;
         Long jobUsage = 5980l;
-        DiskUsageProperty property = new DiskUsageProperty();
-        project.addProperty(property);
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        if(property==null){
+            property = new DiskUsageProperty();
+            project.addProperty(property);
+        }
         property.setDiskUsageWithoutBuilds(jobUsage);
         property.putSlaveWorkspaceSize(j.jenkins, j.jenkins.getWorkspaceFor((TopLevelItem)project).getRemote(), workspaceUsage);
         plugin.refreshGlobalInformation();

@@ -11,18 +11,25 @@ import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
+import hudson.model.Run;
 import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -100,7 +107,7 @@ public class DiskUsageUtil {
         return Math.round(size);        
     }
     
-    public static void controlAllJobsExceedSize(){
+    public static void controlAllJobsExceedSize() throws IOException{
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         plugin.refreshGlobalInformation();
         Long allJobsSize = plugin.getCashedGlobalJobsDiskUsage();
@@ -235,6 +242,8 @@ public class DiskUsageUtil {
     
     public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
             long size = 0;
+            if(!f.exists())
+                return size;
             if (f.isDirectory() && !isSymlink(f)) {
             	File[] fileList = f.listFiles();
             	if (fileList != null) for (File child : fileList) {
@@ -253,10 +262,10 @@ public class DiskUsageUtil {
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
             return;
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        List<File> exceededFiles = new ArrayList<File>();
-        List<AbstractBuild> builds = project.getBuilds();
-        for(AbstractBuild build : builds){
-            exceededFiles.add(build.getRootDir());
+        List<File> exceededFiles = new ArrayList<File>();       
+        Set<DiskUsageBuildInformation> informations = project.getAction(ProjectDiskUsageAction.class).getBuildsInformation();
+        for(DiskUsageBuildInformation information : informations){
+            exceededFiles.add(new File(Jenkins.getInstance().getBuildDirFor(project), information.getId()));
         }
         if(project instanceof ItemGroup){
             List<AbstractProject> projects = getAllProjects((ItemGroup) project);
@@ -287,17 +296,16 @@ public class DiskUsageUtil {
         if (update) {
         	property.saveDiskUsage();
         }
-    }
-
-
-        public static void calculateDiskUsageForBuild(AbstractBuild build)
+    }   
+        
+        public static void calculateDiskUsageForBuild(String buildId, AbstractProject project)
             throws IOException {
-            if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(build.getProject()))
+            if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
                 return;
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         //Build disk usage has to be always recalculated to be kept up-to-date 
         //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
-        long buildSize = DiskUsageUtil.getFileSize(build.getRootDir(), new ArrayList<File>());
+        long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.getInstance().getBuildDirFor(project), buildId), new ArrayList<File>());
 //        if (build instanceof MavenModuleSetBuild) {
 //            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
 //            for (List<MavenBuild> mavenBuilds : builds) {
@@ -305,31 +313,44 @@ public class DiskUsageUtil {
 //                    calculateDiskUsageForBuild(mavenBuild);
 //                }
 //            }
-//        }
-        BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
-        boolean updateBuild = false;
-        if (action == null) {
-            action = new BuildDiskUsageAction(build, buildSize);
-            build.addAction(action);
-            action.setDiskUsage(buildSize);
-            updateBuild = true;
-        } 
-        else {
-            if (( action.getDiskUsage() <= 0 ) ||
-        			( Math.abs(action.getDiskUsage() - buildSize) > 1024 )) {
-        		action.setDiskUsage(buildSize);
-        		updateBuild = true;
-            }
+//      }
+        Collection<AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds().values();
+        AbstractBuild build = null;
+        for(AbstractBuild b : loadedBuilds){
+            if(b.getId().equals(buildId))
+                build = b;
         }
-                if(plugin.getConfiguration().warnAboutBuildExceetedSize() && buildSize>plugin.getConfiguration().getBuildExceedSize()){
-                    try {
-                        sendEmail("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " exceeds size", "Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has size " + getSizeString(buildSize) + ".");
-                    } catch (MessagingException ex) {
-                        Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        if(property==null){
+            property = new DiskUsageProperty();
+            project.addProperty(property);
+        }
+        DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(buildId);
+        Long size = property.getDiskUsageOfBuild(buildId);
+        if (( size <= 0 ) || ( Math.abs(size - buildSize) > 1024 )) {
+                    if(information!=null){
+                        information.setSize(buildSize);
                     }
-                }
-        if ( updateBuild ) {
-        	build.save();
+                    else{
+                        if(build!=null){
+                            information = new DiskUsageBuildInformation(buildId, build.getNumber(), buildSize);
+                            property.getDiskUsageOfBuilds().add(information);
+                        }
+                        else{
+                            //should not happen
+                            AbstractBuild newLoadedBuild = (AbstractBuild) project._getRuns().getById(buildId);
+                            information = new DiskUsageBuildInformation(buildId, newLoadedBuild.getNumber(), buildSize);
+                            property.getDiskUsageOfBuilds().add(information);
+                        }
+                    }
+                    property.saveDiskUsage();
+        }
+        if(plugin.getConfiguration().warnAboutBuildExceetedSize() && buildSize>plugin.getConfiguration().getBuildExceedSize()){
+            try {
+                sendEmail("Build with id " + information.getNumber() + " of project " + project.getDisplayName() + " exceeds size", "Build with id " + information.getNumber() + " of project " + project.getDisplayName() + " has size " + getSizeString(buildSize) + ".");
+            } catch (MessagingException ex) {
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+            }
         }
     }
         
@@ -349,7 +370,6 @@ public class DiskUsageUtil {
     public static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
             return;
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
             property = new DiskUsageProperty();
@@ -447,6 +467,30 @@ public class DiskUsageUtil {
             return DiskUsageUtil.getFileSize(f, exceeded);
         }
        
+    }
+    
+    
+    public static FilenameFilter getBuildDirectoryFilter(){
+        final DateFormat formatter = Run.getIDFormatter();
+        return new FilenameFilter() {
+            @Override public boolean accept(File dir, String name) {
+                if (name.startsWith("0000")) {
+                    // JENKINS-1461 sometimes create bogus data directories with impossible dates, such as year 0, April 31st,
+                    // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
+                    // Don't even bother trying.
+                    return false;
+                }
+                try {
+                    if (formatter.format(formatter.parse(name)).equals(name)) {
+                        return true;
+                    }
+                } catch (ParseException e) {
+                    // fall through
+                }
+                LOGGER.log(Level.FINE, "Skipping {0} in {1}", new Object[] {name, dir});
+                return false;
+            }
+        };
     }
     
     public static final Logger LOGGER = Logger.getLogger(DiskUsageUtil.class.getName());

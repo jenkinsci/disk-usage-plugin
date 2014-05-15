@@ -52,9 +52,9 @@ public class ProjectDiskUsageActionTest {
         Long sizeofBuild = 7546l;
         Long sizeOfMatrixBuild1 = 6800l;
         Long sizeOfMatrixBuild2 = 14032l;
-        build.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeofBuild);
-        matrixBuild1.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild1);
-        matrixBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild2);
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
+        DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
+        DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
         long size1 = 5390;
         long size2 = 2390;
         int count = 1;
@@ -62,10 +62,10 @@ public class ProjectDiskUsageActionTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            configurationBuild.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size1);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            configurationBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size2);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }
@@ -94,9 +94,9 @@ public class ProjectDiskUsageActionTest {
         Long sizeofBuild = 7546l;
         Long sizeOfMatrixBuild1 = 6800l;
         Long sizeOfMatrixBuild2 = 14032l;
-        build.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeofBuild);
-        matrixBuild1.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild1);
-        matrixBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(sizeOfMatrixBuild2);
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
+        DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
+        DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
         long size1 = 5390;
         long size2 = 2390;
         int count = 1;
@@ -104,10 +104,10 @@ public class ProjectDiskUsageActionTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            configurationBuild.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size1);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            configurationBuild2.getAction(BuildDiskUsageAction.class).setDiskUsage(count*size2);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }
@@ -121,18 +121,15 @@ public class ProjectDiskUsageActionTest {
     @Test
      public void getAllBuildDiskUsageFiltered() throws Exception{
         ProjectTest project = new ProjectTest(j.jenkins, "project");
-        ProjectTestBuild build1 = (ProjectTestBuild) project.createExecutable();
-        ProjectTestBuild build2 = (ProjectTestBuild) project.createExecutable();
-        ProjectTestBuild build3 = (ProjectTestBuild) project.createExecutable();
         Calendar calendar1 = new GregorianCalendar();
         Calendar calendar2 = new GregorianCalendar();
         Calendar calendar3 = new GregorianCalendar();
         calendar1.set(2013, 9, 9);
         calendar2.set(2013, 8, 22);
         calendar3.set(2013, 5, 9);
-        build1.setCalendar(calendar1);
-        build2.setCalendar(calendar2);
-        build3.setCalendar(calendar3);
+        ProjectTestBuild build1 = (ProjectTestBuild) project.createExecutable(calendar1);
+        ProjectTestBuild build2 = (ProjectTestBuild) project.createExecutable(calendar2);
+        ProjectTestBuild build3 = (ProjectTestBuild) project.createExecutable(calendar3);
         Calendar filterCalendar = new GregorianCalendar();
         filterCalendar.set(2013, 8, 30);
         Date youngerThan10days = filterCalendar.getTime();
@@ -147,9 +144,9 @@ public class ProjectDiskUsageActionTest {
         Long sizeofBuild1 = 7546l;
         Long sizeofBuild2 = 9546l;
         Long sizeofBuild3 = 15546l;
-        build1.addAction(new BuildDiskUsageAction(build1, sizeofBuild1));
-        build2.addAction(new BuildDiskUsageAction(build2, sizeofBuild2));
-        build3.addAction(new BuildDiskUsageAction(build3, sizeofBuild3));
+        DiskUsageTestUtil.getBuildDiskUsageAction(build1).setDiskUsage(sizeofBuild1);
+        DiskUsageTestUtil.getBuildDiskUsageAction(build2).setDiskUsage(sizeofBuild2);
+        DiskUsageTestUtil.getBuildDiskUsageAction(build3).setDiskUsage(sizeofBuild3);
         project.update();
         Map<String,Long> size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(null, youngerThan10days);
         assertEquals("Disk usage of builds should count only build 1 (only build 1 is younger than 10 days ago).", sizeofBuild1, size.get("all"), 0);
@@ -185,7 +182,13 @@ public class ProjectDiskUsageActionTest {
             builds.put(getNextBuildNumber(), build);
             return build;
         }
-
+        
+        public ProjectTestBuild createExecutable(Calendar calendar) throws IOException{
+            ProjectTestBuild build = new ProjectTestBuild(this, calendar);
+            builds.put(getNextBuildNumber(), build);
+            return build;
+        }
+                
         public TopLevelItemDescriptor getDescriptor() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -193,29 +196,27 @@ public class ProjectDiskUsageActionTest {
         public void update(){
             this.updateTransientActions();;
         }
+        
+        public void save(){
+            //do not save fake project
+        }
      }
      
-     public class ProjectTestBuild extends Build<ProjectTest,ProjectTestBuild>{
-         
-         private transient Calendar calendar;
+     public class ProjectTestBuild extends Build<ProjectTest,ProjectTestBuild>{        
 
          
         public ProjectTestBuild(ProjectTest project) throws IOException {
             super(project);
         }
+        
+        public ProjectTestBuild(ProjectTest project, Calendar calendar) throws IOException {
+            super(project, calendar);
+        }
 
         public ProjectTestBuild(ProjectTest project, File buildDir) throws IOException {
             super(project, buildDir);
         }
-        
-        public void setCalendar(Calendar calendar){
-            this.calendar = calendar;
-        }
-        
-        @Override
-        public Calendar getTimestamp(){
-            return calendar;
-        }
+
      }
     
 }

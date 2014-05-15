@@ -5,7 +5,6 @@
 package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
-import hudson.model.AperiodicWork;
 import hudson.model.AsyncAperiodicWork;
 import hudson.scheduler.CronTab;
 import hudson.triggers.Trigger;
@@ -23,12 +22,29 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
         super(name); 
     }
     
-    public abstract boolean isExecuting();
+    public boolean isExecuting() {
+        for(Thread t: Thread.getAllStackTraces().keySet()){
+            if(t.getName().equals(getThreadName()))
+                return t.isAlive() && !t.isInterrupted();
+        }
+        return false;
+    }
+    
+    public boolean isExecutingMoreThenOneTimes() {
+        int count = 0;
+        for(Thread t: Thread.getAllStackTraces().keySet()){
+            if(t.getName().equals(getThreadName())){
+                if(t.isAlive() && !t.isInterrupted())
+                    count++;
+            }
+        }
+        return count>1;
+    }
     
     public String getThreadName(){
         return name +" thread";
     }
-    
+        
     public abstract DiskUsageCalculation getLastTask();
     
     public long scheduledLastInstanceExecutionTime(){

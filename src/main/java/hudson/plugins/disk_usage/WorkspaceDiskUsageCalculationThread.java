@@ -26,9 +26,7 @@ import jenkins.model.Jenkins;
 public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
     
     //last scheduled task;
-    private static DiskUsageCalculation currentTask;
-    
-    private static boolean executing;
+    private static DiskUsageCalculation currentTask;    
     
     public WorkspaceDiskUsageCalculationThread(){
         super("Calculation of workspace usage");       
@@ -37,8 +35,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {                
          DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(plugin.getConfiguration().isCalculationWorkspaceEnabled() && !isExecuting()){
-            executing=true;
+        if(startExecution()){
             try{
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
@@ -47,6 +44,9 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
                 for (Object item : items) {
                     if (item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
+                        //do not count workspace for running project
+                        if(project.isBuilding())
+                            continue;
                         try{
                             DiskUsageUtil.calculateWorkspaceDiskUsage(project);
                         } catch (Exception ex) {
@@ -58,7 +58,6 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
             catch(Exception e){
                 logger.log(Level.WARNING, "Error when recording disk usage for workspaces.", e);
             }
-            executing=false;
         }
         
     } 
@@ -83,13 +82,15 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
     }
 
     @Override
-    public boolean isExecuting() {
-        return executing;
-    }
-
-    @Override
     public DiskUsageCalculation getLastTask() {
         return currentTask;
+    }
+    
+    private synchronized boolean startExecution(){
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        if(!plugin.getConfiguration().isCalculationWorkspaceEnabled())
+          return false;
+        return !isExecutingMoreThenOneTimes();
     }
     
 }
