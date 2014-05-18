@@ -37,7 +37,7 @@ public class DiskUsagePlugin extends Plugin {
     public DiskUsagePlugin(){
     }
     
-    public void refreshGlobalInformation(){
+    public void refreshGlobalInformation() throws IOException{
         diskUsageBuilds = 0l;
         diskUsageWorkspaces = 0l;
         diskUsageJobsWithoutBuilds = 0l;
@@ -84,33 +84,33 @@ public class DiskUsagePlugin extends Plugin {
         return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
     }
     
-    public Long getGlobalBuildsDiskUsage(){
+    public Long getGlobalBuildsDiskUsage() throws IOException{
         refreshGlobalInformation();
         return diskUsageBuilds;
     }
     
-    public Long getGlobalJobsDiskUsage(){
+    public Long getGlobalJobsDiskUsage() throws IOException{
         refreshGlobalInformation();
         return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
     }
     
-    public Long getGlobalJobsWithoutBuildsDiskUsage(){
+    public Long getGlobalJobsWithoutBuildsDiskUsage() throws IOException{
         refreshGlobalInformation();
         return diskUsageJobsWithoutBuilds;
     }
     
-    public Long getGlobalWorkspacesDiskUsage(){
+    public Long getGlobalWorkspacesDiskUsage() throws IOException{
         refreshGlobalInformation();
         return diskUsageWorkspaces;
     }
     
     
-    public Long getGlobalNonSlaveDiskUsageWorkspace(){
+    public Long getGlobalNonSlaveDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
         return diskUsageNonSlaveWorkspaces;
     }
     
-    public Long getGlobalSlaveDiskUsageWorkspace(){
+    public Long getGlobalSlaveDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
         return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
     }
@@ -147,7 +147,7 @@ public class DiskUsagePlugin extends Plugin {
     /**
      * @return Project list sorted by occupied disk space
      */
-    public List getProjectList() {
+    public List getProjectList() throws IOException {
         refreshGlobalInformation();
         Comparator<AbstractProject> comparator = new Comparator<AbstractProject>() {
 
@@ -155,7 +155,6 @@ public class DiskUsagePlugin extends Plugin {
                 
                 ProjectDiskUsageAction dua1 = getDiskUsage(o1);
                 ProjectDiskUsageAction dua2 = getDiskUsage(o2);
-                
                 long result = dua2.getJobRootDirDiskUsage() + dua2.getAllDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() - dua1.getAllDiskUsageWorkspace();
                 
                 if(result > 0) return 1;

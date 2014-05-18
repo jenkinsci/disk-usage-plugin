@@ -151,6 +151,7 @@ public class DiskUsageCalculationTest extends TestCase{
                 System.out.println(".");
             }
             Thread.sleep(1000); 
+            seconds = calendar.get(Calendar.SECOND);
         }      
         calculation.doRun();
         Thread.sleep(2000);

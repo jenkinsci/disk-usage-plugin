@@ -4,8 +4,12 @@
  */
 package hudson.plugins.disk_usage.integration;
 
+import hudson.model.AbstractBuild;
+import hudson.model.Action;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
+import hudson.plugins.disk_usage.BuildDiskUsageAction;
+import hudson.plugins.disk_usage.DiskUsageCalculation;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
@@ -16,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,5 +60,30 @@ public class DiskUsageTestUtil {
             Thread.sleep(100);
         }
         return slave;
+    }
+    
+    protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild build){
+        List<Action> actions = build.getTransientActions();
+        for(Action a : actions){
+            if(a instanceof BuildDiskUsageAction)
+                return (BuildDiskUsageAction) a;
+        }
+        return null;
+    }
+    
+    protected static void cancelCalculation(DiskUsageCalculation calculation){
+       for(Thread t : Thread.getAllStackTraces().keySet()){
+           if(t.getName().equals(calculation.getThreadName())){
+               t.interrupt();
+               return;
+           }
+       } 
+    }
+    
+    protected static void createFileWithContent(File file) throws FileNotFoundException{
+        file.getParentFile().mkdirs();
+        PrintStream stream = new PrintStream(file);
+        stream.println("hello");
+        stream.close();
     }
 }
