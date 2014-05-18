@@ -4,11 +4,14 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -35,7 +38,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
             listener.getLogger().println("Started calculate disk usage of build");
             Long startTimeOfBuildCalculation = System.currentTimeMillis();
-                DiskUsageUtil.calculateDiskUsageForBuild(build);
+                DiskUsageUtil.calculateDiskUsageForBuild(build.getId(), build.getProject());
                 listener.getLogger().println("Finished Calculation of disk usage of build in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfBuildCalculation));
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 if(property==null){
@@ -71,11 +74,36 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                     property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
                     property.saveDiskUsage();
                     DiskUsageUtil.controlWorkspaceExceedSize(project);
+                    property.saveDiskUsage();
                 }
             }
             catch(Exception ex){
                 listener.getLogger().println("Disk usage plugin fails during calculation disk usage of this build.");
                     Logger.getLogger(getClass().getName()).log(Level.WARNING, "Disk usage plugin fails during build calculation disk space of job " + build.getParent().getDisplayName(), ex);
             }
+            
         }
+    
+    @Override
+    public void onDeleted(AbstractBuild build){
+        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+        if(property==null){
+            try {
+                property = new DiskUsageProperty();
+                build.getProject().addProperty(property);
+            } catch (IOException ex) {
+                Logger.getLogger(DiskUsageBuildListener.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        Iterator<DiskUsageBuildInformation> iterator = property.getDiskUsageOfBuilds().iterator();
+        while(iterator.hasNext()){
+            DiskUsageBuildInformation information = iterator.next();
+            if(build.getId().equals(information.getId())){
+                property.getDiskUsageOfBuilds().remove(information);
+                property.saveDiskUsage();
+                break;
+            }
+        }
+    }
+
 }

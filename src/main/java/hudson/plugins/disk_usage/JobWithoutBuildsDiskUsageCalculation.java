@@ -28,17 +28,15 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
     //last scheduled task;
     private static DiskUsageCalculation currentTask;
     
-    private static boolean executing;
       
     public JobWithoutBuildsDiskUsageCalculation(){
-        super("Calculation of job directories (without builds)");       
+        super("Calculation of job directories (without builds)");         
     }
 
     @Override
-    public void execute(TaskListener listener) throws IOException, InterruptedException {
-         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(plugin.getConfiguration().isCalculationJobsEnabled() && !isExecuting()){
-            executing = true;
+    public void execute(TaskListener listener) throws IOException, InterruptedException { 
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        if(startExecution()){  
             try{
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
@@ -47,7 +45,10 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
                 for (Object item : items) {
                     if (item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
-                        try{
+                        //do not count building project
+                        if(project.isBuilding())
+                            continue;
+                        try{                   
                             DiskUsageUtil.calculateDiskUsageForProject(project);
                         } catch (Exception ex) {
                             logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
@@ -61,7 +62,6 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
             catch(Exception e){
                 logger.log(Level.WARNING, "Error when recording disk usage for jobs.", e);
             }
-            executing=false;
         }
     }
 
@@ -83,15 +83,17 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
         CronTab tab = new CronTab(cron);
         return tab;
     }
-
-    @Override
-    public boolean isExecuting() {
-        return executing;
-    }
-
+    
     @Override
     public DiskUsageCalculation getLastTask() {
         return currentTask;
+    }
+    
+    private synchronized boolean startExecution(){
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        if(!plugin.getConfiguration().isCalculationJobsEnabled())
+          return false;
+        return !isExecutingMoreThenOneTimes();
     }
 
 }
