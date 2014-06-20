@@ -6,7 +6,6 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import java.io.File;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -46,7 +45,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
             diskUsage.load();
             this.diskUsage.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
-            
             saveDiskUsage();
      }
      
@@ -61,11 +59,11 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      }
      
      public Set<DiskUsageBuildInformation> getDiskUsageOfBuilds(){
-         return diskUsage.buildDiskUsage;
+         return diskUsage.getBuildDiskUsage();
      }
      
      public Long getDiskUsageOfBuild(String buildId){
-         for(DiskUsageBuildInformation information: diskUsage.buildDiskUsage){
+         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
              if(buildId.equals(information.getId())){
                  return information.getSize();
              }       
@@ -74,7 +72,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      }
      
      public DiskUsageBuildInformation getDiskUsageBuildInformation(String buildId){
-         for(DiskUsageBuildInformation information: diskUsage.buildDiskUsage){
+         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
              if(buildId.equals(information.getId())){
                  return information;
              }       
@@ -83,7 +81,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      }
      
      public Long getDiskUsageOfBuild(int buildNumber){
-         for(DiskUsageBuildInformation information: diskUsage.buildDiskUsage){
+         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
              if(buildNumber == information.getNumber()){
                  return information.getSize();
              }       
@@ -117,8 +115,15 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
              slaveWorkspacesUsage = null;
              modified = true;
          }
-         if(modified)
-             saveDiskUsage();        
+         if(modified){
+             saveDiskUsage();
+             try{
+                job.save();
+             }
+             catch(IOException e){
+                 Logger.getLogger(getClass().getName()).log(Level.WARNING, "configuration of project " + job.getDisplayName() + " can not be saved.", e);
+             }
+         }
      }
          
     public void putSlaveWorkspace(Node node, String path){
@@ -218,10 +223,13 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
         }
     }
+    
+    public void checkWorkspaces(){
+        checkWorkspaces(false);
+    }
 
-    public void checkWorkspaces() {
-            if(diskUsage.slaveWorkspacesUsage==null){
-                diskUsage.slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
+    public void checkWorkspaces(boolean force) {
+            if(force){
                 checkAllBuilds();
             }
             else{
@@ -252,7 +260,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 if(node==null && nodeName.isEmpty())
                     node = Jenkins.getInstance();
                 //delete name of slaves which do not exist
-                if(Jenkins.getInstance().getNode(nodeName)==null && !nodeName.isEmpty()) {//Jenkins master has empty name
+                if(node ==null) {//Jenkins master has empty name
                     iterator.remove();
                 }
                 else{

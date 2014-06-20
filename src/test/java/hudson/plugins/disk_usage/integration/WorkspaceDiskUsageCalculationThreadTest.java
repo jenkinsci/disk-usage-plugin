@@ -20,7 +20,6 @@ import hudson.model.listeners.RunListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
-import hudson.tasks.Shell;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -208,6 +207,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         prop.putSlaveWorkspace(slave1, slave1.getWorkspaceFor(project).getRemote());
         Thread t = new Thread(testCalculation.getThreadName()){
             
+            @Override
             public void run(){
                 try {
                     Thread.sleep(10000);
@@ -260,6 +260,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @TestExtension
     public static class TestDiskUsageProperty extends DiskUsageProperty{
         
+        @Override
         public void putSlaveWorkspaceSize(Node node, String path, Long size){
             LOGGER.fine("workspace size " + size);
             try {

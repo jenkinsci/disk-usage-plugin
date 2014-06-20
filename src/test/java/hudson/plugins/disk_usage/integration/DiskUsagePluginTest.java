@@ -4,6 +4,8 @@
  */
 package hudson.plugins.disk_usage.integration;
 
+import hudson.model.AbstractProject;
+import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.plugins.disk_usage.*;
 import org.junit.Test;
 import hudson.model.TopLevelItem;
@@ -50,5 +52,16 @@ public class DiskUsagePluginTest {
         assertEquals("Global job diskUsage should be refreshed.", jobUsage, plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), 0);
         assertEquals("Global workspace diskUsage should be refreshed.", workspaceUsage, plugin.getCashedGlobalWorkspacesDiskUsage(), 0);
           
+    }
+    
+    @Test
+    @LocalData
+    public void testNotBreakLazyLoading() throws IOException{
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        int loadedBuilds = project._getRuns().getLoadedBuilds().size();
+        assertTrue("This tests does not sense if there are loaded all builds.",8>loadedBuilds);
+        j.jenkins.getPlugin(DiskUsagePlugin.class).refreshGlobalInformation();
+        assertEquals("Size of builds should be loaded.", 47000, j.jenkins.getPlugin(DiskUsagePlugin.class).getCashedGlobalBuildsDiskUsage(), 0);
+        assertTrue("No new build should be loaded.", loadedBuilds <= project._getRuns().getLoadedBuilds().size());
     }
 }

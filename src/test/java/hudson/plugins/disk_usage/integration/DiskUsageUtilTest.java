@@ -7,7 +7,6 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import org.junit.Assert;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 import java.util.ArrayList;
 import hudson.model.AbstractBuild;

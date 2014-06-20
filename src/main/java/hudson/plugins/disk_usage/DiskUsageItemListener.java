@@ -3,11 +3,7 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
-import hudson.model.ItemGroup;
 import hudson.model.listeners.ItemListener;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 
 /*
@@ -34,48 +30,22 @@ public class DiskUsageItemListener extends ItemListener{
             DiskUsageProjectActionFactory.DESCRIPTOR.onRenameJob(oldName, newName);
     } 
     
+    @Override
     public void onCreated(Item item){
-        addProperty(item);
+        DiskUsageUtil.addProperty(item);
     }
     
-    public void addProperty(Item item){
-            if(item instanceof AbstractProject){
-                AbstractProject project = (AbstractProject) item;
-                DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-                if(property==null){
-                    try {
-                        project.addProperty(new DiskUsageProperty());
-
-                    } catch (IOException ex) {
-                        Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                else{
-                    //try if there is load data to load 
-                    property.getDiskUsage().loadOldData();
-                }
-            }
-            if(item instanceof ItemGroup){
-                for(AbstractProject project : DiskUsageUtil.getAllProjects((ItemGroup)item)){
-                    DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-                    if(property==null){
-                        try {
-                            project.addProperty(new DiskUsageProperty());
-                        } catch (IOException ex) {
-                            Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                    else{
-                    //try if there is load data to load 
-                        property.getDiskUsage().loadOldData();
-                    }
-                }
-            }
+     @Override
+    public void onUpdated(Item item){
+        DiskUsageUtil.addProperty(item);
     }
     
+    
+    
+    @Override
     public void onLoaded(){
         for(Item item : Jenkins.getInstance().getItems()){
-            addProperty(item);
+            DiskUsageUtil.addProperty(item);
         }
     }
 }

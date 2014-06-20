@@ -19,6 +19,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.listeners.ItemListener;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.junit.Rule;
@@ -168,6 +169,7 @@ public class ProjectDiskUsageActionTest {
          
          ProjectTest(ItemGroup group, String name){
              super(group, name);
+             ItemListener.fireOnCreated(this);
          }
          
         //@Override
@@ -197,8 +199,10 @@ public class ProjectDiskUsageActionTest {
             this.updateTransientActions();;
         }
         
+        @Override
         public void save(){
             //do not save fake project
+            getRootDir().mkdirs();
         }
      }
      

@@ -1,6 +1,17 @@
 package hudson.plugins.disk_usage.integration;
 
-import java.io.FileNotFoundException;
+
+import hudson.model.TopLevelItem;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.annotation.Annotation;
+import org.jvnet.hudson.test.JenkinsRecipe;
+import hudson.XmlFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import hudson.model.AbstractProject;
+import java.io.IOException;
+import org.jvnet.hudson.test.recipes.LocalData;
 import java.io.PrintStream;
 import hudson.FilePath;
 import hudson.tasks.Shell;
@@ -20,6 +31,8 @@ import hudson.slaves.OfflineCause;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.lang.annotation.ElementType.METHOD;
 
 /**
  *
@@ -29,6 +42,7 @@ public class DiskUsagePropertyTest {
     
     @Rule
     public JenkinsRule j = new JenkinsRule();
+        
     
     @Test
     public void testGetAllDiskUsageWithoutBuilds() throws Exception{
@@ -180,24 +194,13 @@ public class DiskUsagePropertyTest {
         //DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave2);
         project.setAssignedLabel(slave3.getSelfLabel());
         j.buildAndAssertSuccess(project);
-        System.out.println("workspace1 " + project.getSomeWorkspace());
-        System.out.println(" PROPERTY " + project.getProperty(DiskUsageProperty.class).getSlaveWorkspaceUsage());
-        
         project.setCustomWorkspace(customWorkspaceSlave1.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
-        System.out.println("workspace2 " + project.getSomeWorkspace());
-        System.out.println(" PROPERTY " + project.getProperty(DiskUsageProperty.class).getSlaveWorkspaceUsage());
-        
         project.setCustomWorkspace(null);
         project.setAssignedLabel(slave2.getSelfLabel());
         j.buildAndAssertSuccess(project);
-        System.out.println("workspace3 " + project.getSomeWorkspace());
-        System.out.println(" PROPERTY " + project.getProperty(DiskUsageProperty.class).getSlaveWorkspaceUsage());
-        
         project.setCustomWorkspace(customWorkspaceSlave2.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
-        System.out.println("workspace4 " + project.getSomeWorkspace());
-        System.out.println(" PROPERTY " + project.getProperty(DiskUsageProperty.class).getSlaveWorkspaceUsage());
         Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
         //take one slave offline
@@ -234,5 +237,144 @@ public class DiskUsagePropertyTest {
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
     }
     
+    @Test
+    @LocalData
+    public void testBackwadrCompatibility1(){
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableBuildsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableJobsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableWorkspacesDiskUsageCalculation();
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
+        assertEquals("Size of build 3 should be loaded from previous configuration.", 23932L, property.getDiskUsageOfBuild(3), 0);
+    }
+    
+    
+    @Test
+    @LocalData
+    public void testBackwadrCompatibility2(){
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableBuildsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableJobsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableWorkspacesDiskUsageCalculation();
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
+        assertEquals("Size of workspaces should be loaded from previous configuration.", 4096L, property.getAllWorkspaceSize(), 0);
+        assertTrue("Path of workspace shoudl be loaded form previous configuration.", property.getSlaveWorkspaceUsage().get("").containsKey("$JENKINS_HOME/jobs/project3/workspace"));
+    }
+    
+    @Test
+    @LocalData
+    public void testGetDiskUsageOfBuilds(){
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        for(DiskUsageBuildInformation information : property.getDiskUsageOfBuilds()){
+            assertEquals("Disk usage of build has loaded wrong size.", information.getNumber()*1000, information.getSize(), 0);
+        }
+        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+     }
+     
+    
+    @Test
+    @LocalData
+     public void testGetDiskUsageOfBuild(){
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageOfBuild("2013-08-09_13-02-27"), 0);
+        assertEquals("Build with id 10 should have size 10000", 10000, property.getDiskUsageOfBuild("2013-08-09_13-03-05"), 0);
+        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+     }
+     
+    @Test
+    @LocalData
+     public void testGetDiskUsageBuildInformation(){
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageBuildInformation("2013-08-09_13-02-27").getSize(), 0);
+        assertEquals("Build with id 10 should have size 10000", 10000, property.getDiskUsageBuildInformation("2013-08-09_13-03-05").getSize(), 0);
+        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+     }
+     
+    @Test
+    @LocalData
+     public void testGetDiskUsageOfBuildByNumber(){
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageOfBuild(3), 0);
+        assertEquals("Build with id 10 should have size 10000", 10000, property.getDiskUsageOfBuild(10), 0);
+        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+    
+     }
+
+    @Test
+    @ReplaceHudsonHomeWithCurrentPath("jobs/project1/disk-usage.xml")
+    @LocalData
+    public void testCheckWorkspacesBuildsWithoutLoadingBuilds() throws IOException, InterruptedException {
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        FilePath f = j.jenkins.getWorkspaceFor((TopLevelItem)project);
+        property.checkWorkspaces();
+        assertEquals("Workspace should have size 4096", 4096, property.getAllWorkspaceSize(), 0);
+        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+    }
+    
+    @Test
+    @ReplaceHudsonHomeWithCurrentPath("jobs/project1/builds/2013-08-09_13-02-27/build.xml, jobs/project1/builds/2013-08-09_13-02-28/build.xml")
+    @LocalData
+    public void testCheckWorkspacesWithLoadingBuilds() {
+       AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+       DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+       assertTrue("Project should contains workspace with path {JENKINS_HOME}/jobs/project1/workspace", property.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/jobs/project1/workspace"));
+       assertTrue("Project should contains workspace with path {JENKINS_HOME}/workspace", property.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));      
+       assertEquals("Builds should be loaded.", 8, project._getRuns().getLoadedBuilds().size(), 0);
+    }
+    
+    @Target(METHOD)
+    @Retention(RUNTIME)
+    @JenkinsRecipe(ReplaceHudsonHomeWithCurrentPath.CurrentWorkspacePath.class)
+    public @interface ReplaceHudsonHomeWithCurrentPath {
+        
+        String value() default "";
+        
+        class CurrentWorkspacePath extends JenkinsRecipe.Runner<ReplaceHudsonHomeWithCurrentPath>{
+            private String paths;
+            public void decorateHome(JenkinsRule rule, File home){
+                if(paths.isEmpty())
+                    return;
+                for(String path : paths.split(",")){
+                    path = path.trim();
+                    try {
+                        File file = new File(home,path);
+                        XmlFile xmlFile = new XmlFile(file);
+                        String content = xmlFile.asString();
+                        content = content.replace("${JENKINS_HOME}", home.getAbsolutePath());
+                        PrintStream stream = new PrintStream(file);
+                        stream.print(content);
+                        stream.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DiskUsagePropertyTest.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+            
+            @Override
+            public void setup(JenkinsRule jenkinsRule, ReplaceHudsonHomeWithCurrentPath recipe) throws Exception {
+                paths = recipe.value();
+            }
+        }
+    }
+    
+    class WorkspacePathAnnotation implements Annotation{
+
+        public Class<? extends Annotation> annotationType() {
+            return WorkspacePathAnnotation.class;
+        }
+        
+    }
     
 }

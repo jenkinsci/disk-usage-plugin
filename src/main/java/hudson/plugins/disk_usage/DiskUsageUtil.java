@@ -46,6 +46,47 @@ import jenkins.model.Jenkins;
  */
 public class DiskUsageUtil {
     
+    public static void addProperty(Item item){
+            if(item instanceof AbstractProject){
+                AbstractProject project = (AbstractProject) item;
+                DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                if(property==null){
+                    try {
+                        property = new DiskUsageProperty();
+                        project.addProperty(property);
+
+                    } catch (IOException ex) {
+                        Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                loadData(property);
+            }
+            if(item instanceof ItemGroup){
+                
+                for(AbstractProject project : DiskUsageUtil.getAllProjects((ItemGroup)item)){
+                    DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                    if(property==null){
+                        try {
+                            property = new DiskUsageProperty();
+                            project.addProperty(property);
+                        } catch (IOException ex) {
+                            Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    loadData(property);
+                }
+            }
+    }
+    
+    private static void loadData(DiskUsageProperty property){
+        if(!property.getDiskUsage().getConfigFile().exists()){
+            property.getDiskUsage().loadFirstTime();
+        }
+        else{
+            property.loadDiskUsage();
+        }
+    }
+    
     public static Date getDate(String timeCount, String timeUnit){
         if(timeUnit==null || !timeUnit.matches("\\d+") || !timeCount.matches("\\d+"))
            return null;

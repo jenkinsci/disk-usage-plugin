@@ -7,27 +7,13 @@ import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
-import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
 import java.util.logging.Level;;
-import jenkins.model.Jenkins;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import jenkins.model.Jenkins;
-import jenkins.model.Jenkins;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.model.Jenkins;
 
 
@@ -64,7 +50,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                                 project.addProperty(property);
                             }
                             ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
-                            for(DiskUsageBuildInformation information: diskUsage.buildDiskUsage){  
+                            for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){  
                                 Map<Integer,AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
                                 AbstractBuild build = loadedBuilds.get(information.getNumber());
                                 //do not calculat builds in progress

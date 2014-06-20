@@ -3,7 +3,6 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.model.*;
 import hudson.security.Permission;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,17 +24,6 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     @Override
     public Collection<? extends Action> createFor(AbstractProject job) {
         ProjectDiskUsageAction action = new ProjectDiskUsageAction(job);
-//        if(job.getProperty(DiskUsageProperty.class)==null){
-//            try {
-//                job.addProperty(new DiskUsageProperty());
-//            } catch (IOException ex) {
-//                Logger.getLogger(DiskUsageProjectActionFactory.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
-        DiskUsageProperty property = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);
-        if(property==null){
-            property = new DiskUsageProperty();
-        }
         return Collections.singleton(action);
     }
 

@@ -4,11 +4,9 @@ import hudson.plugins.disk_usage.*;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.model.AperiodicWork;
-import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
-import hudson.util.RunList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -122,6 +120,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, contextPath);
         final JobWithoutBuildsDiskUsageCalculation testCalculation = new JobWithoutBuildsDiskUsageCalculation();
         Thread t = new Thread(testCalculation.getThreadName()){
+            @Override
             public void run(){
                 try {
                     Thread.sleep(10000);
