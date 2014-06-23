@@ -121,7 +121,7 @@
         <input type="hidden" name="name" value="${h.name}"/>
          <j:choose>
          <j:when test="${it.getWorkspaceDiskUsageThread().isExecuting()}">
-           ${%Counting of workpsace disk usage is executing now.} <br/>
+           ${%Counting of workspace disk usage is executing now.} <br/>
          </j:when>
          <j:otherwise>
            <f:submit value="${%Record Workspaces Disk Usage}" /><br/>
