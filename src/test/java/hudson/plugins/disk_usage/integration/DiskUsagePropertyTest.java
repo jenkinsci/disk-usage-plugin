@@ -251,6 +251,7 @@ public class DiskUsagePropertyTest {
     
     
     @Test
+    @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml")
     @LocalData
     public void testBackwadrCompatibility2(){
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableBuildsDiskUsageCalculation();
@@ -260,7 +261,7 @@ public class DiskUsagePropertyTest {
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
         assertEquals("Size of workspaces should be loaded from previous configuration.", 4096L, property.getAllWorkspaceSize(), 0);
-        assertTrue("Path of workspace shoudl be loaded form previous configuration.", property.getSlaveWorkspaceUsage().get("").containsKey("$JENKINS_HOME/jobs/project3/workspace"));
+        assertTrue("Path of workspace shoudl be loaded form previous configuration.", property.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
     }
     
     @Test

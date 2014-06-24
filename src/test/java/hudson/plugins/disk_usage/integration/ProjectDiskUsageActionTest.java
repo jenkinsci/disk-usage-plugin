@@ -1,5 +1,7 @@
 package hudson.plugins.disk_usage.integration;
 
+import hudson.model.AbstractProject;
+import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.plugins.disk_usage.*;
 import hudson.model.TopLevelItem;
 import hudson.model.Project;
@@ -162,6 +164,18 @@ public class ProjectDiskUsageActionTest {
         size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(olderThan3weeks, null);
         assertEquals("Disk usage of builds should count only build 3 (only build 3 is older tah 3 weeks).", sizeofBuild3, size.get("all"), 0);
 
+       
+    }
+    
+    @Test
+    @LocalData
+    public void testNotToBreakLazyLoading() throws IOException{
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        project.isBuilding();
+        int loadedBuilds = project._getRuns().getLoadedBuilds().size();
+        assertTrue("This test does not have sense if there is loaded all builds", 8 > loadedBuilds);
+        project.getAction(ProjectDiskUsageAction.class).getGraph();
+        assertTrue("Creation of graph should not cause loading of builds.", project._getRuns().getLoadedBuilds().size() <= loadedBuilds );
        
     }
      

@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
 import hudson.model.TaskListener;
@@ -81,7 +80,6 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                 listener.getLogger().println("Disk usage plugin fails during calculation disk usage of this build.");
                     Logger.getLogger(getClass().getName()).log(Level.WARNING, "Disk usage plugin fails during build calculation disk space of job " + build.getParent().getDisplayName(), ex);
             }
-            
         }
     
     @Override

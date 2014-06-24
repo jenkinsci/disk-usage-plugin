@@ -1,5 +1,6 @@
 package hudson.plugins.disk_usage.integration;
 
+import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.model.Action;
 import java.util.List;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
@@ -125,5 +126,5 @@ public class BuildDiskUsageActionTest {
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(teraBytes);
         assertEquals("String representation of build disk usage is wrong which has 2T B is wrong.", "2 TB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
     }
- 
+    
 }

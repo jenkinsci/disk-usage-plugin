@@ -8,10 +8,12 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
 import hudson.model.Run;
+import hudson.model.TopLevelItem;
 import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
 import java.io.File;
@@ -79,7 +81,7 @@ public class DiskUsageUtil {
     }
     
     private static void loadData(DiskUsageProperty property){
-        if(!property.getDiskUsage().getConfigFile().exists()){
+        if(!property.getDiskUsage().getConfigFile().exists() || !property.getDiskUsage().isBuildsLoaded()){
             property.getDiskUsage().loadFirstTime();
         }
         else{
@@ -218,7 +220,7 @@ public class DiskUsageUtil {
             return 0;
         return Math.floor(Math.log(number) / Math.log(1024));
     }
-    
+        
     public static int getIndex(String unit){
         int index = 0;
         if(unit.equals("KB"))
@@ -338,7 +340,25 @@ public class DiskUsageUtil {
         	property.saveDiskUsage();
         }
     }   
-        
+      
+    
+    public static void addBuildDiskUsageAction(AbstractBuild build){
+        BuildDiskUsageAction action = null;
+        for(Action a: build.getActions()){
+            if(a instanceof BuildDiskUsageAction){
+                action = (BuildDiskUsageAction) a;
+                break;
+            }
+        }
+        if(action == null){
+            build.addAction(new BuildDiskUsageAction(build));
+            try {
+                build.save();
+            } catch (IOException ex) {
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
         public static void calculateDiskUsageForBuild(String buildId, AbstractProject project)
             throws IOException {
             if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
@@ -358,8 +378,10 @@ public class DiskUsageUtil {
         Collection<AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds().values();
         AbstractBuild build = null;
         for(AbstractBuild b : loadedBuilds){
-            if(b.getId().equals(buildId))
+            if(b.getId().equals(buildId)){
                 build = b;
+                addBuildDiskUsageAction(build);
+            }
         }
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){

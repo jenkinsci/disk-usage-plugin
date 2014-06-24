@@ -4,7 +4,9 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
+import hudson.model.Node;
 import hudson.model.ProminentProjectAction;
+import hudson.model.TopLevelItem;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -140,6 +142,13 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         //for keeping backward compatibility
         if(diskUsage!=null){
             buildDiskUsage = diskUsage.buildUsage;
+            Node node = build.getBuiltOn();
+            if(node!=null && diskUsage.wsUsage!=null && diskUsage.wsUsage > 0){
+                DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+                AbstractProject project = build.getProject().getRootProject();
+                if(property!=null && (project instanceof TopLevelItem))
+                    property.putSlaveWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem)project).getRemote(), diskUsage.wsUsage);
+            }
             diskUsage=null;
         }
         return this;

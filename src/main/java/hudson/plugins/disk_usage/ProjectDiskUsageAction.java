@@ -5,9 +5,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
-import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.Graph;
-import hudson.util.RunList;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -17,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -297,18 +296,17 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
         long maxValueWorkspace = 0;
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         maxValueWorkspace = Math.max(getAllCustomOrNonSlaveWorkspaces(), getAllSlaveWorkspaces());
         maxValue =  getJobRootDirDiskUsage();
         //First iteration just to get scale of the y-axis
-        RunList<? extends AbstractBuild> builds = project.getBuilds();
+        TreeSet<DiskUsageBuildInformation> builds = new TreeSet<DiskUsageBuildInformation>();
+        builds.addAll(property.getDiskUsageOfBuilds());
         //do it in reverse order
-        for (int i=builds.size()-1; i>=0; i--) {
-            AbstractBuild build = builds.get(i);
-            BuildDiskUsageAction dua = build.getAction(BuildDiskUsageAction.class);
-            if (dua != null) {
-                usages.add(new Object[]{build, getJobRootDirDiskUsage(), dua.getAllDiskUsage(), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
-            }
-            maxValue = Math.max(maxValue, dua.getAllDiskUsage());
+        for (DiskUsageBuildInformation build : builds) {
+            
+           usages.add(new Object[]{build, getJobRootDirDiskUsage(), build.getSize(), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
+            maxValue = Math.max(maxValue, build.getSize());
         }
 
         int floor = (int) DiskUsageUtil.getScale(maxValue);
@@ -320,7 +318,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         DefaultCategoryDataset dataset2 = new DefaultCategoryDataset();
         for (Object[] usage : usages) {
-            NumberOnlyBuildLabel label = new NumberOnlyBuildLabel((AbstractBuild) usage[0]);
+            Integer label = ((DiskUsageBuildInformation) usage[0]).getNumber();
             dataset.addValue(((Long) usage[1]) / base, "job directory", label);  
             dataset.addValue(((Long) usage[2]) / base, "build directory", label);
             dataset2.addValue(((Long) usage[3]) / workspaceBase, "all slave workspaces of job", label);

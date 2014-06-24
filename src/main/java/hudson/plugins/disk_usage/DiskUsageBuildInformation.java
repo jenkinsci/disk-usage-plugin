@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author Lucie Votypkova
  */
-public class DiskUsageBuildInformation implements Serializable{
+public class DiskUsageBuildInformation implements Serializable, Comparable{
     
     private String id;
     
@@ -43,6 +43,13 @@ public class DiskUsageBuildInformation implements Serializable{
             return information.getId().equals(id);
         }
         return false;
+    }
+    
+    public int compareTo(Object o){
+        if(o instanceof DiskUsageBuildInformation){
+            return id.compareTo(((DiskUsageBuildInformation)o).getId());
+        }
+        throw new IllegalArgumentException("Can not compare with different type");
     }
     
     public void setSize(Long size){

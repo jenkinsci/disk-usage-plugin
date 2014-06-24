@@ -20,6 +20,7 @@ import java.util.Collections;
 @Extension
 public class DiskUsageBuildActionFactory extends TransientBuildActionFactory{
     
+    @Override
     public Collection<? extends Action> createFor(Run target) {
         if (target instanceof AbstractBuild){
             AbstractBuild build = (AbstractBuild) target;

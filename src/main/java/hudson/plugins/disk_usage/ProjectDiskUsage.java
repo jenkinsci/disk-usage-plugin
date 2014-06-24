@@ -48,6 +48,10 @@ public class ProjectDiskUsage implements Saveable{
          this.job = job;
      }
      
+     public boolean isBuildsLoaded(){
+         return buildDiskUsage!=null;
+     }
+     
      public Set<DiskUsageBuildInformation> getBuildDiskUsage(){
          if(buildDiskUsage==null){
              try{
@@ -71,6 +75,7 @@ public class ProjectDiskUsage implements Saveable{
     }
     
     public synchronized void loadFirstTime(){
+        load();
         buildDiskUsage = new HashSet<DiskUsageBuildInformation>();
         List<Run> list = job.getBuilds();
         for(Run run : list){
@@ -79,10 +84,18 @@ public class ProjectDiskUsage implements Saveable{
                 BuildDiskUsageAction usage = run.getAction(BuildDiskUsageAction.class);
                 DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.number, 0l);
                 buildDiskUsage.add(information);
-                if(usage!=null){
-                    information.setSize(usage.buildDiskUsage);
-                    run.getActions().remove(usage);
+                if(usage==null){
+                    run.getActions().add(new BuildDiskUsageAction(build));
+                    try {
+                        build.save();
+                    } catch (IOException ex) {
+                        Logger.getLogger(ProjectDiskUsage.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
+                else{
+                    information.setSize(usage.buildDiskUsage);
+                }
+                DiskUsageUtil.addBuildDiskUsageAction(build);
             }
         }
         DiskUsageProperty property = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);

@@ -4,6 +4,7 @@
  */
 package hudson.plugins.disk_usage.integration;
 
+import hudson.plugins.disk_usage.DiskUsageProperty;
 import hudson.model.AbstractProject;
 import hudson.plugins.disk_usage.DiskUsageBuildInformation;
 import hudson.plugins.disk_usage.ProjectDiskUsageAction;
@@ -42,5 +43,13 @@ public class ProjectDiskUsageTest {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         Set<DiskUsageBuildInformation> informations = project.getAction(ProjectDiskUsageAction.class).getBuildsInformation();
         assertEquals("Set of DisUsageBuildInformation does not contains all builds of job.", 8, informations.size());
+    }
+    
+    @Test
+    @LocalData
+    public void testLoadingAllBuildInformationFromPreviousVersion(){
+       AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+       DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);    
+       assertEquals("Builds information should be loaded.", 8, property.getDiskUsageOfBuilds().size(), 0);
     }
 }
