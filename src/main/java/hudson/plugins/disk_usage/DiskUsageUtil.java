@@ -319,8 +319,8 @@ public class DiskUsageUtil {
         long buildSize = DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles);
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            property = new DiskUsageProperty();
-            project.addProperty(property);
+            addProperty(project);
+            property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
         Long diskUsageWithoutBuilds = property.getDiskUsageWithoutBuilds();
         boolean update = false;
@@ -385,8 +385,8 @@ public class DiskUsageUtil {
         }
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            property = new DiskUsageProperty();
-            project.addProperty(property);
+            addProperty(project);
+            property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(buildId);
         Long size = property.getDiskUsageOfBuild(buildId);
@@ -435,8 +435,8 @@ public class DiskUsageUtil {
             return;
         DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            property = new DiskUsageProperty();
-            project.addProperty(property);
+            addProperty(project);
+            property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
         property.checkWorkspaces();
         for(String nodeName: property.getSlaveWorkspaceUsage().keySet()){

@@ -62,9 +62,8 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         AbstractProject project = build.getProject();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            property = new DiskUsageProperty();
-            project.addProperty(property);
-            property.loadDiskUsage();
+            DiskUsageUtil.addProperty(project);
+            property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
         if(information!=null){
@@ -83,13 +82,8 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         AbstractProject project = build.getProject();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            property = new DiskUsageProperty();
-            try {
-                project.addProperty(property);
-            } catch (IOException ex) {
-                Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-                return 0L;
-            }
+            DiskUsageUtil.addProperty(project);
+            property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
         return property.getDiskUsageOfBuild(build.getId());
     }
@@ -118,12 +112,8 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                     AbstractProject project = (AbstractProject) item;
                     DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                     if(property==null){
-                        property = new DiskUsageProperty();
-                        try {
-                            project.addProperty(property);
-                        } catch (IOException ex) {
-                            Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        DiskUsageUtil.addProperty(project);
+                        property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                     }
                     Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
                     for(DiskUsageBuildInformation information :  informations){

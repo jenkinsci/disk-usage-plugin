@@ -41,8 +41,8 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                 listener.getLogger().println("Finished Calculation of disk usage of build in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfBuildCalculation));
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 if(property==null){
-                    property = new DiskUsageProperty();
-                    build.getProject().addProperty(property);
+                    DiskUsageUtil.addProperty(build.getProject());
+                    property =  (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 }
                 if(build.getWorkspace()!=null){
                     ArrayList<FilePath> exceededFiles = new ArrayList<FilePath>();
@@ -86,12 +86,8 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     public void onDeleted(AbstractBuild build){
         DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
         if(property==null){
-            try {
-                property = new DiskUsageProperty();
-                build.getProject().addProperty(property);
-            } catch (IOException ex) {
-                Logger.getLogger(DiskUsageBuildListener.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                DiskUsageUtil.addProperty(build.getProject());
+                property =  (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);          
         }
         Iterator<DiskUsageBuildInformation> iterator = property.getDiskUsageOfBuilds().iterator();
         while(iterator.hasNext()){
