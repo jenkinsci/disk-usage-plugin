@@ -48,8 +48,10 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     
     public Long getDiskUsageWorkspace(){
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        if(property==null)
-            return 0l;
+        if(property==null){
+            DiskUsageUtil.addProperty(project);
+            property = project.getProperty(DiskUsageProperty.class);
+        }
         return property.getAllWorkspaceSize();
     }
     
@@ -111,12 +113,8 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     public Long getDiskUsageWithoutBuilds(){
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            property = new DiskUsageProperty();
-            try {
-                project.addProperty(property);
-            } catch (IOException ex) {
-                Logger.getLogger(ProjectDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            DiskUsageUtil.addProperty(project);
+            property = project.getProperty(DiskUsageProperty.class);
         }
         return property.getDiskUsageWithoutBuilds();
     }
@@ -124,7 +122,8 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     public Long getAllDiskUsageWithoutBuilds(){
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            return 0l;
+            DiskUsageUtil.addProperty(project);
+            property = project.getProperty(DiskUsageProperty.class);
         }
         return property.getAllDiskUsageWithoutBuilds();
     }
@@ -156,9 +155,8 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                     AbstractProject p = (AbstractProject) item;
                     DiskUsageProperty property = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
                     if(property==null){
-                        property = new DiskUsageProperty();
-                        p.addProperty(property);
-                        property.loadDiskUsage();
+                        DiskUsageUtil.addProperty(project);
+                        property = project.getProperty(DiskUsageProperty.class);
                     }
                     Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
                     for(DiskUsageBuildInformation information: informations){
@@ -215,9 +213,8 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     public Map<String, Long> getBuildsDiskUsage(Date older, Date yonger) throws IOException {
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            property = new DiskUsageProperty();
-            project.addProperty(property);
-            property.loadDiskUsage();
+            DiskUsageUtil.addProperty(project);
+            property = project.getProperty(DiskUsageProperty.class);
         }
         Map<String,Long> diskUsage = new TreeMap<String,Long>();
         Long buildsDiskUsage = 0l;
@@ -281,8 +278,8 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     public Set<DiskUsageBuildInformation> getBuildsInformation() throws IOException{
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null){
-            property = new DiskUsageProperty();
-            project.addProperty(property);
+            DiskUsageUtil.addProperty(project);
+            property = project.getProperty(DiskUsageProperty.class);
         }
         return property.getDiskUsageOfBuilds();
     }
