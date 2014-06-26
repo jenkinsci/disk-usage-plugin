@@ -1,6 +1,8 @@
 package hudson.plugins.disk_usage.integration;
 
 
+import hudson.model.AbstractBuild;
+import hudson.matrix.MatrixBuild;
 import hudson.model.TopLevelItem;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -334,6 +336,63 @@ public class DiskUsagePropertyTest {
        assertTrue("Project should contains workspace with path {JENKINS_HOME}/workspace", property.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));      
        assertEquals("Builds should be loaded.", 8, project._getRuns().getLoadedBuilds().size(), 0);
     }
+    
+    @Test
+    public void testGetAllDiskUsageOfBuild() throws IOException, Exception{
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
+        MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
+        TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
+        TextAxis axis2 = new TextAxis("axis2", "Aaxis", "Baxis", "Caxis");
+        AxisList list = new AxisList();
+        list.add(axis1);
+        list.add(axis2);
+        matrixProject.setAxes(list);
+        j.buildAndAssertSuccess(project);
+        AbstractBuild build = project.getLastBuild();
+        j.buildAndAssertSuccess(matrixProject);
+        MatrixBuild matrixBuild1 = matrixProject.getLastBuild();
+        j.buildAndAssertSuccess(matrixProject);
+        MatrixBuild matrixBuild2 = matrixProject.getLastBuild();
+        Long sizeofBuild = 7546l;
+        Long sizeOfMatrixBuild1 = 6800l;
+        Long sizeOfMatrixBuild2 = 14032l;
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
+        DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
+        DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
+        long size1 = 5390;
+        long size2 = 2390;
+        int count = 1;
+        Long matrixBuild1TotalSize = sizeOfMatrixBuild1;
+        Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
+        for(MatrixConfiguration c: matrixProject.getItems()){
+            AbstractBuild configurationBuild = c.getBuildByNumber(1);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
+            matrixBuild1TotalSize += count*size1;
+            AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
+            matrixBuild2TotalSize += count*size2;
+            count++;
+        }
+        hudson.plugins.disk_usage.DiskUsageProperty freeStyleProjectProperty = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty matrixProjectProperty = (DiskUsageProperty) matrixProject.getProperty(DiskUsageProperty.class);
+        assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, freeStyleProjectProperty.getAllDiskUsageOfBuild(1));
+        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, matrixProjectProperty.getAllDiskUsageOfBuild(1));
+        assertEquals("BuildDiskUsageAction for build 2 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild2TotalSize, matrixProjectProperty.getAllDiskUsageOfBuild(2));
+        
+    }
+    
+    @Test
+    @LocalData
+    public void testDoNotBreakLazyLoading(){
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        int loadedBuilds = project._getRuns().getLoadedBuilds().size();
+        assertTrue("This tests does not sense if there are loaded all builds.",8>loadedBuilds);
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        assertEquals("Size of builds should be loaded.", 1000, property.getAllDiskUsageOfBuild(1), 0);
+        assertEquals("Size of builds should be loaded.", 7000, property.getAllDiskUsageOfBuild(7), 0);
+        assertTrue("No new build should be loaded.", loadedBuilds <= project._getRuns().getLoadedBuilds().size());      
+    }
+    
     
     @Target(METHOD)
     @Retention(RUNTIME)

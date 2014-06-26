@@ -305,7 +305,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         //do it in reverse order
         for (DiskUsageBuildInformation build : builds) {
             
-           usages.add(new Object[]{build, getJobRootDirDiskUsage(), build.getSize(), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
+           usages.add(new Object[]{build, getJobRootDirDiskUsage(), property.getAllDiskUsageOfBuild(build.getNumber()), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
             maxValue = Math.max(maxValue, build.getSize());
         }
 

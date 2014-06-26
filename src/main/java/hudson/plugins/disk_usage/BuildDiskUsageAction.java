@@ -8,7 +8,6 @@ import hudson.model.Node;
 import hudson.model.ProminentProjectAction;
 import hudson.model.TopLevelItem;
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;

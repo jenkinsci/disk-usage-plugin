@@ -1,6 +1,5 @@
 package hudson.plugins.disk_usage.integration;
 
-import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.model.Action;
 import java.util.List;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;

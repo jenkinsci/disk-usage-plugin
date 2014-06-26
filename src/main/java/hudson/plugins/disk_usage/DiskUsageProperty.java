@@ -80,6 +80,35 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
          return null;
      }
      
+     public Long getAllDiskUsageOfBuild(String buildId){
+         return getAllDiskUsageOfBuild(getDiskUsageBuildInformation(buildId).getNumber());
+     }
+     
+     public Long getAllDiskUsageOfBuild(int buildNumber){
+         Long size = getDiskUsageOfBuild(buildNumber);
+         if(owner instanceof ItemGroup){
+             ItemGroup group = (ItemGroup) owner;
+             for(Object item : group.getItems()){
+                 if(item instanceof AbstractProject){
+                     AbstractProject project = (AbstractProject) item;
+                     DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                     size += property.getAllDiskUsageOfBuild(buildNumber);
+                 }
+             }
+        }
+         return size;
+     }
+     
+     
+     public DiskUsageBuildInformation getDiskUsageBuildInformation(int buildNumber){
+         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
+             if(buildNumber == information.getNumber()){
+                 return information;
+             }       
+         }
+         return null;
+     }
+     
      public Long getDiskUsageOfBuild(int buildNumber){
          for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
              if(buildNumber == information.getNumber()){
