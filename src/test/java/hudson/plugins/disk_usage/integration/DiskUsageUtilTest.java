@@ -53,6 +53,7 @@ public class DiskUsageUtilTest {
         Long sizeAll = size;
         for(MatrixConfiguration config: project.getActiveConfigurations()){
             AbstractBuild b = config.getBuildByNumber(1);
+            System.out.println("build root size " + b.getRootDir().length());
             File f = new File(b.getRootDir(), "fileList");
             sizeAll += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(f)) + build.getRootDir().length();
         }
