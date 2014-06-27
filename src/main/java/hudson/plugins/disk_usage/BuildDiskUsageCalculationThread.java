@@ -71,6 +71,15 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                 logger.log(Level.WARNING, "Error when recording disk usage for builds", ex);
             }
         }
+        else{
+            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+            if(plugin.getConfiguration().isCalculationBuildsEnabled()){
+                logger.log(Level.FINER, "Calculation of builds is already in progress.");
+            }
+            else{
+                logger.log(Level.FINER, "Calculation of builds is disabled.");
+            }
+        }
     }
     
     public CronTab getCronTab() throws ANTLRException{

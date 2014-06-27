@@ -63,6 +63,14 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
                 logger.log(Level.WARNING, "Error when recording disk usage for jobs.", e);
             }
         }
+        else{
+            if(plugin.getConfiguration().isCalculationJobsEnabled()){
+                logger.log(Level.FINER, "Calculation of jobs is already in progress.");
+            }
+            else{
+                logger.log(Level.FINER, "Calculation of jobs is disabled.");
+            }
+        }
     }
 
     @Override

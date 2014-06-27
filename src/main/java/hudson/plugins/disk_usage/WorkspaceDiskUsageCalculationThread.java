@@ -59,6 +59,14 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
                 logger.log(Level.WARNING, "Error when recording disk usage for workspaces.", e);
             }
         }
+        else{
+            if(plugin.getConfiguration().isCalculationWorkspaceEnabled()){
+                logger.log(Level.FINER, "Calculation of workspace is already in progress.");
+            }
+            else{
+                logger.log(Level.FINER, "Calculation of workspace is disabled.");
+            }
+        }
         
     } 
     
