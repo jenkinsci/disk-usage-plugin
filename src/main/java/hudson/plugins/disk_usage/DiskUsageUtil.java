@@ -131,6 +131,10 @@ public class DiskUsageUtil {
        
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         String address = plugin.getConfiguration().getEmailAddress();
+        if(address==null || address.isEmpty()){
+            Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "e-mail addres is not set for notification about exceed disk size. Please set it in global configuration.");
+            return;
+        }
         MimeMessage msg = new MimeMessage(Mailer.descriptor().createSession());
         msg.setSubject(subject);
         msg.setText(message, "utf-8");
