@@ -377,7 +377,8 @@ public class DiskUsageUtil {
         //Build disk usage has to be always recalculated to be kept up-to-date 
         //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
         long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.getInstance().getBuildDirFor(project), buildId), new ArrayList<File>());
-//        if (build instanceof MavenModuleSetBuild) {
+        System.out.println(buildSize);
+        //        if (build instanceof MavenModuleSetBuild) {
 //            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
 //            for (List<MavenBuild> mavenBuilds : builds) {
 //                for (MavenBuild mavenBuild : mavenBuilds) {
