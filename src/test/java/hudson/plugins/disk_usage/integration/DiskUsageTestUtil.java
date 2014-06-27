@@ -44,10 +44,13 @@ public class DiskUsageTestUtil {
     }
     
     protected static Long getSize(List<File> files){
+        System.out.println("getSize for test");
         Long lenght = 0l;
         for(File file: files){
+            System.out.println(file.getAbsolutePath() + " " + file.length());
             lenght += file.length();
         }
+        System.out.println("total " + lenght);
         return lenght;
     }
     

@@ -288,20 +288,26 @@ public class DiskUsageUtil {
     }
     
     public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
+        System.out.println("list exceed files" + exceedFiles);
+        System.out.println("calculate file " + f.getAbsolutePath());
             long size = 0;
             if(!f.exists())
                 return size;
             if (f.isDirectory() && !isSymlink(f)) {
             	File[] fileList = f.listFiles();
+                System.out.println("subfiles " + fileList);
             	if (fileList != null) for (File child : fileList) {
+                    System.out.println("subfile " + child.getAbsolutePath());
                     if(exceedFiles.contains(child))
                         continue; //do not count exceeded files
+                    System.out.println("not exceeded");
                     if (!isSymlink(child)) size += getFileSize(child, exceedFiles);
                 }
                 else {
             		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
             	}
             }
+            System.out.println("size " + f.length());
             return size + f.length();
    }
     
