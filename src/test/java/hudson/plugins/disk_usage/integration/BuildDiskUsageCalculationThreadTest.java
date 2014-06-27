@@ -89,6 +89,9 @@ public class BuildDiskUsageCalculationThreadTest {
             buildSizesProject2.put(build, getSize(readFileList(file)) + build.getRootDir().length());
         }
         BuildDiskUsageCalculationThread calculation = new BuildDiskUsageCalculationThread();
+        if(calculation.isExecuting()){
+          waitUntilThreadEnds(calculation);  
+        }
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
         for(AbstractBuild build: buildSizesProject1.keySet()){
@@ -124,6 +127,9 @@ public class BuildDiskUsageCalculationThreadTest {
             matrixConfigurationBuildsSize.put(c.getDisplayName(), getSize(readFileList(file)) + build.getRootDir().length());
         }
         BuildDiskUsageCalculationThread calculation = new BuildDiskUsageCalculationThread();
+        if(calculation.isExecuting()){
+          waitUntilThreadEnds(calculation);  
+        }
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
         Long size = DiskUsageTestUtil.getBuildDiskUsageAction(project.getBuildByNumber(1)).getDiskUsage();

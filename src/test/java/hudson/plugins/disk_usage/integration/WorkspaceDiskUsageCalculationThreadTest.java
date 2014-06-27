@@ -43,7 +43,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
  *
  * @author Lucie Votypkova
  */
-public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
+public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{        
     private void waitUntilThreadEnds(WorkspaceDiskUsageCalculationThread calculation) throws InterruptedException{
         Thread thread = null;
         //wait until thread ends
@@ -112,6 +112,9 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
         Long size2 = getSize(readFileList(file)) + slave1.getWorkspaceFor(project2).length() + slave2.getWorkspaceFor(project2).length();      
         WorkspaceDiskUsageCalculationThread thread = new WorkspaceDiskUsageCalculationThread();
+        if(thread.isExecuting()){
+          waitUntilThreadEnds(thread);  
+        }
         thread.execute(TaskListener.NULL);
         waitUntilThreadEnds(thread);
         Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());       
@@ -145,6 +148,9 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         project1.setAssignedNode(slave2);
         buildAndAssertSuccess(project1);
         WorkspaceDiskUsageCalculationThread thread = new WorkspaceDiskUsageCalculationThread();
+        if(thread.isExecuting()){
+          waitUntilThreadEnds(thread);  
+        }
         thread.execute(TaskListener.NULL);
         waitUntilThreadEnds(thread);
         slave1.toComputer().setTemporarilyOffline(false, null);
