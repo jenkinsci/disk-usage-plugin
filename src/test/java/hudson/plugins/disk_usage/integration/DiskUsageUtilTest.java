@@ -48,6 +48,7 @@ public class DiskUsageUtilTest {
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         AbstractBuild build = project.getBuildByNumber(1);
         File file = new File(build.getRootDir(), "fileList");
+        System.out.println("build root size " + build.getRootDir().length());
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + build.getRootDir().length();
         Long sizeAll = size;
         for(MatrixConfiguration config: project.getActiveConfigurations()){
