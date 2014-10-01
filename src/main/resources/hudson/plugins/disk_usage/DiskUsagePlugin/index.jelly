@@ -60,7 +60,7 @@
       <j:set var="buildsLocked" value="0"/>
       <j:forEach var="p" items="${projects}">
         <tr>
-          <td><b><a href="${it.getProjectUrl(p)}">${p.getFullName()}</a></b> </td>
+          <td><b><a href="${it.getProjectUrl(p)}">${p.fullDisplayName}</a></b> </td>
           <j:set var="diskUsage" value="${it.getDiskUsage(p)}" />
            <j:set var="buildDiskUsage" value="${diskUsage.getBuildsDiskUsage(request.getAttribute('older'), request.getAttribute('younger'))}" />            
            <j:set var="buildsAll" value="${buildsAll + buildDiskUsage.get('all')}"/>

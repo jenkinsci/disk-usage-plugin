@@ -163,13 +163,9 @@ public class DiskUsagePlugin extends Plugin {
             }
         };
 
-        List<AbstractProject> projectList = new ArrayList();
-        for(Item item: Jenkins.getInstance().getItems()){
-            if(item instanceof AbstractProject)
-                projectList.add((AbstractProject)item);
-        }
+        List<AbstractProject> projectList = Jenkins.getInstance().getAllItems(AbstractProject.class);
         Collections.sort(projectList, comparator);
-        
+
         return projectList;
     }
     
