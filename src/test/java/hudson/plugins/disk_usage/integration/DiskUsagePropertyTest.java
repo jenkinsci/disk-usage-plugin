@@ -143,8 +143,8 @@ public class DiskUsagePropertyTest {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         DiskUsageProperty property = new DiskUsageProperty();
         project.addProperty(property);
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
-        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave1 = j.createOnlineSlave();
+        Slave slave2 = j.createOnlineSlave();
         FilePath path = j.jenkins.getWorkspaceFor(project);
         path.mkdirs();
         property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
@@ -153,7 +153,7 @@ public class DiskUsagePropertyTest {
         j.jenkins.removeNode(slave2);
         property.checkWorkspaces();
         assertFalse("Disk usage property should not contains slave which does not exist.", property.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
-        assertTrue("Disk usage property should not slave1.", property.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
+        assertTrue("Disk usage property should contains slave1.", property.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
         assertTrue("Disk usage property should contains jenkins master.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));       
     }  
     
@@ -162,8 +162,8 @@ public class DiskUsagePropertyTest {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         DiskUsageProperty property = new DiskUsageProperty();
         project.addProperty(property);
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
-        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave1 = j.createOnlineSlave();
+        Slave slave2 = j.createOnlineSlave();
         FilePath path = j.jenkins.getWorkspaceFor(project);
         path.mkdirs();
         property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
