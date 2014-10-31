@@ -186,6 +186,7 @@ public class BuildDiskUsageCalculationThreadTest {
         
         public TestFreeStyleProject(ItemGroup group, String name){
             super(group, name);
+            onCreatedFromScratch();
         }
         
          @Override

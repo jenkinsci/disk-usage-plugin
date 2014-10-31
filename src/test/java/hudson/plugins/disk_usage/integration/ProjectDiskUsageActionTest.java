@@ -183,6 +183,7 @@ public class ProjectDiskUsageActionTest {
          
          ProjectTest(ItemGroup group, String name){
              super(group, name);
+             onCreatedFromScratch();
              ItemListener.fireOnCreated(this);
          }
          
