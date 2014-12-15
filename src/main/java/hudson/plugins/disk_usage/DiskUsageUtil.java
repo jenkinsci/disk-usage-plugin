@@ -65,7 +65,7 @@ public class DiskUsageUtil {
             }
             if(item instanceof ItemGroup){
                 
-                for(AbstractProject project : DiskUsageUtil.getAllProjects((ItemGroup)item)){
+                for(AbstractProject project : DiskUsageUtil.getAllProjects((ItemGroup<?>)item)){
                     DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                     if(property==null){
                         try {
