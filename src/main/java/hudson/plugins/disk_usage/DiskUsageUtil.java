@@ -12,17 +12,11 @@ import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
-import hudson.model.Run;
-import hudson.model.TopLevelItem;
 import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -400,13 +394,13 @@ public class DiskUsageUtil {
                     }
                     else{
                         if(build!=null){
-                            information = new DiskUsageBuildInformation(buildId, build.getNumber(), buildSize);
+                            information = new DiskUsageBuildInformation(buildId, build.getTimeInMillis(), build.getNumber(), buildSize);
                             property.getDiskUsageOfBuilds().add(information);
                         }
                         else{
                             //should not happen
                             AbstractBuild newLoadedBuild = (AbstractBuild) project._getRuns().getById(buildId);
-                            information = new DiskUsageBuildInformation(buildId, newLoadedBuild.getNumber(), buildSize);
+                            information = new DiskUsageBuildInformation(buildId, newLoadedBuild.getTimeInMillis(), newLoadedBuild.getNumber(), buildSize);
                             property.getDiskUsageOfBuilds().add(information);
                         }
                     }
@@ -534,30 +528,6 @@ public class DiskUsageUtil {
             return DiskUsageUtil.getFileSize(f, exceeded);
         }
        
-    }
-    
-    
-    public static FilenameFilter getBuildDirectoryFilter(){
-        final DateFormat formatter = Run.getIDFormatter();
-        return new FilenameFilter() {
-            @Override public boolean accept(File dir, String name) {
-                if (name.startsWith("0000")) {
-                    // JENKINS-1461 sometimes create bogus data directories with impossible dates, such as year 0, April 31st,
-                    // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
-                    // Don't even bother trying.
-                    return false;
-                }
-                try {
-                    if (formatter.format(formatter.parse(name)).equals(name)) {
-                        return true;
-                    }
-                } catch (ParseException e) {
-                    // fall through
-                }
-                LOGGER.log(Level.FINE, "Skipping {0} in {1}", new Object[] {name, dir});
-                return false;
-            }
-        };
     }
     
     public static final Logger LOGGER = Logger.getLogger(DiskUsageUtil.class.getName());

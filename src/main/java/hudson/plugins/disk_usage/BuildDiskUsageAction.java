@@ -70,7 +70,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             information.setSize(size);
         }
         else{    
-            property.getDiskUsageOfBuilds().add(new DiskUsageBuildInformation(build.getId(), build.getNumber(), size));
+            property.getDiskUsageOfBuilds().add(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size));
         }
         property.saveDiskUsage(); 
     }
