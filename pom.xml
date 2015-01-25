@@ -10,7 +10,7 @@
   <artifactId>disk-usage</artifactId>
   <packaging>hpi</packaging>
   <name>Jenkins disk-usage plugin</name>
-  <version>0.25-SNAPSHOT</version>
+  <version>0.25</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Disk+Usage+Plugin</url>
 
   <developers>
@@ -24,6 +24,7 @@
     <connection>scm:git:git://github.com/jenkinsci/disk-usage-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/disk-usage-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/disk-usage-plugin</url>
+    <tag>disk-usage-0.25</tag>
   </scm>
 
   <distributionManagement>
