@@ -82,7 +82,7 @@ public class ProjectDiskUsage implements Saveable{
             if(run instanceof AbstractBuild){
                 AbstractBuild build = (AbstractBuild) run;
                 BuildDiskUsageAction usage = run.getAction(BuildDiskUsageAction.class);
-                DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.number, 0l);
+                DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
                 buildDiskUsage.add(information);
                 if(usage==null){
                     run.getActions().add(new BuildDiskUsageAction(build));
@@ -134,7 +134,7 @@ public class ProjectDiskUsage implements Saveable{
             if(run instanceof AbstractBuild){
                 AbstractBuild build = (AbstractBuild) run;
                 BuildDiskUsageAction usage = run.getAction(BuildDiskUsageAction.class);
-                DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.number, 0l);
+                DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
                 buildDiskUsage.add(information);
                 if(usage!=null){
                     information.setSize(usage.buildDiskUsage);

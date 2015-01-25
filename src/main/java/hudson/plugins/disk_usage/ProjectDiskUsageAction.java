@@ -7,7 +7,6 @@ import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
 import hudson.util.Graph;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -160,13 +159,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                     }
                     Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
                     for(DiskUsageBuildInformation information: informations){
-                        Date date = null;
-                        try {
-                            date = Run.getIDFormatter().parse(information.getId());
-                        } catch (ParseException ex) {
-                            Logger.getLogger(ProjectDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-                            continue;
-                        }
+                        Date date = new Date(information.getTimestamp());
                         if(older!=null && !date.before(older))
                             continue;
                         if(yonger!=null && !date.after(yonger))
@@ -230,13 +223,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
             }
           Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
           for(DiskUsageBuildInformation information: informations){
-            Date date = null;
-                try {
-                    date = Run.getIDFormatter().parse(information.getId());
-                } catch (ParseException ex) {
-                    Logger.getLogger(ProjectDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-                    continue;
-                }
+            Date date = new Date(information.getTimestamp());
             if(older!=null && !date.before(older))
                 continue;
             if(yonger!=null && !date.after(yonger))
