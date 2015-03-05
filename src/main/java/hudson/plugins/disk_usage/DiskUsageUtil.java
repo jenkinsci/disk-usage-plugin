@@ -12,6 +12,7 @@ import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
+import hudson.plugins.disk_usage.sizing.FileSizerProvider;
 import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
 import java.io.File;
@@ -288,21 +289,13 @@ public class DiskUsageUtil {
     }
     
     public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
-            long size = 0;
-            if(!f.exists())
-                return size;
-            if (f.isDirectory() && !isSymlink(f)) {
-            	File[] fileList = f.listFiles();
-            	if (fileList != null) for (File child : fileList) {
-                    if(exceedFiles.contains(child))
-                        continue; //do not count exceeded files
-                    if (!isSymlink(child)) size += getFileSize(child, exceedFiles);
-                }
-                else {
-            		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
-            	}
-            }
-            return size + f.length();
+		long size = 0;
+		if(!f.exists()) {
+			return size;
+		}
+
+		size = new FileSizerProvider().fileSizer().calculateFileSize(f, exceedFiles);
+		return size;
    }
     
     public static void calculateDiskUsageForProject(AbstractProject project) throws IOException{
