@@ -28,7 +28,7 @@ public class UnixDiskUsageFileSizer extends AbstractNativeDiskUsageFileSizer {
 	protected boolean canExecuteBinary() {
 		boolean canExecute = false;
 		try {
-			canExecute = executeCommand(new File("."), "du", "-s", ".").contains(".");
+			canExecute = executeCommand(new File("."), "du", "-sk", ".").contains(".");
 		} catch (NativeDiskUsageFileSizingException e) {
 			LOGGER.log(FINEST, "Cannot execute "+getClass()+ " on this machine.", e);
 		}
@@ -37,7 +37,7 @@ public class UnixDiskUsageFileSizer extends AbstractNativeDiskUsageFileSizer {
 
 	public Long calculateFileSize(File f, List<File> exceedFiles) {
 		try {
-			String output = executeCommand(f, "du", "-Hs", ".");
+			String output = executeCommand(f, "du", "-Hsk", ".");
 			return bytesFromOutput(output);
 		} catch (NativeDiskUsageFileSizingException e) {
 			LOGGER.log(WARNING, "Problem while calculating disk-usage.", e);
@@ -49,7 +49,8 @@ public class UnixDiskUsageFileSizer extends AbstractNativeDiskUsageFileSizer {
 		// example output: 
 		// 2284632	.
 		final String bytesAsString = CharMatcher.inRange('0', '9').retainFrom(output);
-		final long resultingBytes = Long.parseLong(bytesAsString);
+		final long resultingKiloBytes = Long.parseLong(bytesAsString);
+		final long resultingBytes = resultingKiloBytes * 1024L;
 		LOGGER.log(FINER, "interpreting output of du '{0}' as {1} bytes.", new Object[]{output, resultingBytes});
 		return resultingBytes;
 	}
