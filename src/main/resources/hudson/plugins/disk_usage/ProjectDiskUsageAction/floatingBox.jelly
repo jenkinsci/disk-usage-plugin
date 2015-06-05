@@ -1,15 +1,17 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 
-Project disk usage information + trend graph
-
-
 <j:if test="${(from.getAllDiskUsageWorkspace() > 0) || (from.getJobRootDirDiskUsage() > 0) || (from.getAllBuildsDiskUsage() > 0)}">
-    
+
+  <div class="test-trend-caption">
+      Disk Usage
+  </div>    
   <div style="width:auto;align:right;margin:12px;">
     <div style="width:auto;margin:0px;margin-left:auto;text-align:right;">
-      <img src="${resURL}/plugin/disk-usage/icons/diskusage16.png" /> 
-     
-    <b>${%Disk Usage}: </b>  ${%Workspace} ${from.getSizeInString(from.getAllDiskUsageWorkspace())} (${%On slaves} ${from.getSizeInString(from.getAllSlaveWorkspaces())}, ${%Non slave workspaces} ${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces())}),  ${%Builds} ${from.getSizeInString(from.getBuildsDiskUsage().get('all'))} (${%Locked} ${from.getSizeInString(from.getBuildsDiskUsage().get('locked'))}), ${%Job directory} ${from.getSizeInString(from.getJobRootDirDiskUsage())}
+        <ul>
+            <li>${%Workspace} ${from.getSizeInString(from.getAllDiskUsageWorkspace())} (${%On slaves} ${from.getSizeInString(from.getAllSlaveWorkspaces())}</li>
+            <li>${%Non slave workspaces} ${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces())})</li>
+            <li>${%Builds} ${from.getSizeInString(from.getBuildsDiskUsage().get('all'))} (${%Locked} ${from.getSizeInString(from.getBuildsDiskUsage().get('locked'))}), ${%Job directory} ${from.getSizeInString(from.getJobRootDirDiskUsage())}</li>
+        </ul>
     </div>
   </div>
 
