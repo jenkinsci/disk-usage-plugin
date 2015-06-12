@@ -447,11 +447,11 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
     }    
 
-    public synchronized void saveDiskUsage() {
+    public void saveDiskUsage() {
         diskUsage.save();
     }
     
-    public synchronized void loadDiskUsage(){
+    public void loadDiskUsage(){
         diskUsage.load();        
     }
 
