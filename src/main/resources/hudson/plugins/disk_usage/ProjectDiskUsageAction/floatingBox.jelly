@@ -4,7 +4,8 @@
 
   <div class="test-trend-caption">
       Disk Usage
-  </div>    
+  </div>
+  
   <div style="width:auto;align:right;margin:12px;">
     <div style="width:auto;margin:0px;margin-left:auto;text-align:right;">
         <ul>
@@ -16,6 +17,7 @@
   </div>
 
   <j:if test="${from.showGraph()}">
+    
     <div class="test-trend-caption">
       ${%Disk Usage Trend}
     </div>
@@ -23,7 +25,9 @@
     <div>
       <img src="diskUsage/graph/png?height=200&amp;width=550" lazymap="diskUsage/graph/map"/>
     </div>
+    
   </j:if>
   
 </j:if>
+
 </j:jelly>
