@@ -282,14 +282,15 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         long maxValueWorkspace = 0;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         maxValueWorkspace = Math.max(getAllCustomOrNonSlaveWorkspaces(), getAllSlaveWorkspaces());
-        maxValue =  getJobRootDirDiskUsage();
+        Long jobRootDirDiskUsage = getJobRootDirDiskUsage();
+        maxValue = jobRootDirDiskUsage;
         //First iteration just to get scale of the y-axis
         TreeSet<DiskUsageBuildInformation> builds = new TreeSet<DiskUsageBuildInformation>();
         builds.addAll(property.getDiskUsageOfBuilds());
         //do it in reverse order
         for (DiskUsageBuildInformation build : builds) {
             
-           usages.add(new Object[]{build, getJobRootDirDiskUsage(), property.getAllDiskUsageOfBuild(build.getNumber()), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
+           usages.add(new Object[]{build, jobRootDirDiskUsage, property.getAllDiskUsageOfBuild(build.getNumber()), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
             maxValue = Math.max(maxValue, build.getSize());
         }
 
