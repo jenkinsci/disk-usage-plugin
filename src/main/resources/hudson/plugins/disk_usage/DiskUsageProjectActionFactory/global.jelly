@@ -31,7 +31,7 @@
             </f:entry>
            <f:optionalBlock name="jobsWarning" title="${%Warn if all jobs exceed some size}" checked="${descriptor.warnAboutAllJobsExceetedSize()}">  
              <f:entry title="${%Exceeded size for all jobs}">
-              <j:set var="allJobsSize" value="${descriptor.getJobExceedSizeInString()}" />
+              <j:set var="allJobsSize" value="${descriptor.getAllJobsExceedSizeInString()}" />
 	      <input name="allJobsSize" value="${descriptor.getValue(allJobsSize)}" />
               <select name="JobsSizeUnit">
                <f:option value="B" selected="${allJobsSize==null || (descriptor.getUnit(allJobsSize).equals('B'))}">B</f:option>  
