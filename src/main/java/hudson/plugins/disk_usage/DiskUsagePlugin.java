@@ -139,11 +139,6 @@ public class DiskUsagePlugin extends Plugin {
         return DiskUsageUtil.getSizeString(size);
     }
     
-    //Another shortcut
-    public static String getProjectUrl(Job project) {
-        return Util.encode(project.getAbsoluteUrl());
-    }
-    
     /**
      * @return Project list sorted by occupied disk space
      */
