@@ -149,7 +149,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
              try{
                 job.save();
              }
-             catch(IOException e){
+             catch(Exception e){
                  Logger.getLogger(getClass().getName()).log(Level.WARNING, "configuration of project " + job.getDisplayName() + " can not be saved.", e);
              }
          }
