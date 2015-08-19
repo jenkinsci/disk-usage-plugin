@@ -1,5 +1,6 @@
 package hudson.plugins.disk_usage.integration;
 
+import hudson.XmlFile;
 import hudson.model.AbstractProject;
 import hudson.plugins.disk_usage.*;
 import hudson.matrix.MatrixConfiguration;

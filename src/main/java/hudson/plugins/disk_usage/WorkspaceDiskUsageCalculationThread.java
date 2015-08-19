@@ -35,7 +35,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {                
          DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(startExecution()){
+        if(!isCancelled() && startExecution()){
             try{
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();

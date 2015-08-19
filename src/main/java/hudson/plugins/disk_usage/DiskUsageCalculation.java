@@ -10,13 +10,19 @@ import hudson.scheduler.CronTab;
 import hudson.triggers.Trigger;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.util.Timer;
 
 /**
  *
  * @author lucinka
  */
-public abstract class DiskUsageCalculation extends AsyncAperiodicWork{              
+public abstract class DiskUsageCalculation extends AsyncAperiodicWork{ 
+    
+    private boolean cancelled;
     
     public DiskUsageCalculation(String name){        
         super(name); 
@@ -47,17 +53,40 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
         
     public abstract DiskUsageCalculation getLastTask();
     
-    public long scheduledLastInstanceExecutionTime(){
-        if(getLastTask()==null || getLastTask()==this){
-            return super.scheduledExecutionTime();
+    public long scheduledLastInstanceExecutionTime() {
+        try {
+            CronTab tab = null;
+            if(getLastTask()==null || getLastTask().isCancelled()) //not scheduled
+                return 0l;
+            tab = getLastTask().getCronTab();
+                long time = getCronTab().ceil(new GregorianCalendar().getTimeInMillis()).getTimeInMillis(); 
+                if(time< new GregorianCalendar().getTimeInMillis()){
+                    return 0;
+                }
+                return time;
+
+        } catch (ANTLRException ex) {
+            Logger.getLogger(DiskUsageCalculation.class.getName()).log(Level.SEVERE, null, ex);
+            return -1;
         }
-        return getLastTask().scheduledExecutionTime();
     }
     
     @Override
     public long getInitialDelay(){
         return getRecurrencePeriod();
     } 
+    
+    @Override
+    public boolean cancel(){
+       cancelled = true;
+       ScheduledThreadPoolExecutor ex = (ScheduledThreadPoolExecutor) Timer.get();
+        ex.purge();
+       return super.cancel();
+    }
+    
+    public boolean isCancelled(){
+        return cancelled;
+    }
     
     public void reschedule(){
         if(getLastTask()==null){
@@ -66,8 +95,13 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
         else{
             getLastTask().cancel();   
         }
-        Trigger.timer.purge();
-        Trigger.timer.schedule(getNewInstance(), getRecurrencePeriod());
+        Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
+        
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DiskUsageCalculation.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public abstract CronTab getCronTab() throws ANTLRException;

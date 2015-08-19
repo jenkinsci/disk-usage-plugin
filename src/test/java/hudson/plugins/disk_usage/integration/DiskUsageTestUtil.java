@@ -63,8 +63,7 @@ public class DiskUsageTestUtil {
     }
     
     protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild build){
-        List<Action> actions = build.getTransientActions();
-        for(Action a : actions){
+        for(Action a : build.getAllActions()){
             if(a instanceof BuildDiskUsageAction)
                 return (BuildDiskUsageAction) a;
         }

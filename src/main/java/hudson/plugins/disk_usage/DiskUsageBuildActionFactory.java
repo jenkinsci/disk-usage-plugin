@@ -12,24 +12,22 @@ import hudson.model.TransientBuildActionFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.TransientActionFactory;
 
 /**
  *
  * @author Lucie Votypkova
  */
 @Extension
-public class DiskUsageBuildActionFactory extends TransientBuildActionFactory{
-    
+public class DiskUsageBuildActionFactory extends TransientActionFactory<AbstractBuild>{
+
     @Override
-    public Collection<? extends Action> createFor(Run target) {
-        if (target instanceof AbstractBuild){
-            AbstractBuild build = (AbstractBuild) target;
-            BuildDiskUsageAction action = build.getAction(BuildDiskUsageAction.class);
-            if (action!=null){
-                build.getActions().remove(action);
-            }
-            return new ArrayList<Action>(Collections.singleton(new BuildDiskUsageAction(build)));
-        }
-        return Collections.EMPTY_LIST;   
+    public Class type() {
+        return AbstractBuild.class;
+    }
+
+    @Override
+    public Collection<? extends Action> createFor(AbstractBuild t) {
+        return new ArrayList<Action>(Collections.singleton(new BuildDiskUsageAction(t))); 
     }
 }

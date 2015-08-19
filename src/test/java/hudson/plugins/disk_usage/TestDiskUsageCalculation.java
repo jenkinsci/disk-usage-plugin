@@ -6,6 +6,7 @@ import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
 import hudson.triggers.Trigger;
 import java.util.List;
+import jenkins.util.Timer;
 
 /*
  * To change this template, choose Tools | Templates
@@ -69,8 +70,10 @@ public class TestDiskUsageCalculation extends BuildDiskUsageCalculationThread{
     public AperiodicWork getNewInstance() {
         TestDiskUsageCalculation c = new TestDiskUsageCalculation(cron, sleep);
         if(instancesHistory!=null){
-            if(maxInstances<=instancesHistory.size())
-                Trigger.timer.cancel();
+            if(maxInstances<=instancesHistory.size()){
+                instancesHistory.get(0).cancel();
+                instancesHistory.remove(0);
+            }
             instancesHistory.add(c);
         }
         if(currentInstance!=null){

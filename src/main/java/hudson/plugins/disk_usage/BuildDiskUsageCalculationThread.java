@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 
 
@@ -34,7 +35,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
-        if(startExecution()){
+        if(!isCancelled() && startExecution()){
             try{
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
@@ -50,7 +51,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                                 project.addProperty(property);
                             }
                             ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
-                            for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){  
+                            for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)){ 
                                 Map<Integer,AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
                                 AbstractBuild build = loadedBuilds.get(information.getNumber());
                                 //do not calculat builds in progress

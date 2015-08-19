@@ -33,6 +33,7 @@ public class DiskUsageItemListener extends ItemListener{
     @Override
     public void onCreated(Item item){
         DiskUsageUtil.addProperty(item);
+
     }
     
     @Override

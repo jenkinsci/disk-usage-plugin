@@ -82,8 +82,7 @@ public class BuildDiskUsageActionTest {
         int count = 0;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            List<Action> actions = configurationBuild.getTransientActions();
-            for(Action action : actions){
+            for(Action action : configurationBuild.getAllActions()){
                 if(action instanceof BuildDiskUsageAction){
                     BuildDiskUsageAction a = (BuildDiskUsageAction) action;
                     a.setDiskUsage(kiloBytes);
@@ -92,7 +91,7 @@ public class BuildDiskUsageActionTest {
             count++;
         }
         BuildDiskUsageAction action = null;
-        for(Action a: matrixBuild.getTransientActions()){
+        for(Action a: matrixBuild.getAllActions()){
             if(a instanceof BuildDiskUsageAction){
                 action = (BuildDiskUsageAction) a ;
                 action.setDiskUsage(kiloBytes);

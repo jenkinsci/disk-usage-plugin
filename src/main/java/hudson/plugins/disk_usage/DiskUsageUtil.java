@@ -55,7 +55,7 @@ public class DiskUsageUtil {
                         Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                loadData(property);
+                loadData(property, false);
             }
             if(item instanceof ItemGroup){
                 
@@ -69,14 +69,18 @@ public class DiskUsageUtil {
                             Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                    loadData(property);
+                    loadData(property, false);
                 }
             }
     }
     
-    private static void loadData(DiskUsageProperty property){
-        if(!property.getDiskUsage().getConfigFile().exists() || !property.getDiskUsage().isBuildsLoaded()){
-            property.getDiskUsage().loadFirstTime();
+    protected static void loadData(DiskUsageProperty property, boolean loadAllBuilds){
+        if(loadAllBuilds){
+            try {
+                property.getDiskUsage().loadAllBuilds();
+            } catch (IOException ex) {
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         else{
             property.loadDiskUsage();
@@ -304,7 +308,12 @@ public class DiskUsageUtil {
             return;
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         List<File> exceededFiles = new ArrayList<File>();       
-        Set<DiskUsageBuildInformation> informations = project.getAction(ProjectDiskUsageAction.class).getBuildsInformation();
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+         if(property==null){
+            addProperty(project);
+            property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        }
+        Set<DiskUsageBuildInformation> informations = (Set<DiskUsageBuildInformation>) property.getDiskUsage().getBuildDiskUsage(true);
         for(DiskUsageBuildInformation information : informations){
             exceededFiles.add(new File(Jenkins.getInstance().getBuildDirFor(project), information.getId()));
         }
@@ -315,11 +324,6 @@ public class DiskUsageUtil {
             }
         }
         long buildSize = DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles);
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        if(property==null){
-            addProperty(project);
-            property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        }
         Long diskUsageWithoutBuilds = property.getDiskUsageWithoutBuilds();
         boolean update = false;
         	if (( diskUsageWithoutBuilds <= 0 ) ||
@@ -340,23 +344,23 @@ public class DiskUsageUtil {
     }   
       
     
-    public static void addBuildDiskUsageAction(AbstractBuild build){
-        BuildDiskUsageAction action = null;
-        for(Action a: build.getActions()){
-            if(a instanceof BuildDiskUsageAction){
-                action = (BuildDiskUsageAction) a;
-                break;
-            }
-        }
-        if(action == null){
-            build.addAction(new BuildDiskUsageAction(build));
-            try {
-                build.save();
-            } catch (IOException ex) {
-                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
+//    public static void addBuildDiskUsageAction(AbstractBuild build){
+//        BuildDiskUsageAction action = null;
+//        for(Action a: build.getActions()){
+//            if(a instanceof BuildDiskUsageAction){
+//                action = (BuildDiskUsageAction) a;
+//                break;
+//            }
+//        }
+//        if(action == null){
+//            build.addAction(new BuildDiskUsageAction(build));
+//            try {
+//                build.save();
+//            } catch (IOException ex) {
+//                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
+//    }
         public static void calculateDiskUsageForBuild(String buildId, AbstractProject project)
             throws IOException {
             if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
@@ -378,7 +382,8 @@ public class DiskUsageUtil {
         for(AbstractBuild b : loadedBuilds){
             if(b.getId().equals(buildId)){
                 build = b;
-                addBuildDiskUsageAction(build);
+                break;
+                //addBuildDiskUsageAction(build);
             }
         }
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);

@@ -59,11 +59,11 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      }
      
      public Set<DiskUsageBuildInformation> getDiskUsageOfBuilds(){
-         return diskUsage.getBuildDiskUsage();
+         return diskUsage.getBuildDiskUsage(false);
      }
      
      public Long getDiskUsageOfBuild(String buildId){
-         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
+         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(false)){
              if(buildId.equals(information.getId())){
                  return information.getSize();
              }       
@@ -72,7 +72,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      }
      
      public DiskUsageBuildInformation getDiskUsageBuildInformation(String buildId){
-         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
+         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(false)){
              if(buildId.equals(information.getId())){
                  return information;
              }       
@@ -101,7 +101,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      
      
      public DiskUsageBuildInformation getDiskUsageBuildInformation(int buildNumber){
-         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
+         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(false)){
              if(buildNumber == information.getNumber()){
                  return information;
              }       
@@ -110,7 +110,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      }
      
      public Long getDiskUsageOfBuild(int buildNumber){
-         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage()){
+         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(false)){
              if(buildNumber == information.getNumber()){
                  return information.getSize();
              }       
@@ -452,7 +452,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     }
     
     public void loadDiskUsage(){
-        diskUsage.load();        
+        AbstractProject job = (AbstractProject) owner;
+        diskUsage.load(); 
     }
 
     @Extension
