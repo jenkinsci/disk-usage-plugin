@@ -23,6 +23,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import static hudson.plugins.disk_usage.integration.DiskUsageTestUtil.getSize;
+
 /**
  *
  * @author Lucie Votypkova
@@ -47,14 +49,6 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         return files;
     }
     
-    private Long getSize(List<File> files){
-        Long length = 0l;
-        for(File file: files){
-            length += file.length();
-        }
-        return length; 
-    }
-    
     @Test
     @LocalData
     public void testExecute() throws IOException, InterruptedException{
@@ -68,11 +62,11 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         File file = new File(project.getRootDir(),"fileList");
-        Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
+        Long projectSize = getSize(readFileList(file)) + getSize(project.getRootDir());
         file = new File(project2.getRootDir(),"fileList");
-        Long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
-        projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
-        project2Size += project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length(); 
+        Long project2Size = getSize(readFileList(file)) + getSize(project2.getRootDir());
+        projectSize += getSize(project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
+        project2Size += getSize(project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
         if(calculation.isExecuting()){
             DiskUsageTestUtil.cancelCalculation(calculation);
@@ -97,16 +91,16 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();        
         File file = new File(project.getRootDir(),"fileList");
-        Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
+        Long projectSize = getSize(readFileList(file)) + getSize(project.getRootDir());
         file = new File(project2.getRootDir(),"fileList");
-        Long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
-        projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
-        project2Size += project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();        
+        Long project2Size = getSize(readFileList(file)) + getSize(project2.getRootDir());
+        projectSize += getSize(project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
+        project2Size += getSize(project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
         for(MatrixConfiguration config: project.getItems()){
             config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
             File f = new File(config.getRootDir(),"fileList");
-            Long size = getSize(readFileList(f)) + config.getRootDir().length();
-            long diskUsageXML = config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
+            Long size = getSize(readFileList(f)) + getSize(config.getRootDir());
+            long diskUsageXML = getSize(config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
             matrixConfigurationsSize.put(config.getDisplayName(), size + diskUsageXML);
         }
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();

@@ -14,4 +14,6 @@ public interface FileSizer {
 	boolean canRun();
 	
 	Long calculateFileSize(File f, List<File> exceedFiles);
+
+	Long blockSize();
 }

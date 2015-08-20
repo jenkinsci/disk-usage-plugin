@@ -37,6 +37,8 @@ import hudson.model.Run;
 import hudson.slaves.OfflineCause;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import static hudson.plugins.disk_usage.integration.DiskUsageTestUtil.getSize;
 import static org.junit.Assert.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.lang.annotation.ElementType.METHOD;
@@ -209,14 +211,15 @@ public class DiskUsagePropertyTest {
         j.buildAndAssertSuccess(project);
         project.setCustomWorkspace(customWorkspaceSlave2.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
-        Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
+        Long customWorkspaceSlaveSize = getSize(customWorkspaceSlave1, customWorkspaceSlave2, customWorkspaceSlave1.getParentFile(),
+				customWorkspaceSlave2.getParentFile());
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
         //take one slave offline
         slave1.toComputer().disconnect(new OfflineCause.ByCLI("test disconnection"));
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
         //change remote fs
         slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"ChangedWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
-        customWorkspaceSlaveSize = customWorkspaceSlaveSize + workspaceSlave1.length();
+        customWorkspaceSlaveSize = customWorkspaceSlaveSize + getSize(workspaceSlave1);
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
     }
     
@@ -238,7 +241,8 @@ public class DiskUsagePropertyTest {
         j.buildAndAssertSuccess(project);
         project.setCustomWorkspace(customWorkspaceSlave2.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
-        Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
+        Long customWorkspaceSlaveSize = getSize(customWorkspaceSlave1, customWorkspaceSlave2, customWorkspaceSlave1.getParentFile(),
+				customWorkspaceSlave2.getParentFile());
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
         //take one slave offline
         j.jenkins.setNumExecutors(0);

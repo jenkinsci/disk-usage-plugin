@@ -12,7 +12,7 @@ import hudson.plugins.disk_usage.sizing.strategy.UnixDiskUsageFileSizer;
 
 public class FileSizerProvider {
 
-	private final ImmutableList<FileSizer> fileSizers = ImmutableList.of(new UnixDiskUsageFileSizer(), new JavaIOFileSizer());
+	private static final ImmutableList<FileSizer> fileSizers = ImmutableList.of(new UnixDiskUsageFileSizer(), new JavaIOFileSizer());
 	
 	public FileSizer fileSizer() {
 		for (FileSizer fileSizer : fileSizers) {

@@ -36,7 +36,7 @@ public class JavaIOFileSizer implements FileSizer {
 				LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
 			}
 		}
-		return size + f.length();
+		return size + (f.isFile() ? f.length() : 0L);
 	}
 	
 	public static boolean isSymlink(File f) {
@@ -45,5 +45,10 @@ public class JavaIOFileSizer implements FileSizer {
 		} catch (IOException e) {
 			return false;
 		}
+	}
+
+	@Override
+	public Long blockSize() {
+		return 1L;
 	}
 }

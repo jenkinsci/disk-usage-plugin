@@ -28,6 +28,8 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import static hudson.plugins.disk_usage.integration.DiskUsageTestUtil.getSize;
 import static org.junit.Assert.*;
 
 /**
@@ -63,14 +65,6 @@ public class BuildDiskUsageCalculationThreadTest {
         return files;
     }
     
-    private Long getSize(List<File> files){
-        Long lenght = 0l;
-        for(File file: files){
-            lenght += file.length();
-        }
-        return lenght;
-    }
-    
     @Test
     @LocalData
     public void testExecute() throws IOException, InterruptedException{
@@ -83,11 +77,11 @@ public class BuildDiskUsageCalculationThreadTest {
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
         for(AbstractBuild build: project.getBuilds()){
             File file = new File(build.getRootDir(),"fileList");
-            buildSizesProject1.put(build, getSize(readFileList(file)) + build.getRootDir().length());
+            buildSizesProject1.put(build, getSize(readFileList(file)) + getSize(build.getRootDir()));
         }
         for(AbstractBuild build: project2.getBuilds()){
             File file = new File(build.getRootDir(),"fileList");
-            buildSizesProject2.put(build, getSize(readFileList(file)) + build.getRootDir().length());
+            buildSizesProject2.put(build, getSize(readFileList(file)) + getSize(build.getRootDir()));
         }
         BuildDiskUsageCalculationThread calculation = new BuildDiskUsageCalculationThread();
         if(calculation.isExecuting()){
@@ -117,15 +111,15 @@ public class BuildDiskUsageCalculationThreadTest {
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");  
         AbstractBuild matrixBuild = project.getBuildByNumber(1);
-        Long matrixProjectBuildSize = getSize(readFileList(new File(matrixBuild.getRootDir(),"fileList"))) + matrixBuild.getRootDir().length();
+        Long matrixProjectBuildSize = getSize(readFileList(new File(matrixBuild.getRootDir(),"fileList"))) + getSize(matrixBuild.getRootDir());
         for(AbstractBuild build: project2.getBuilds()){
             File file = new File(build.getRootDir(),"fileList");
-            buildSizesProject2.put(build, getSize(readFileList(file)) + build.getRootDir().length());
+            buildSizesProject2.put(build, getSize(readFileList(file)) + getSize(build.getRootDir()));
         }
         for(MatrixConfiguration c: project.getActiveConfigurations()){
             AbstractBuild build = c.getBuildByNumber(1);
             File file = new File(build.getRootDir(),"fileList");
-            matrixConfigurationBuildsSize.put(c.getDisplayName(), getSize(readFileList(file)) + build.getRootDir().length());
+            matrixConfigurationBuildsSize.put(c.getDisplayName(), getSize(readFileList(file)) + getSize(build.getRootDir()));
         }
         BuildDiskUsageCalculationThread calculation = new BuildDiskUsageCalculationThread();
         if(calculation.isExecuting()){

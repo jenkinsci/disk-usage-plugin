@@ -4,12 +4,17 @@
  */
 package hudson.plugins.disk_usage.integration;
 
+import hudson.FilePath;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
 import hudson.plugins.disk_usage.DiskUsageCalculation;
+import hudson.plugins.disk_usage.sizing.FileSizer;
+import hudson.plugins.disk_usage.sizing.FileSizerProvider;
+import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
@@ -22,9 +27,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  *
@@ -42,14 +50,54 @@ public class DiskUsageTestUtil {
         }
         return files;
     }
-    
-    protected static Long getSize(List<File> files){
-        Long lenght = 0l;
-        for(File file: files){
-            lenght += file.length();
-        }
-        return lenght;
-    }
+
+	protected static Long getSize(FilePath filePath) throws IOException, InterruptedException {
+		return filePath.act(new RemoteFileSizeDeterminer());
+	}
+
+
+	public static class RemoteFileSizeDeterminer implements FilePath.FileCallable<Long> {
+
+		@Override
+		public Long invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+			return DiskUsageTestUtil.getSize(f);
+		}
+
+		@Override
+		public void checkRoles(RoleChecker checker) throws SecurityException {
+			// TODO (simon, 14.09.15): generated method stub
+		}
+	}
+	protected static Long getSize(File... files) {
+		return getSize(Arrays.asList(files));
+	}
+
+	protected static Long getSize(List<File> files){
+		Long lenght = 0l;
+		for(File file: files){
+			lenght += diskFileSize(file);
+		}
+		return lenght;
+	}
+
+
+
+	private static long diskFileSize(File file) {
+		if(file.isDirectory()) {
+			return 0L;
+		}
+		final FileSizer fileSizer = new FileSizerProvider().fileSizer();
+		final Long blockSize = fileSizer.blockSize();
+		return (long) Math.ceil(((double) file.length()) / blockSize) * blockSize;
+	}
+
+	protected static boolean isSymlink(File file) {
+		try {
+			return Util.isSymlink(file);
+		} catch (IOException e) {
+			return false;
+		}
+	}
     
     protected static Slave createSlave(String name, String remoteFS, Jenkins jenkins, ComputerLauncher launcher) throws Exception{
         DumbSlave slave = new DumbSlave(name, "dummy",
@@ -85,4 +133,8 @@ public class DiskUsageTestUtil {
         stream.println("hello");
         stream.close();
     }
+
+	static Long getSizeOf(FilePath filePath) {
+		return getSize(new File(filePath.getRemote()));
+	}
 }
