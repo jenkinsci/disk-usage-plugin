@@ -34,7 +34,6 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             return;
         }
         //backward compatibility
-        if(property.getDiskUsageBuildInformation(build.getNumber())==null){
             BuildDiskUsageAction action = null;
             for(Action a : build.getActions()){
                 if(a instanceof BuildDiskUsageAction){
@@ -45,10 +44,12 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                 }
             }
             if(action!=null){
+                //remove old action, now it is added by transition action factory
                 build.getActions().remove(action);
             }
-            property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size), build);
-        }
+            if(property.getDiskUsageBuildInformation(build.getNumber())==null){
+                property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size), build);
+            }
 //        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
 //        if(property==null){
 //            property=new DiskUsageProperty();
