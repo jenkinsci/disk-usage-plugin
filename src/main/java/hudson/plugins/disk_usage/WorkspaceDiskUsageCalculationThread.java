@@ -40,7 +40,6 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
                 items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
-
                 for (Object item : items) {
                     if (item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;

@@ -168,7 +168,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
     public Map<String,Map<String,Long>> getSlaveWorkspaceUsage(){
         if(diskUsage.slaveWorkspacesUsage==null){
-           diskUsage.slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
+          // diskUsage.slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
            checkWorkspaces();
         }
         return diskUsage.slaveWorkspacesUsage;
@@ -377,8 +377,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         Long size = 0l;
         for(String nodeName: getSlaveWorkspaceUsage().keySet()){
             Node slave = Jenkins.getInstance().getNode(nodeName);
-            if(slave==null && !nodeName.isEmpty()) //slave does not exist
+            if(slave==null && !nodeName.isEmpty() && !(slave instanceof Jenkins)) {//slave does not exist
                 continue;
+            }
             Map<String,Long> paths = getSlaveWorkspaceUsage().get(nodeName);
             for(String path: paths.keySet()){
                     size += paths.get(path);

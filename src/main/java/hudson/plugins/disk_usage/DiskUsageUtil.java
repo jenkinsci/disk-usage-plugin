@@ -441,6 +441,7 @@ public class DiskUsageUtil {
             addProperty(project);
             property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
+        
         property.checkWorkspaces();
         for(String nodeName: property.getSlaveWorkspaceUsage().keySet()){
             Node node = null;

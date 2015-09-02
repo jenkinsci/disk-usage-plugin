@@ -6,6 +6,7 @@ package hudson.plugins.disk_usage;
 
 import com.google.common.collect.Maps;
 import hudson.BulkChange;
+import hudson.FilePath;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -99,8 +100,21 @@ public class ProjectDiskUsage implements Saveable{
         Map<String,Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
         if(workspacesInfo==null)
             workspacesInfo = new ConcurrentHashMap<String,Long>();
-        workspacesInfo.put(path, size);
+        //worksace with 0 are only initiative (are not counted yet) or does not exists
+        //no nexist workspaces are removed in method checkWorkspaces in class DiskUsageProperty
+        if(workspacesInfo.get(path)==null || size>0l ){ 
+            workspacesInfo.put(path, size);
+        }
         slaveWorkspacesUsage.put(node.getNodeName(), workspacesInfo);
+    }
+    
+    public boolean containsBuildWithId(String id){
+        for(DiskUsageBuildInformation inf : buildDiskUsage){
+            if(inf.getId().equals(id)){
+                return true;
+            }
+        }
+        return false;
     }
     
     public void loadAllBuilds() throws IOException{
@@ -114,6 +128,9 @@ public class ProjectDiskUsage implements Saveable{
         buildDiskUsage = new HashSet<DiskUsageBuildInformation>();
         for(Run run : list){
             if(run instanceof AbstractBuild){
+                if(containsBuildWithId(run.getId())){
+                    continue;
+                }
                 AbstractBuild build = (AbstractBuild) run;
                 BuildDiskUsageAction toRemove = null;
                 long buildOldDiskUsage = 0l;
@@ -197,9 +214,11 @@ public class ProjectDiskUsage implements Saveable{
     } 
     
     protected void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build){
-        buildDiskUsage.add(info);
-        if(build!=null && build.getWorkspace()!=null){
-            putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
+        if(!containsBuildWithId(info.getId())){
+            buildDiskUsage.add(info);
+            if(build!=null && build.getWorkspace()!=null){
+                putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
+            }
         }
     }
     

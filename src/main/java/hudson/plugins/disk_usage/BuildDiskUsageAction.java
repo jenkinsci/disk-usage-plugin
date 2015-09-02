@@ -2,6 +2,7 @@ package hudson.plugins.disk_usage;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
@@ -27,6 +28,27 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     
     public BuildDiskUsageAction(AbstractBuild build) {
         this.build = build;
+        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+        long size = 0L;
+        if(property==null){
+            return;
+        }
+        //backward compatibility
+        if(property.getDiskUsageBuildInformation(build.getNumber())==null){
+            BuildDiskUsageAction action = null;
+            for(Action a : build.getActions()){
+                if(a instanceof BuildDiskUsageAction){
+                    action = (BuildDiskUsageAction) a;
+                    if(action.buildDiskUsage != null){
+                        size=action.buildDiskUsage;
+                    }            
+                }
+            }
+            if(action!=null){
+                build.getActions().remove(action);
+            }
+            property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size), build);
+        }
 //        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
 //        if(property==null){
 //            property=new DiskUsageProperty();
