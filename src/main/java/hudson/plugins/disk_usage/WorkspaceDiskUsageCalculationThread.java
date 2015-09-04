@@ -93,7 +93,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
         return currentTask;
     }
     
-    private synchronized boolean startExecution(){
+    private boolean startExecution(){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         if(!plugin.getConfiguration().isCalculationWorkspaceEnabled())
           return false;

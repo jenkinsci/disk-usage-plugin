@@ -277,6 +277,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         Long size = getSize(readFileList(file)) + slave1.getWorkspaceFor(job).length();
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
+        assertFalse("Disk usage should be counted correctly even for one workspace.", size > job.getAction(ProjectDiskUsageAction.class).getAllSlaveWorkspaces());
         assertEquals("Disk usage should be counted only one times for the same workspace.", size, job.getAction(ProjectDiskUsageAction.class).getAllSlaveWorkspaces(),0);
     }
     
