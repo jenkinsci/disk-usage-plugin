@@ -264,6 +264,22 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         excludes.clear();
     }
     
+    @Test
+    @LocalData
+    public void testDoNotCountSizeTheSameWorkspaceTwice() throws Exception{
+        FreeStyleProject job = jenkins.createProject(FreeStyleProject.class, "project1");
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(jenkins.getRootDir(),"workspace1").getPath(), jenkins, createComputerLauncher(null));
+        job.setAssignedLabel(slave1.getSelfLabel());
+        buildAndAssertSuccess(job);
+        buildAndAssertSuccess(job);
+        buildAndAssertSuccess(job);
+        File file = new File(slave1.getWorkspaceFor(job).getRemote(), "fileList");
+        Long size = getSize(readFileList(file)) + slave1.getWorkspaceFor(job).length();
+        WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
+        calculation.execute(TaskListener.NULL);
+        assertEquals("Disk usage should be counted only one times for the same workspace.", size, job.getAction(ProjectDiskUsageAction.class).getAllSlaveWorkspaces(),0);
+    }
+    
     @TestExtension
     public static class TestDiskUsageProperty extends DiskUsageProperty{
         
