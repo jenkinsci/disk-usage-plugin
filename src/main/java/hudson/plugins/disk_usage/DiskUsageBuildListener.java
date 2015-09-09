@@ -8,9 +8,7 @@ import hudson.model.ItemGroup;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -89,14 +87,23 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                 DiskUsageUtil.addProperty(build.getProject());
                 property =  (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);          
         }
-        Iterator<DiskUsageBuildInformation> iterator = property.getDiskUsageOfBuilds().iterator();
-        while(iterator.hasNext()){
-            DiskUsageBuildInformation information = iterator.next();
-            if(build.getId().equals(information.getId())){
-                property.getDiskUsageOfBuilds().remove(information);
-                property.saveDiskUsage();
-                break;
-            }
+        DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
+        if(information!=null){;
+            property.getDiskUsage().removeBuild(information);
+            property.getDiskUsage().save();
+        }
+    }
+    
+    @Override
+    public void onStarted(AbstractBuild build, TaskListener listener){
+        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+        if(property==null){
+                DiskUsageUtil.addProperty(build.getProject());
+                property =  (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);          
+        }
+        DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
+        if(information==null){
+            property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), 0l), build);
         }
     }
 

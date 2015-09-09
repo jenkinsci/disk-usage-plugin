@@ -6,12 +6,14 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
+import java.io.File;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -389,12 +391,16 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     }
 
 //    public Object readResolve() {
-//        diskUsage = new ProjectDiskUsage();      
-//         if(diskUsage.diskUsageWithoutBuilds == null)
-//             diskUsage.diskUsageWithoutBuilds = 0l;
-//         if(diskUsage.slaveWorkspacesUsage==null)
-//            diskUsage.slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
-//         return this;
+//        //ensure that build was not removed without calling listener - badly removed, or badly saved (without build.xml)
+//       
+//        for(DiskUsageBuildInformation information : diskUsage.getBuildDiskUsage(false)){
+//            File buildsDirectory = new File(owner.getRootDir(),"builds");
+//            File build = new File(buildsDirectory,information.toString());
+//            if(!build.exists()){
+//                diskUsage.removeBuild(information);
+//            }
+//        }
+//        return this;
 //     }
 
     public Long getDiskUsageWithoutBuilds(){
@@ -455,6 +461,15 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     public void loadDiskUsage(){
         AbstractProject job = (AbstractProject) owner;
         diskUsage.load(); 
+        //ensure that build was not removed without calling listener - badly removed, or badly saved (without build.xml)
+        for(DiskUsageBuildInformation information : diskUsage.getBuildDiskUsage(false)){
+            File buildsDirectory = new File(owner.getRootDir(),"builds");
+            File build = new File(buildsDirectory,information.getId());
+            if(!build.exists()){
+                diskUsage.removeBuild(information);
+            }
+        }
+        diskUsage.save();
     }
 
     @Extension

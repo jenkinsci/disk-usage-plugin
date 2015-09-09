@@ -95,7 +95,7 @@ public class DiskUsagePluginTest {
         AbstractBuild build = project.getBuild("2013-08-09_13-02-26");
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
-        j.jenkins.reload();
+        j.jenkins.restart();
         project = (AbstractProject) j.jenkins.getItem("project1");
         build = project.getBuild("2013-08-09_13-02-26");
         property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);

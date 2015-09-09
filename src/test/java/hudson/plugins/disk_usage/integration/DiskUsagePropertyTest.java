@@ -405,6 +405,37 @@ public class DiskUsagePropertyTest {
         assertTrue("No new build should be loaded.", loadedBuilds <= project._getRuns().getLoadedBuilds().size());      
     }
     
+    @Test
+    public void testRemoveBuild() throws Exception{
+        FreeStyleProject project = j.createFreeStyleProject();
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        assertEquals("Disk usage should have information about two builds.", 2, property.getDiskUsage().getBuildDiskUsage(false).size());
+        AbstractBuild build = project.getLastBuild();
+        build.delete();
+        assertEquals("Deleted build should be removed from disk-usage informations too.", 1, property.getDiskUsage().getBuildDiskUsage(false).size());
+    }
+    
+    @Test
+    public void testRemoveDeletedBuildNotLoadedByJenkins() throws Exception{
+        FreeStyleProject project = j.createFreeStyleProject();
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        AbstractBuild build = project.getLastBuild();
+        File file = build.getRootDir();
+        FilePath path = new FilePath(file);
+        path.deleteRecursive();
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        assertFalse("It is not possible to delete build.", file.exists());
+        assertEquals("Disk usage should have information about 2 builds.", 2, property.getDiskUsage().getBuildDiskUsage(false).size());
+        j.jenkins.reload();
+        project = (FreeStyleProject) j.jenkins.getItem(project.getDisplayName());
+        property = project.getProperty(DiskUsageProperty.class);
+        assertEquals("Deleted build without Jenkins should not be loaded.", 1, property.getDiskUsage().getBuildDiskUsage(false).size());
+        
+    }
+    
     
     @Target(METHOD)
     @Retention(RUNTIME)

@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import org.apache.commons.collections.set.SynchronizedSet;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -62,6 +63,7 @@ public class ProjectDiskUsage implements Saveable{
      }
      
      public Set<DiskUsageBuildInformation> getBuildDiskUsage(boolean needAll){
+         Set<DiskUsageBuildInformation> information = new HashSet<DiskUsageBuildInformation>();
          AbstractProject p = (AbstractProject) job;
          if(needAll && !allBuildsLoaded){
              try{
@@ -71,7 +73,8 @@ public class ProjectDiskUsage implements Saveable{
                  Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load builds "+getConfigFile(),e);
              }
          }
-         return Collections.synchronizedSet(buildDiskUsage);
+         information.addAll(buildDiskUsage);
+         return information;
      }
     
     public synchronized void save() {
@@ -82,6 +85,10 @@ public class ProjectDiskUsage implements Saveable{
         } catch (IOException e) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to save "+getConfigFile(),e);
         }
+    }
+    
+    public synchronized void removeBuild(DiskUsageBuildInformation information){
+        buildDiskUsage.remove(information);
     }
     
     private int numberOfBuildFolders() throws IOException{
@@ -211,8 +218,8 @@ public class ProjectDiskUsage implements Saveable{
             }
         }
         save();
-    } 
-    
+    }
+       
     protected void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build){
         if(!containsBuildWithId(info.getId())){
             buildDiskUsage.add(info);
@@ -223,6 +230,7 @@ public class ProjectDiskUsage implements Saveable{
     }
     
     private void removeDeletedBuilds(){
+        
         Iterator<DiskUsageBuildInformation> iterator= buildDiskUsage.iterator();
         while(iterator.hasNext()){
             DiskUsageBuildInformation information = iterator.next();

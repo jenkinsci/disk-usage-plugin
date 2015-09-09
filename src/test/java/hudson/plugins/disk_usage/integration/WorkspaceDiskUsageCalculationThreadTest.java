@@ -135,7 +135,6 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         MatrixProject project1 = createMatrixProject("project1");
         project1.setAxes(axes);
         project1.setAssignedNode(slave1);
-        System.out.println("IS BUILDING");
         buildAndAssertSuccess(project1);
         MatrixProject project2 = createMatrixProject("project2");
         AxisList axes2 = new AxisList();

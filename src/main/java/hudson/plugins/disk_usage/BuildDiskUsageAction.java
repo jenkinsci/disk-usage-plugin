@@ -7,18 +7,20 @@ import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
 import hudson.model.ProminentProjectAction;
+import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.RunAction2;
 
 /**
  * Disk usage information for a single build
  * @author dvrzalik
  */
 //TODO really implementsProminentProjectAction???
-public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction {
+public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction, RunAction2 {
 
     @Deprecated
     Long buildDiskUsage;
@@ -27,46 +29,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     DiskUsage diskUsage;
     
     public BuildDiskUsageAction(AbstractBuild build) {
-        this.build = build;
-        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-        long size = 0L;
-        if(property==null){
-            return;
-        }
-        //backward compatibility
-            BuildDiskUsageAction action = null;
-            for(Action a : build.getActions()){
-                if(a instanceof BuildDiskUsageAction){
-                    action = (BuildDiskUsageAction) a;
-                    if(action.buildDiskUsage != null){
-                        size=action.buildDiskUsage;
-                    }            
-                }
-            }
-            if(action!=null){
-                //remove old action, now it is added by transition action factory
-                build.getActions().remove(action);
-            }
-            if(property.getDiskUsageBuildInformation(build.getNumber())==null){
-                property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size), build);
-            }
-//        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-//        if(property==null){
-//            property=new DiskUsageProperty();
-//            try {
-//                 build.getProject().addProperty(property);
-//            } catch (IOException ex) {
-//                Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
-//        DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
-//        if(information!=null){
-//            information.setSize(diskUsage);
-//        }
-//        else{    
-//            property.getDiskUsageOfBuilds().add(new DiskUsageBuildInformation(build.getId(), build.getNumber(), diskUsage));
-//        }
-//        property.saveDiskUsage();   
+        this.build = build;          
     }        
 
         public String getIconFileName() {
@@ -164,6 +127,43 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             diskUsage=null;
         }
         return this;
+    }
+
+    @Override
+    public void onAttached(Run<?, ?> r) {
+        //no action is needed
+    }
+
+    @Override
+    public void onLoad(Run<?, ?> r) {
+        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+        long size = 0L;
+        if(property==null){
+            return;
+        }
+        //backward compatibility
+            BuildDiskUsageAction action = null;
+            for(Action a : build.getActions()){
+                if(a instanceof BuildDiskUsageAction){
+                    action = (BuildDiskUsageAction) a;
+                    if(action.buildDiskUsage != null){
+                        size=action.buildDiskUsage;
+                    }            
+                }
+            }
+            if(action!=null){
+                //remove old action, now it is added by transition action factory
+                build.getActions().remove(action);
+                try {
+                    build.save();
+                } catch (IOException ex) {
+                    Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            //Transient actions can be created even during deletion of job
+            if(property.getDiskUsageBuildInformation(build.getNumber())==null && build.getRootDir().exists()){
+                property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size), build);
+            }
     }
        
 }
