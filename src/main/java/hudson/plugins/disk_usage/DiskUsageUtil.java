@@ -35,6 +35,8 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import jenkins.model.Jenkins;
+import org.jenkinsci.remoting.Role;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  *
@@ -532,6 +534,11 @@ public class DiskUsageUtil {
                 exceeded.add(new File(file.getRemote()));
             }
             return DiskUsageUtil.getFileSize(f, exceeded);
+        }
+
+        @Override
+        public void checkRoles(RoleChecker rc) throws SecurityException {
+           
         }
        
     }
