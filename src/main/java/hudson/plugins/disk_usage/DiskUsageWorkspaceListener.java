@@ -24,11 +24,6 @@ public class DiskUsageWorkspaceListener extends WorkspaceListener{
         if(property!=null){
             property.checkWorkspaces();
         }
-        try {
-            project.save();
-        } catch (IOException ex) {
-            Logger.getLogger(DiskUsageWorkspaceListener.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
     
 }

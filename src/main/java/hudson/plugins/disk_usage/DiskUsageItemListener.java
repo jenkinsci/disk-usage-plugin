@@ -34,12 +34,7 @@ public class DiskUsageItemListener extends ItemListener{
     public void onCreated(Item item){
         DiskUsageUtil.addProperty(item);
 
-    }
-    
-    @Override
-    public void onUpdated(Item item){
-        DiskUsageUtil.addProperty(item);
-    }
+    }   
     
     @Override
     public void onCopied(Item src, Item item){

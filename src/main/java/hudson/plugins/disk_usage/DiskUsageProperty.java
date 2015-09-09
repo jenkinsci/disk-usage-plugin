@@ -149,6 +149,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
          if(modified){
              saveDiskUsage();
              try{
+                 System.out.println("is necessary to save job");
                 job.save();
              }
              catch(Exception e){
@@ -472,6 +473,11 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         diskUsage.save();
     }
 
+    @Override
+    public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {
+        return new DiskUsageProperty();
+    }
+
     @Extension
     public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
 
@@ -492,17 +498,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
         public boolean showGraph(){
             return showGraph;
-        }
-
-
-        @Override
-        public DiskUsageProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-             return new DiskUsageProperty();
-        }
-
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            return true;
         }
 
         @Override
