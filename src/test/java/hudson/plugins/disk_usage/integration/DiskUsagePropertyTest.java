@@ -1,6 +1,9 @@
 package hudson.plugins.disk_usage.integration;
 
 
+import java.util.ConcurrentModificationException;
+import java.util.GregorianCalendar;
+import hudson.model.FreeStyleBuild;
 import hudson.util.XStream2;
 import hudson.model.AbstractBuild;
 import hudson.matrix.MatrixBuild;
@@ -30,12 +33,14 @@ import hudson.matrix.AxisList;
 import hudson.matrix.TextAxis;
 import hudson.matrix.MatrixProject;
 import hudson.model.FreeStyleProject;
+import hudson.model.Run;
 import hudson.slaves.OfflineCause;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.lang.annotation.ElementType.METHOD;
+import static org.mockito.Mockito.*;
 
 /**
  *
@@ -436,6 +441,129 @@ public class DiskUsagePropertyTest {
         
     }
     
+    private TestThread runRemoveThread(ProjectDiskUsage usage){
+        final ProjectDiskUsage diskUsage = usage;
+        TestThread removeThread = new TestThread("removeFromSet"){
+          public void run(){
+              try{
+                int count = 0;
+                while(count < 1000){
+                        count++;
+                        diskUsage.removeBuild(diskUsage.getDiskUsageBuildInformation(count));
+                    }
+                } catch (ConcurrentModificationException ex) {
+                    exception = ex;
+                }catch (Exception ex){
+                    exception = ex;
+                }
+          }
+        };
+        removeThread.start();
+        return removeThread;
+    }
+    
+    private TestThread runPutThread(ProjectDiskUsage usage){
+        final ProjectDiskUsage diskUsage = usage;
+        TestThread putThread = new TestThread("putIntoSet"){      
+         public void run(){
+                try {
+                    int count = 0;
+                    while(count < 1000){
+                        count++;
+                        GregorianCalendar calendar = new GregorianCalendar();
+                        calendar.set(2014, 1, 1);
+                        calendar.add(GregorianCalendar.MINUTE, count);
+                        Run.ID_FORMATTER.get().format(calendar.getTime());
+                        diskUsage.addBuildInformation(new DiskUsageBuildInformation(Run.ID_FORMATTER.get().format(calendar.getTime()),calendar.getTimeInMillis(), count, 0l), null);
+                    
+                    }
+                } catch (ConcurrentModificationException ex) {
+                    exception = ex;
+                }catch (Exception ex){
+                    exception = ex;
+                } 
+          }  
+        };
+        putThread.start();
+        return putThread;
+    }
+    
+    private TestThread runSaveThread(ProjectDiskUsage usage){
+        final ProjectDiskUsage diskUsage = usage;
+        TestThread saveThread = new TestThread("saveSet"){
+          public void run(){
+              try{
+                  int count = 0;
+                  while(count<100){
+                      count++;
+                      diskUsage.save();
+                  }
+              } catch (ConcurrentModificationException ex) {
+                    exception = ex;
+                }catch (Exception ex){
+                    exception = ex;
+                } 
+          }  
+        };
+        saveThread.start();
+        return saveThread;
+    }
+    
+    private void checkForConcurrencyException(Throwable[] exceptions){
+        
+        for(Throwable ex : exceptions){
+            if(ex instanceof ConcurrentModificationException){
+                fail("DiskUsageProperty is not thread save. Attribute #diskUsageProperty caused ConcurrentModitifiactionException");
+                return;
+            }
+        }
+        fail("Checking of thread safety caused Exception which is not connected with thread safety problem.");
+    }
+    
+    //JENKINS-29143
+    @Test
+    public void testThreadSaveOperationUnderSetOfDiskUsageBuildInformation() throws Exception{
+        final FreeStyleProject project = j.createFreeStyleProject();
+        final ProjectDiskUsage diskUsage = new ProjectDiskUsage();
+        diskUsage.setProject(project);
+        TestThread putThread = runPutThread(diskUsage);
+        TestThread removeThread = runRemoveThread(diskUsage);
+        TestThread saveThread = runSaveThread(diskUsage);
+        while(putThread.isAlive() || removeThread.isAlive()|| saveThread.isAlive()){
+            Thread.currentThread().sleep(1000);
+        }
+        
+        Exception ex = putThread.getException();
+        if(putThread.getException()!=null){
+            ex.printStackTrace();
+            checkForConcurrencyException(ex.getSuppressed());
+        }
+        ex = removeThread.getException();
+        if(removeThread.getException()!=null){
+            ex.printStackTrace();
+            checkForConcurrencyException(ex.getSuppressed());
+        }
+        ex = saveThread.getException();
+        if(saveThread.getException()!=null){
+            ex.printStackTrace();
+            checkForConcurrencyException(ex.getSuppressed());
+        }
+    }
+    
+    public class TestThread extends Thread {
+       
+        TestThread(String name){
+            super(name);
+        }
+       
+        public Exception exception;
+        
+        public Exception getException(){
+            return exception;
+        }
+        
+    }
+    
     
     @Target(METHOD)
     @Retention(RUNTIME)
@@ -479,5 +607,7 @@ public class DiskUsagePropertyTest {
         }
         
     }
+    
+    
     
 }

@@ -149,7 +149,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
          if(modified){
              saveDiskUsage();
              try{
-                 System.out.println("is necessary to save job");
                 job.save();
              }
              catch(Exception e){

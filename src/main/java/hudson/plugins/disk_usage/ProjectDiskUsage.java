@@ -42,7 +42,7 @@ public class ProjectDiskUsage implements Saveable{
     protected transient Job job;
     protected Long diskUsageWithoutBuilds = 0l;
     protected Map<String,Map<String,Long>> slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
-    private Set<DiskUsageBuildInformation> buildDiskUsage = new HashSet<DiskUsageBuildInformation>();
+    private Set<DiskUsageBuildInformation> buildDiskUsage = Collections.synchronizedSet(new HashSet<DiskUsageBuildInformation>());
     private boolean allBuildsLoaded;
    
     
@@ -85,9 +85,10 @@ public class ProjectDiskUsage implements Saveable{
         } catch (IOException e) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to save "+getConfigFile(),e);
         }
+
     }
     
-    public synchronized void removeBuild(DiskUsageBuildInformation information){
+    public void removeBuild(DiskUsageBuildInformation information){
         buildDiskUsage.remove(information);
     }
     
@@ -132,7 +133,7 @@ public class ProjectDiskUsage implements Saveable{
         }
         AbstractProject project = (AbstractProject) job;
         List<Run> list = project.getBuilds();
-        buildDiskUsage = new HashSet<DiskUsageBuildInformation>();
+        buildDiskUsage = Collections.synchronizedSet(new HashSet<DiskUsageBuildInformation>());
         for(Run run : list){
             if(run instanceof AbstractBuild){
                 if(containsBuildWithId(run.getId())){
@@ -185,6 +186,10 @@ public class ProjectDiskUsage implements Saveable{
             }
             try {
                 file.unmarshal(this);
+                if(buildDiskUsage instanceof HashSet){
+                    //saved collection is not serialized in previous versions.
+                    buildDiskUsage = Collections.synchronizedSet(buildDiskUsage);
+                }
             } catch (IOException e) {
                 Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load "+file, e);
             }
@@ -203,7 +208,7 @@ public class ProjectDiskUsage implements Saveable{
      * 
      */
     public void loadOldData(){
-        buildDiskUsage = new HashSet<DiskUsageBuildInformation>();
+        buildDiskUsage = Collections.synchronizedSet(new HashSet<DiskUsageBuildInformation>());
         List<Run> list = job.getBuilds();
         for(Run run : list){
             if(run instanceof AbstractBuild){
@@ -219,10 +224,21 @@ public class ProjectDiskUsage implements Saveable{
         }
         save();
     }
+    
+    public DiskUsageBuildInformation getDiskUsageBuildInformation(int number){
+        for(DiskUsageBuildInformation information : buildDiskUsage){
+            if(information.getNumber()==number){
+                return information;
+            }
+        }
+        return null;
+    }
        
-    protected void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build){
+    public void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build){
         if(!containsBuildWithId(info.getId())){
-            buildDiskUsage.add(info);
+            synchronized(this){
+                buildDiskUsage.add(info);
+            }
             if(build!=null && build.getWorkspace()!=null){
                 putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
             }
