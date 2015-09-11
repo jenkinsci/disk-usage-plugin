@@ -335,7 +335,7 @@ public class DiskUsagePropertyTest {
     }
     
     @Test
-    @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml, workspace, jobs/project1/builds/2013-08-09_13-02-27/build.xml, jobs/project1/builds/2013-08-09_13-02-28/build.xml")
+    @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml, jobs/project1/builds/2013-08-09_13-02-27/build.xml, jobs/project1/builds/2013-08-09_13-02-28/build.xml")
     @LocalData
     public void testCheckWorkspacesWithLoadingBuilds() throws IOException {
        File file = new File(j.jenkins.getRootDir(),"jobs/project2/builds/2013-08-09_13-02-26/build.xml");
@@ -510,7 +510,9 @@ public class DiskUsagePropertyTest {
     }
     
     private void checkForConcurrencyException(Throwable[] exceptions){
-        
+        if(exceptions.length==0){
+            return;
+        }
         for(Throwable ex : exceptions){
             if(ex instanceof ConcurrentModificationException){
                 fail("DiskUsageProperty is not thread save. Attribute #diskUsageProperty caused ConcurrentModitifiactionException");
