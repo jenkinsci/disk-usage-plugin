@@ -6,7 +6,6 @@ package hudson.plugins.disk_usage;
 
 import com.google.common.collect.Maps;
 import hudson.BulkChange;
-import hudson.FilePath;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -16,21 +15,18 @@ import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
-import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.apache.commons.collections.set.SynchronizedSet;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -42,7 +38,7 @@ public class ProjectDiskUsage implements Saveable{
     protected transient Job job;
     protected Long diskUsageWithoutBuilds = 0l;
     protected Map<String,Map<String,Long>> slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
-    private Set<DiskUsageBuildInformation> buildDiskUsage = Collections.synchronizedSet(new HashSet<DiskUsageBuildInformation>());
+    private Set<DiskUsageBuildInformation> buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
     private boolean allBuildsLoaded;
    
     
@@ -133,7 +129,7 @@ public class ProjectDiskUsage implements Saveable{
         }
         AbstractProject project = (AbstractProject) job;
         List<Run> list = project.getBuilds();
-        buildDiskUsage = Collections.synchronizedSet(new HashSet<DiskUsageBuildInformation>());
+        buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
         for(Run run : list){
             if(run instanceof AbstractBuild){
                 if(containsBuildWithId(run.getId())){
@@ -188,7 +184,9 @@ public class ProjectDiskUsage implements Saveable{
                 file.unmarshal(this);
                 if(buildDiskUsage instanceof HashSet){
                     //saved collection is not serialized in previous versions.
-                    buildDiskUsage = Collections.synchronizedSet(buildDiskUsage);
+                    Set<DiskUsageBuildInformation> informations = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
+                    informations.addAll(buildDiskUsage);
+                    buildDiskUsage = informations;
                 }
             } catch (IOException e) {
                 Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load "+file, e);
@@ -208,7 +206,7 @@ public class ProjectDiskUsage implements Saveable{
      * 
      */
     public void loadOldData(){
-        buildDiskUsage = Collections.synchronizedSet(new HashSet<DiskUsageBuildInformation>());
+        buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
         List<Run> list = job.getBuilds();
         for(Run run : list){
             if(run instanceof AbstractBuild){
@@ -236,9 +234,7 @@ public class ProjectDiskUsage implements Saveable{
        
     public void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build){
         if(!containsBuildWithId(info.getId())){
-            synchronized(this){
                 buildDiskUsage.add(info);
-            }
             if(build!=null && build.getWorkspace()!=null){
                 putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
             }

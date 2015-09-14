@@ -509,15 +509,11 @@ public class DiskUsagePropertyTest {
         return saveThread;
     }
     
-    private void checkForConcurrencyException(Throwable[] exceptions){
-        if(exceptions.length==0){
+    private void checkForConcurrencyException(Exception exception){
+        exception.printStackTrace();
+        if(exception instanceof ConcurrentModificationException){
+            fail("DiskUsageProperty is not thread save. Attribute #diskUsageProperty caused ConcurrentModitifiactionException");
             return;
-        }
-        for(Throwable ex : exceptions){
-            if(ex instanceof ConcurrentModificationException){
-                fail("DiskUsageProperty is not thread save. Attribute #diskUsageProperty caused ConcurrentModitifiactionException");
-                return;
-            }
         }
         fail("Checking of thread safety caused Exception which is not connected with thread safety problem.");
     }
@@ -537,18 +533,15 @@ public class DiskUsagePropertyTest {
         
         Exception ex = putThread.getException();
         if(putThread.getException()!=null){
-            ex.printStackTrace();
-            checkForConcurrencyException(ex.getSuppressed());
+            checkForConcurrencyException(ex);
         }
         ex = removeThread.getException();
         if(removeThread.getException()!=null){
-            ex.printStackTrace();
-            checkForConcurrencyException(ex.getSuppressed());
+            checkForConcurrencyException(ex);
         }
         ex = saveThread.getException();
         if(saveThread.getException()!=null){
-            ex.printStackTrace();
-            checkForConcurrencyException(ex.getSuppressed());
+            checkForConcurrencyException(ex);
         }
     }
     
