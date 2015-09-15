@@ -5,6 +5,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
+import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.Graph;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -285,13 +286,14 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         Long jobRootDirDiskUsage = getJobRootDirDiskUsage();
         maxValue = jobRootDirDiskUsage;
         //First iteration just to get scale of the y-axis
-        TreeSet<DiskUsageBuildInformation> builds = new TreeSet<DiskUsageBuildInformation>();
+        ArrayList<DiskUsageBuildInformation> builds = new ArrayList<DiskUsageBuildInformation>();
         builds.addAll(property.getDiskUsageOfBuilds());
         //do it in reverse order
-        for (DiskUsageBuildInformation build : builds) {
-            
-           usages.add(new Object[]{build, jobRootDirDiskUsage, property.getAllDiskUsageOfBuild(build.getNumber()), getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
-            maxValue = Math.max(maxValue, build.getSize());
+        for (int i=builds.size()-1; i>=0; i--) {
+            DiskUsageBuildInformation build = builds.get(i);
+            Long diskUsage = property.getDiskUsageOfBuild(build.getId());
+                usages.add(new Object[]{build.getNumber(), getJobRootDirDiskUsage(), diskUsage, getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
+                maxValue = Math.max(maxValue, diskUsage);
         }
 
         int floor = (int) DiskUsageUtil.getScale(maxValue);
@@ -303,13 +305,17 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         DefaultCategoryDataset dataset2 = new DefaultCategoryDataset();
         for (Object[] usage : usages) {
-            Integer label = ((DiskUsageBuildInformation) usage[0]).getNumber();
-            dataset.addValue(((Long) usage[1]) / base, "job directory", label);  
-            dataset.addValue(((Long) usage[2]) / base, "build directory", label);
-            dataset2.addValue(((Long) usage[3]) / workspaceBase, "all slave workspaces of job", label);
-            dataset2.addValue(((Long) usage[4]) / workspaceBase, "all non slave workspaces of job", label);
+            Integer label = ((Integer) usage[0]);
+            dataset.addValue(((Long) usage[1]) / base,
+                    Messages.DiskUsage_Graph_JobDirectory(), label);
+            dataset.addValue(((Long) usage[2]) / base,
+                    Messages.DiskUsage_Graph_BuildDirectory(), label);
+            dataset2.addValue(((Long) usage[3]) / workspaceBase,
+                    Messages.DiskUsage_Graph_SlaveWorkspaces(), label);
+            dataset2.addValue(((Long) usage[4]) / workspaceBase,
+                    Messages.DiskUsage_Graph_NonSlaveWorkspaces(), label);
         }
-        return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);   
+        return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);
     }
 
     /** Shortcut for the jelly view */

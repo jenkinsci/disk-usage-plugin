@@ -70,7 +70,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                     listener.getLogger().println("Finished Calculation of disk usage of workspace in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfWorkspaceCalculation));
                     property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
                     property.saveDiskUsage();
-                    DiskUsageUtil.controlorkspaceExceedSize(project);
+                    DiskUsageUtil.controlWorkspaceExceedSize(project);
                     property.saveDiskUsage();
                 }
             }
