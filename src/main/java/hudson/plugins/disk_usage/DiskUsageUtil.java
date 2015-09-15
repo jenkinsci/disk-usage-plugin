@@ -265,30 +265,8 @@ public class DiskUsageUtil {
         return unit;
     }
     
-    public static boolean isSymlink(File f){
-        boolean symlink = false;
-        try{
-            Class<?> files = Thread.currentThread().getContextClassLoader().loadClass( "java.nio.file.Files" );
-            Class<?> path = Thread.currentThread().getContextClassLoader().loadClass( "java.nio.file.Path" );
-            Class<?> paths = Thread.currentThread().getContextClassLoader().loadClass( "java.nio.file.Paths" );
-            URI uri = new URI(f.getAbsolutePath());
-            Object filePath = paths.getMethod("get", URI.class).invoke(null, uri);
-            symlink = (Boolean) files.getMethod("isSymbolicLink", path).invoke(null, filePath);           
-        }
-        catch(Exception e){
-            //not java 7, try native
-            try{
-                symlink = Util.isSymlink(f);
-            }
-            catch(NoClassDefFoundError error){
-                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage can not determine if file " + f.getAbsolutePath() + " is symlink.");
-                //native fails
-            }
-            catch (IOException ex) {
-                    Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return symlink;
+    public static boolean isSymlink(File f) throws IOException{
+        return Util.isSymlink(f);
     }
     
     public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
