@@ -26,7 +26,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     @Override
     public void onCompleted(AbstractBuild build, TaskListener listener){
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(build.getProject())){
-            listener.getLogger().println("This job is excluded form disk usage calculation.");
+            listener.getLogger().println("This job is excluded from disk usage calculation.");
             return;
         }
         try{
