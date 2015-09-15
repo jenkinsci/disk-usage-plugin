@@ -168,30 +168,34 @@ public class DiskUsageUtil {
         }          
     }
     
-    public static void controlorkspaceExceedSize(AbstractProject project){
+    public static void controlWorkspaceExceedSize(AbstractProject project){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+
+        if(property == null) {
+            return;
+        }
+
         Long size = property.getAllWorkspaceSize();
-                        if(plugin.getConfiguration().warnAboutJobWorkspaceExceedSize() && size>plugin.getConfiguration().getJobWorkspaceExceedSize()){
-                            StringBuilder builder = new StringBuilder();
-                            builder.append("Workspaces of Job " + project.getDisplayName() + " have size " + size + ".");
-                            builder.append("\n");
-                            builder.append("List of workspaces:");
-                            for(String slaveName : property.getSlaveWorkspaceUsage().keySet()){
-                                Long s = 0l;
-                                for(Long l :property.getSlaveWorkspaceUsage().get(slaveName).values()){
-                                    s += l;
-                                }
-                                builder.append("\n");
-                                builder.append("Slave " + slaveName + " has workspace of job " + project.getDisplayName() + " with size " + getSizeString(s));
-                            }
-                            try {
-                                sendEmail("Workspaces of Job " + project.getDisplayName() + " exceed size", builder.toString());
-                            } catch (MessagingException ex) {
-                                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
-                            }
-                        }
-        
+        if(plugin.getConfiguration().warnAboutJobWorkspaceExceedSize() && size>plugin.getConfiguration().getJobWorkspaceExceedSize()){
+            StringBuilder builder = new StringBuilder();
+            builder.append("Workspaces of Job " + project.getDisplayName() + " have size " + size + ".");
+            builder.append("\n");
+            builder.append("List of workspaces:");
+            for(String slaveName : property.getSlaveWorkspaceUsage().keySet()){
+                Long s = 0l;
+                for(Long l :property.getSlaveWorkspaceUsage().get(slaveName).values()){
+                    s += l;
+                }
+                builder.append("\n");
+                builder.append("Slave " + slaveName + " has workspace of job " + project.getDisplayName() + " with size " + getSizeString(s));
+            }
+            try {
+                sendEmail("Workspaces of Job " + project.getDisplayName() + " exceed size", builder.toString());
+            } catch (MessagingException ex) {
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+            }
+        }
     }
     
     public static List<String> parseExcludedJobsFromString(String jobs){
@@ -487,7 +491,7 @@ public class DiskUsageUtil {
                         if(diskUsage!=null && diskUsage>0){
                             property.putSlaveWorkspaceSize(node, workspace.getRemote(), diskUsage);
                         }
-                        controlorkspaceExceedSize(project);
+                        controlWorkspaceExceedSize(project);
                     }
                     else{
                         property.remove(node, projectWorkspace);
