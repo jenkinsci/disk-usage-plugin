@@ -14,12 +14,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.RunAction2;
+import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Disk usage information for a single build
  * @author dvrzalik
  */
 //TODO really implementsProminentProjectAction???
+@ExportedBean(defaultVisibility = 1)
 public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction, RunAction2 {
 
     @Deprecated
@@ -45,6 +48,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     }
     
     public void setDiskUsage(Long size) throws IOException{
+        FileUtils.sizeOf(null);
         AbstractProject project = build.getProject();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){

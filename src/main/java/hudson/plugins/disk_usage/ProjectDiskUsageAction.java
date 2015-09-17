@@ -20,12 +20,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Disk usage of a project
  * 
  * @author dvrzalik
  */
+@ExportedBean(defaultVisibility = 1)
 public class ProjectDiskUsageAction implements ProminentProjectAction {
 
     AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project;
