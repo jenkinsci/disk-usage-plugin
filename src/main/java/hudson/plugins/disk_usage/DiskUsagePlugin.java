@@ -4,6 +4,7 @@ import hudson.Extension;
 import hudson.Plugin;
 import hudson.Util;
 import hudson.model.*;
+import hudson.security.Permission;
 import hudson.util.Graph;
 
 import java.io.File;
@@ -226,18 +227,21 @@ public class DiskUsagePlugin extends Plugin {
     }  
     
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationBuildsEnabled() && !getBuildsDiskUsageThread().isExecuting())
             getBuildsDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
     
     public void doRecordJobsDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationJobsEnabled() && !getJobsDiskUsageThread().isExecuting())
             getJobsDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
     
     public void doRecordWorkspaceDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationWorkspaceEnabled() && !getWorkspaceDiskUsageThread().isExecuting())
             getWorkspaceDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
@@ -263,6 +267,10 @@ public class DiskUsagePlugin extends Plugin {
             if(nextExecution<=0) //not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
+    }
+    
+    public boolean hasAdministrativePermission(){
+        return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
     }
     
 }
