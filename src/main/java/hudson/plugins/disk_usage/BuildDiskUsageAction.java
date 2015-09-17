@@ -48,7 +48,6 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     }
     
     public void setDiskUsage(Long size) throws IOException{
-        FileUtils.sizeOf(null);
         AbstractProject project = build.getProject();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
