@@ -16,7 +16,8 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     
     @Override
     public void onCompleted(AbstractBuild build, TaskListener listener){
-            if(build.getProject().getPublishersList().get(DiskUsagePostBuildCalculation.class)==null){
+        Long diskUsage = build.getAction(BuildDiskUsageAction.class).getDiskUsage();
+            if(build.getProject().getPublishersList().get(DiskUsagePostBuildCalculation.class)==null || diskUsage==0){
                 DiskUsageUtil.calculationDiskUsageOfBuild(build, listener);
             }
             else{

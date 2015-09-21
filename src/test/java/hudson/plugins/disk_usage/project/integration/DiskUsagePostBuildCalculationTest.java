@@ -1,18 +1,10 @@
-package hudson.plugins.disk_usage.DiskUsagePostBuildCalculation.integration;
+package hudson.plugins.disk_usage.project.integration;
 
+import hudson.matrix.MatrixProject;
 import hudson.plugins.disk_usage.project.DiskUsagePostBuildCalculation;
-import hudson.plugins.disk_usage.integration.*;
-import hudson.model.Action;
-import java.io.IOException;
-import java.util.List;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
 import org.junit.Test;
-import hudson.matrix.MatrixConfiguration;
-import hudson.matrix.MatrixBuild;
 import hudson.model.AbstractBuild;
-import hudson.matrix.AxisList;
-import hudson.matrix.TextAxis;
-import hudson.matrix.MatrixProject;
 import hudson.model.FreeStyleProject;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.junit.Rule;
@@ -43,7 +35,16 @@ public class DiskUsagePostBuildCalculationTest {
         project.getPublishersList().add(new DiskUsagePostBuildCalculation());
         j.buildAndAssertSuccess(project);
         AbstractBuild build = project.getLastBuild();
-        assertTrue("Disk usage called by listener should be skipped.", build.getLog(10).contains("Skipping calculation of disk usage"));
+        assertTrue("Disk usage called by listener should be skipped.", build.getLog(10).contains("Skipping calculation of disk usage, it was already done in post build step."));
+    }
+    
+    @Test
+    public void testDiskUsageCalculationForMatrixProject() throws Exception{
+        MatrixProject project = j.jenkins.createProject(MatrixProject.class, "project");
+        project.getPublishersList().add(new DiskUsagePostBuildCalculation());
+        j.buildAndAssertSuccess(project);
+        AbstractBuild build = project.getLastBuild();
+        assertTrue("Disk usage of build should be calculated.", build.getAction(BuildDiskUsageAction.class).getDiskUsage() > 0);
     }
     
     

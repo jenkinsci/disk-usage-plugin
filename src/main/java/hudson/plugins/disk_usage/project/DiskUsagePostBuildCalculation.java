@@ -28,6 +28,7 @@ public class DiskUsagePostBuildCalculation extends Recorder{
     
     @Override
       public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener){
+        listener.getLogger().println("append disk usage");
           DiskUsageUtil.calculationDiskUsageOfBuild(build, listener);
           return true;
       }

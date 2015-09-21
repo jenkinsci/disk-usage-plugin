@@ -32,7 +32,20 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     DiskUsage diskUsage;
     
     public BuildDiskUsageAction(AbstractBuild build) {
-        this.build = build;          
+        this.build = build;       
+        System.out.println("create build disk usage for build " + build + " of project " + build.getProject().getDisplayName());
+        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+        if(property==null){
+            DiskUsageUtil.addProperty(build.getProject());
+            property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+        }
+        DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
+        if(information==null){
+            System.out.println("information is null");
+        }
+        else{
+            System.out.println("information " + information);
+        }
     }        
 
         public String getIconFileName() {
