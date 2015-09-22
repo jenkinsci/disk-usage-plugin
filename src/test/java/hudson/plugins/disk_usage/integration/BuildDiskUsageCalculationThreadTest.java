@@ -77,11 +77,11 @@ public class BuildDiskUsageCalculationThreadTest {
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
         for(AbstractBuild build: project.getBuilds()){
             File file = new File(build.getRootDir(),"fileList");
-            buildSizesProject1.put(build, getSize(readFileList(file)) + getSize(build.getRootDir()));
+            buildSizesProject1.put(build, getSize(readFileList(file)));
         }
         for(AbstractBuild build: project2.getBuilds()){
             File file = new File(build.getRootDir(),"fileList");
-            buildSizesProject2.put(build, getSize(readFileList(file)) + getSize(build.getRootDir()));
+            buildSizesProject2.put(build, getSize(readFileList(file)));
         }
         BuildDiskUsageCalculationThread calculation = new BuildDiskUsageCalculationThread();
         if(calculation.isExecuting()){
@@ -111,15 +111,15 @@ public class BuildDiskUsageCalculationThreadTest {
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");  
         AbstractBuild matrixBuild = project.getBuildByNumber(1);
-        Long matrixProjectBuildSize = getSize(readFileList(new File(matrixBuild.getRootDir(),"fileList"))) + getSize(matrixBuild.getRootDir());
+        Long matrixProjectBuildSize = getSize(readFileList(new File(matrixBuild.getRootDir(),"fileList")));
         for(AbstractBuild build: project2.getBuilds()){
             File file = new File(build.getRootDir(),"fileList");
-            buildSizesProject2.put(build, getSize(readFileList(file)) + getSize(build.getRootDir()));
+            buildSizesProject2.put(build, getSize(readFileList(file)));
         }
         for(MatrixConfiguration c: project.getActiveConfigurations()){
             AbstractBuild build = c.getBuildByNumber(1);
             File file = new File(build.getRootDir(),"fileList");
-            matrixConfigurationBuildsSize.put(c.getDisplayName(), getSize(readFileList(file)) + getSize(build.getRootDir()));
+            matrixConfigurationBuildsSize.put(c.getDisplayName(), getSize(readFileList(file)));
         }
         BuildDiskUsageCalculationThread calculation = new BuildDiskUsageCalculationThread();
         if(calculation.isExecuting()){

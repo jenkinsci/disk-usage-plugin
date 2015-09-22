@@ -62,9 +62,9 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         File file = new File(project.getRootDir(),"fileList");
-        Long projectSize = getSize(readFileList(file)) + getSize(project.getRootDir());
+        Long projectSize = getSize(readFileList(file));
         file = new File(project2.getRootDir(),"fileList");
-        Long project2Size = getSize(readFileList(file)) + getSize(project2.getRootDir());
+        Long project2Size = getSize(readFileList(file));
         projectSize += getSize(project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
         project2Size += getSize(project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
@@ -91,15 +91,15 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();        
         File file = new File(project.getRootDir(),"fileList");
-        Long projectSize = getSize(readFileList(file)) + getSize(project.getRootDir());
+        Long projectSize = getSize(readFileList(file));
         file = new File(project2.getRootDir(),"fileList");
-        Long project2Size = getSize(readFileList(file)) + getSize(project2.getRootDir());
+        Long project2Size = getSize(readFileList(file));
         projectSize += getSize(project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
         project2Size += getSize(project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
         for(MatrixConfiguration config: project.getItems()){
             config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
             File f = new File(config.getRootDir(),"fileList");
-            Long size = getSize(readFileList(f)) + getSize(config.getRootDir());
+            Long size = getSize(readFileList(f));
             long diskUsageXML = getSize(config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile());
             matrixConfigurationsSize.put(config.getDisplayName(), size + diskUsageXML);
         }

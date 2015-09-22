@@ -97,10 +97,10 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         File f = new File(slave1.getWorkspaceFor(project1).getRemote());
         File file = new File(slave1.getWorkspaceFor(project1).getRemote(), "fileList");
         File file2 = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
-        Long size = getSize(readFileList(file)) + getSizeOf(slave1.getWorkspaceFor(project1));
-        size += getSize(readFileList(file2)) + getSizeOf(slave2.getWorkspaceFor(project1));
+        Long size = getSize(readFileList(file));
+        size += getSize(readFileList(file2));
         file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
-        Long size2 = getSize(readFileList(file)) + getSizeOf(slave1.getWorkspaceFor(project2)) + getSizeOf(slave2.getWorkspaceFor(project2));      
+        Long size2 = getSize(readFileList(file));
         WorkspaceDiskUsageCalculationThread thread = new WorkspaceDiskUsageCalculationThread();
         if(thread.isExecuting()){
           waitUntilThreadEnds(thread);  
@@ -149,18 +149,18 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         File fileAxis1 = new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis1", "fileList");
         File fileAxis2 = new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis2", "fileList");
         File fileAxis3 = new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis3", "fileList");
-        Long size = getSize(readFileList(file)) + getSizeOf(slave1.getWorkspaceFor(project1));
-        Long sizeAxis1 = getSize(readFileList(fileAxis1)) + getSize(new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis1"));
-        Long sizeAxis2 = getSize(readFileList(fileAxis2)) + getSize(new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis2"));
-        Long sizeAxis3 = getSize(readFileList(fileAxis3)) + getSize(new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis3"));
+        Long size = getSize(readFileList(file));
+        Long sizeAxis1 = getSize(readFileList(fileAxis1));
+        Long sizeAxis2 = getSize(readFileList(fileAxis2));
+        Long sizeAxis3 = getSize(readFileList(fileAxis3));
         file = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
         fileAxis1 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis1", "fileList");
         fileAxis2 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis2", "fileList");
         fileAxis3 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis3", "fileList");
-        size += getSize(readFileList(file)) + getSizeOf(slave2.getWorkspaceFor(project1));
-        sizeAxis1 += getSize(readFileList(fileAxis1)) + getSize(new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis1"));
-        sizeAxis2 += getSize(readFileList(fileAxis2)) + getSize(new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis2"));
-        sizeAxis3 += getSize(readFileList(fileAxis3)) + getSize(new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis3"));
+        size += getSize(readFileList(file));
+        sizeAxis1 += getSize(readFileList(fileAxis1));
+        sizeAxis2 += getSize(readFileList(fileAxis2));
+        sizeAxis3 += getSize(readFileList(fileAxis3));
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         //configurations
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
@@ -170,9 +170,9 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
         fileAxis1 = new File(slave1.getWorkspaceFor(project2).getRemote()+"/axis/axis1", "fileList");
         fileAxis2 = new File(slave1.getWorkspaceFor(project2).getRemote()+"/axis/axis2", "fileList");
-        size = getSize(readFileList(file)) + getSizeOf(slave1.getWorkspaceFor(project2));
-        sizeAxis1 = getSize(readFileList(fileAxis1)) + getSize(new File(slave1.getWorkspaceFor(project2).getRemote()+"/axis/axis1"));
-        sizeAxis2 = getSize(readFileList(fileAxis2)) + getSize(new File(slave1.getWorkspaceFor(project2).getRemote()+"/axis/axis2"));
+        size = getSize(readFileList(file));
+        sizeAxis1 = getSize(readFileList(fileAxis1));
+        sizeAxis2 = getSize(readFileList(fileAxis2));
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         //configurations
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project2.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
@@ -276,7 +276,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         buildAndAssertSuccess(job);
         buildAndAssertSuccess(job);
         File file = new File(slave1.getWorkspaceFor(job).getRemote(), "fileList");
-        Long size = getSize(readFileList(file)) + getSize(slave1.getWorkspaceFor(job));
+        Long size = getSize(readFileList(file));
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
         assertFalse("Disk usage should be counted correctly even for one workspace.", size > job.getAction(ProjectDiskUsageAction.class).getAllSlaveWorkspaces());
