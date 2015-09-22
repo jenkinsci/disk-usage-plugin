@@ -7,18 +7,13 @@ package hudson.plugins.disk_usage.integration;
 import static hudson.plugins.disk_usage.integration.DiskUsageTestUtil.getSize;
 import static hudson.plugins.disk_usage.integration.DiskUsageTestUtil.getSizeOf;
 
+import hudson.Launcher;
+import hudson.model.*;
 import hudson.plugins.disk_usage.*;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
-import hudson.model.AbstractProject;
-import hudson.model.AperiodicWork;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Node;
 import hudson.model.Node.Mode;
-import hudson.model.Slave;
-import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
@@ -39,6 +34,7 @@ import java.util.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -186,7 +182,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     
     @Test
     public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
-        FreeStyleProject projectWithoutDiskUsage = jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
+        FreeStyleProject projectWithoutDiskUsage = createProjectWithData("projectWithoutDiskUsage");
         FreeStyleBuild build = projectWithoutDiskUsage.createExecutable();
         DiskUsageProjectActionFactory.DESCRIPTOR.disableWorkspacesDiskUsageCalculation();
         BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
@@ -200,7 +196,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
         WorkspaceDiskUsageCalculationThread testCalculation = new WorkspaceDiskUsageCalculationThread();
         DiskUsageTestUtil.cancelCalculation(testCalculation);
-        FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, "project1");
+        FreeStyleProject project = createProjectWithData("project1");
         TestDiskUsageProperty prop = new TestDiskUsageProperty();
         project.addProperty(prop);
         Slave slave1 = createSlave("slave1", new File(hudson.getRootDir(),"workspace1").getPath());
@@ -243,8 +239,9 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         excludes.add("excludedJob");
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
-        FreeStyleProject excludedJob = jenkins.createProject(FreeStyleProject.class, "excludedJob");
-        FreeStyleProject includedJob = jenkins.createProject(FreeStyleProject.class, "incudedJob");
+        FreeStyleProject excludedJob = createProjectWithData("excludedJob");
+        FreeStyleProject includedJob = createProjectWithData("incudedJob");
+
         Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(jenkins.getRootDir(),"workspace1").getPath(), jenkins, createComputerLauncher(null));
         excludedJob.setAssignedLabel(slave1.getSelfLabel());
         includedJob.setAssignedLabel(slave1.getSelfLabel());
@@ -256,8 +253,20 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         assertTrue("Disk usage for included project should be counted.", includedJob.getProperty(DiskUsageProperty.class).getAllWorkspaceSize() > 0);
         excludes.clear();
     }
-    
-    @Test
+
+	private FreeStyleProject createProjectWithData(final String name) throws IOException {
+		final FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, name);
+		project.getBuildersList().add(new TestBuilder() {
+			@Override
+			public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+				build.getWorkspace().createTextTempFile("testdata", ".txt", "Project-Name: " + name + "\nNow: " + System.currentTimeMillis());
+				return true;
+			}
+		});
+		return project;
+	}
+
+	@Test
     @LocalData
     public void testDoNotCountSizeTheSameWorkspaceTwice() throws Exception{
         FreeStyleProject job = jenkins.createProject(FreeStyleProject.class, "project1");
