@@ -10,13 +10,19 @@ import com.google.common.collect.ImmutableList;
 import hudson.plugins.disk_usage.sizing.strategy.JavaIOFileSizer;
 import hudson.plugins.disk_usage.sizing.strategy.UnixDiskUsageFileSizer;
 
+import java.util.logging.Logger;
+
 public class FileSizerProvider {
+
+	public static final Logger LOGGER = Logger.getLogger(FileSizerProvider.class.getName());
+
 
 	private static final ImmutableList<FileSizer> fileSizers = ImmutableList.of(new UnixDiskUsageFileSizer(), new JavaIOFileSizer());
 	
 	public FileSizer fileSizer() {
 		for (FileSizer fileSizer : fileSizers) {
 			if(fileSizer.canRun()) {
+				LOGGER.fine("selecting FileSizer of type: " + fileSizer.getClass());
 				return fileSizer;
 			}
 		}

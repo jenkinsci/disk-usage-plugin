@@ -35,7 +35,7 @@ public class UnixDiskUsageFileSizer extends AbstractNativeDiskUsageFileSizer {
 		try {
 			canExecute = !executeCommand(new File("."), "du", "-H", "-s", "-k").trim().isEmpty();
 		} catch (NativeDiskUsageFileSizingException e) {
-			LOGGER.log(FINEST, "Cannot execute "+getClass()+ " on this machine.", e);
+			LOGGER.log(INFO, "Cannot execute "+getClass()+ " on this machine.", e);
 		}
 		return canExecute;
 	}
