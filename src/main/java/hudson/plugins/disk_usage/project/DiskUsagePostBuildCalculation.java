@@ -44,7 +44,7 @@ public class DiskUsagePostBuildCalculation extends Recorder{
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
-            return "Calcualete disk usage of build";
+            return "Calculate disk usage of build";
         }
 
         @Override
