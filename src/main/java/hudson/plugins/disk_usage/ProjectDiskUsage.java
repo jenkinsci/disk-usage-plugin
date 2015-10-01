@@ -233,7 +233,6 @@ public class ProjectDiskUsage implements Saveable{
     }
        
     public void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build){
-        System.out.println("addin " + build + " " + info.getSize());
         if(!containsBuildWithId(info.getId())){
                 buildDiskUsage.add(info);
             if(build!=null && build.getWorkspace()!=null){
