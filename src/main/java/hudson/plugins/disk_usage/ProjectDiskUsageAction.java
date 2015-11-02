@@ -1,16 +1,20 @@
 package hudson.plugins.disk_usage;
 
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.Graph;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,8 +22,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -140,6 +147,43 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         }
     }
     
+    public DiskUsageProperty getDiskUsageProperty(){
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        return property;
+    }
+    
+    public String getDiskUsageNotLoadedBuilds(){
+        return DiskUsageUtil.getSizeString(getSizeOfAllNotLoadedBuilds());
+        
+    }
+    
+    public ProjectDiskUsage getDiskUsage(){
+        return getDiskUsageProperty().getDiskUsage();
+    }
+    
+    public Long getSizeOfNotLoadedBuilds(){
+        Long size = 0L;
+        for(Long s : getDiskUsage().getUnusedBuilds().values()){
+            size += s;
+        }
+        return size;
+    }
+    
+    public Long getSizeOfAllNotLoadedBuilds(){
+       Long size = getSizeOfNotLoadedBuilds();
+       if(project instanceof ItemGroup){
+           ItemGroup group = (ItemGroup) project;
+           for(Item item : (Collection<Item>) group.getItems()){
+               if(item instanceof AbstractProject){
+                   AbstractProject p = (AbstractProject) item;
+                   ProjectDiskUsageAction action = p.getAction(getClass());
+                   size += action.getSizeOfAllNotLoadedBuilds();
+               }
+           }
+       }
+        return size;
+    }
+    
     private Map<String,Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger) throws IOException{
         Map<String,Long> diskUsage = new TreeMap<String,Long>();
         Long buildsDiskUsage = 0l;
@@ -176,15 +220,28 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                                 build = b;
                             }
                         }
-                        if(build!=null){
-                            if(build.isKeepLog()){
+                        if(build!=null && build.isKeepLog()){
+                            locked += size;
+                        }
+                        else{
+                            if(information.isLocked()){
                                 locked += size;
                             }
                         }
-                        else{
-                            notLoaded += size;
-                        }
+                        
                     }
+                    for(File file : property.getDiskUsage().getFilesOfNotLoadedBuilds()){
+                      GregorianCalendar calendar = new GregorianCalendar();
+                      calendar.setTimeInMillis(file.lastModified());
+                      Date date = calendar.getTime();
+                      if(older!=null && !date.before(older))
+                        continue;
+                      if(yonger!=null && !date.after(yonger))
+                        continue;
+                      Long size = property.getDiskUsage().getSizeOfNotLoadedBuild(file.getName());
+                      buildsDiskUsage += size;
+                      notLoaded += size;
+                  }
                 }
             }
             
@@ -240,14 +297,27 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                     build = b;
                 }
             }
-            if(build!=null){
-                if(build.isKeepLog()){
-                    locked += size;
-                }
+            if(build!=null && build.isKeepLog()){
+                locked += size;
             }
             else{
-                notLoaded += size;
+                if(information.isLocked()){
+                    locked += size;
+                }
+                
             }
+          }
+          for(File file : property.getDiskUsage().getFilesOfNotLoadedBuilds()){
+              GregorianCalendar calendar = new GregorianCalendar();
+              calendar.setTimeInMillis(file.lastModified());
+              Date date = calendar.getTime();
+              if(older!=null && !date.before(older))
+                continue;
+              if(yonger!=null && !date.after(yonger))
+                continue;
+              Long size = property.getDiskUsage().getSizeOfNotLoadedBuild(file.getName());
+              buildsDiskUsage += size;
+              notLoaded += size;
           }
         }
         diskUsage.put("all", buildsDiskUsage);
@@ -318,6 +388,26 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                     Messages.DiskUsage_Graph_NonSlaveWorkspaces(), label);
         }
         return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);
+    }
+    
+    public void doDelete(StaplerRequest req, StaplerResponse res) throws IOException, ServletException{
+        String buildId = req.getParameter("buildId");
+        File file = new File(project.getBuildDir(), buildId);
+        Util.deleteRecursive(file);
+        getDiskUsage().removeDeletedNotLoadedBuild(buildId);
+        req.getView(this, "index.jelly").forward(req, res);
+    }
+    
+    public void doReload(StaplerRequest req, StaplerResponse res) throws IOException, ServletException{
+        String buildId = req.getParameter("buildId");
+        AbstractBuild build = project.getBuild(buildId);
+        if(build==null){
+            req.setAttribute("errorMessage","Build " + buildId+ " can not be loaded. Please, check Jenkins log for details.");
+        }
+        else{
+            getDiskUsage().moveToLoadedBuilds(build, getDiskUsage().getSizeOfNotLoadedBuild(buildId));
+        }
+        req.getView(this, "index.jelly").forward(req, res);
     }
 
     /** Shortcut for the jelly view */

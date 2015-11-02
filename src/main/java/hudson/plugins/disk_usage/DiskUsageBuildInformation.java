@@ -4,10 +4,12 @@
  */
 package hudson.plugins.disk_usage;
 
+import hudson.util.VersionNumber;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -20,6 +22,7 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
     private String id;
     private long timestamp;
     private int number;
+    private boolean isLocked;
     
     private Long size;
     
@@ -28,8 +31,33 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
         this.timestamp = timestamp;
         this.number = number;
         this.size = size;
+        this.isLocked = false;
+    }
+    
+    public DiskUsageBuildInformation(String id, long timestamp, int number, Long size, boolean isLocked){
+        this.id = id;
+        this.timestamp = timestamp;
+        this.number = number;
+        this.size = size;
+        this.isLocked = isLocked;
+    }
+    
+    public boolean isLocked(){
+        return isLocked;
     }
 
+    public void lock(){
+        isLocked = true;
+    }
+    
+    public void unLock(){
+        isLocked = false;
+    }
+    
+    public void setLockState(boolean locked){
+        isLocked = locked;
+    }
+    
     private Object readResolve() {
         if (timestamp == 0) {
             try {
@@ -42,6 +70,9 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
     }
     
     public String getId(){
+        if(Jenkins.getVersion().isNewerThan(new VersionNumber("1.597"))){
+            return String.valueOf(number);
+        }
         return id;
     }
 

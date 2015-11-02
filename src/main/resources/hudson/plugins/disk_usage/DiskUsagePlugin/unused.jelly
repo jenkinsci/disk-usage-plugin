@@ -1,0 +1,49 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<l:layout title="${%Disk Usage}" secured="true">
+       
+   <!-- 
+     Sorted table of project disk usages
+   -->
+   <l:side-panel>
+    <l:tasks>
+      <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
+      <l:task icon="images/24x24/disk.gif" href="${rootURL}/plugin/disk-usage" title="${%Back the overview}" />
+    </l:tasks>
+  </l:side-panel>
+
+    <l:main-panel>
+         
+     
+     <p> <b>${%Jobs}: </b>${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())}, 
+         <b>${%Builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalBuildsDiskUsage())},
+         <b>${%Locked builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalLockedBuildsDiskUsage())}, 
+         <b> ${%All workspace}: </b>${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())},
+         <b> ${%Not current workspace}: </b>${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}<br/></p>
+     
+     <!-- project table -->
+      
+     <table id="projectstatus" class="sortable pane bigtable">
+      <tr>
+        <th>${%Project Name}</th> <th>${%Not loaded builds}</th>
+      </tr>
+      <j:set var="projects" value="${it.getNotLoadedBuilds().keySet()}" />
+      <j:forEach var="p" items="${projects}">
+        <tr>
+          <td><b><a href="${rootURL}/${p.url}">${p.fullDisplayName}</a></b> </td>
+          <j:set var="diskUsage" value="${it.getDiskUsage(p)}" />
+          
+           <td data="${diskUsage.getSizeOfAllNotLoadedBuilds()}">${diskUsage.getDiskUsageNotLoadedBuilds()}</td>
+         </tr>
+      </j:forEach>
+      
+      <!-- sum of values -->
+      <tr class="sortbottom">
+        <td data="~~~"><b>${%Total}</b> </td>
+        <td data="${it.getTotalSizeOfNotLoadedBuilds()}"><b>${it.getTotalSizeOfNotLoadedBuilds()}</b></td>
+        </tr>
+    </table>
+    
+    <p/>
+    </l:main-panel>
+</l:layout>
+</j:jelly>

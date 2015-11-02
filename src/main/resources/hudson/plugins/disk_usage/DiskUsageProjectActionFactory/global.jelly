@@ -22,6 +22,12 @@
             </f:entry>
          </f:optionalBlock>
          
+         <f:optionalBlock name="calculationNotUsedData" title="${%Enable calculation of not used data}" checked="${descriptor.isCalculationNotUsedDataEnabled()}">  
+            <f:entry title="${%Time interval for calculation}">
+	      <f:textbox name="countIntervalNotUsedData" value="${descriptor.getCountIntervalForNotUsedData()}" />
+            </f:entry>
+         </f:optionalBlock>
+         
          
          <!-- Warnings -->
         <!-- <f:section title="E-mail warnings settings">-->

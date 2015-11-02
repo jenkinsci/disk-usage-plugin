@@ -2,6 +2,7 @@ package hudson.plugins.disk_usage;
 
 import hudson.Extension;
 import hudson.model.*;
+import hudson.plugins.disk_usage.unused.DiskUsageNotUsedDataCalculationThread;
 import hudson.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,6 +54,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         private boolean calculationWorkspace = true;
     
         private boolean checkWorkspaceOnSlave = false;
+        
+        private String countNotUsedData ="0 */6 * * *";
+        
+        private boolean calculationNotUsedData = false;
     
         private String email;
     
@@ -151,6 +156,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     	return countIntervalWorkspace;
     }
     
+    public String getCountIntervalForNotUsedData(){
+        return countNotUsedData;
+    }
+    
     public boolean getCheckWorkspaceOnSlave(){
         return checkWorkspaceOnSlave;
     }
@@ -173,6 +182,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     
     public boolean isCalculationJobsEnabled(){
         return calculationJobs;
+    }
+    
+    public boolean isCalculationNotUsedDataEnabled(){
+        return calculationNotUsedData;
     }
     
     public boolean warnAboutJobWorkspaceExceedSize(){
@@ -292,7 +305,8 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
         configureBuildsCalculation(form);
         configureJobsCalculation(form);
-        configureWorkspacesCalculation(form);        
+        configureWorkspacesCalculation(form);  
+        configureNotUsedDataCalculation(form);
         String excluded = form.getString("excludedJobs");
         excludedJobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
         if(form.containsKey("warnings")){
@@ -377,6 +391,16 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         WorkspaceDiskUsageCalculationThread workspaceCalculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
         if(!oldCountIntervalWorkspace.equals(countIntervalWorkspace) || oldCalculationWorkspace!=calculationWorkspace)
             workspaceCalculation.reschedule();
+    }
+    
+    private void configureNotUsedDataCalculation(JSONObject form){
+        boolean oldNotUsedData = calculationNotUsedData;
+        String oldCountIntervalNotUsedData = countNotUsedData;
+        calculationNotUsedData = form.containsKey("calculationNotUsedData");
+        countNotUsedData = calculationNotUsedData? form.getJSONObject("calculationNotUsedData").getString("countIntervalNotUsedData") : "0 */6 * * *";
+        DiskUsageNotUsedDataCalculationThread notUsedDataCalculation = AperiodicWork.all().get(DiskUsageNotUsedDataCalculationThread.class);
+        if(!oldCountIntervalNotUsedData.equals(countNotUsedData) || oldNotUsedData!=calculationNotUsedData)
+            notUsedDataCalculation.reschedule();
     }
 
     public int getTimeoutWorkspace() {

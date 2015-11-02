@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.RunAction2;
-import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -33,18 +32,10 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     
     public BuildDiskUsageAction(AbstractBuild build) {
         this.build = build;       
-        System.out.println("create build disk usage for build " + build + " of project " + build.getProject().getDisplayName());
         DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
         if(property==null){
             DiskUsageUtil.addProperty(build.getProject());
             property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-        }
-        DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
-        if(information==null){
-            System.out.println("information is null");
-        }
-        else{
-            System.out.println("information " + information);
         }
     }        
 
@@ -72,7 +63,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             information.setSize(size);
         }
         else{    
-            property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size), build);
+            property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size, build.isKeepLog()), build);
         }
         property.saveDiskUsage(); 
     }
@@ -176,9 +167,21 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                     Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getNumber());
             //Transient actions can be created even during deletion of job
-            if(property.getDiskUsageBuildInformation(build.getNumber())==null && build.getRootDir().exists()){
-                property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size), build);
+            if(information==null && build.getRootDir().exists()){
+                property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size, build.isKeepLog()), build);
+            }
+            else{
+                if(information!=null && !(build.getProject() instanceof ItemGroup)){
+                    //check if lock is still valide
+                    //not for ItemGroup, because MatrixProject causes recursion
+                    if(information.isLocked()!= build.isKeepLog()){
+                       information.setLockState(build.isKeepLog());
+                       property.getDiskUsage().save();
+                    }
+                }
+                
             }
     }
        

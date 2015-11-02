@@ -8,19 +8,15 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.plugins.disk_usage.unused.DiskUsageItemGroup;
 import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -39,7 +35,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import jenkins.model.Jenkins;
-import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 
 /**
@@ -83,7 +78,7 @@ public class DiskUsageUtil {
     protected static void loadData(DiskUsageProperty property, boolean loadAllBuilds){
         if(loadAllBuilds){
             try {
-                property.getDiskUsage().loadAllBuilds();
+                property.getDiskUsage().loadAllBuilds(loadAllBuilds);
             } catch (IOException ex) {
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -223,7 +218,6 @@ public class DiskUsageUtil {
         floor = Math.min(floor, 4);
         double base = Math.pow(1024, floor);
         String unit = getUnitString(floor);
-
         return Math.round(size / base) + " " + unit;
     }
 
@@ -351,7 +345,7 @@ public class DiskUsageUtil {
             }
             return size + f.length();
    }
-    
+ 
     public static void calculateDiskUsageForProject(AbstractProject project) throws IOException{
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
             return;
@@ -362,9 +356,14 @@ public class DiskUsageUtil {
             addProperty(project);
             property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
-        Set<DiskUsageBuildInformation> informations = (Set<DiskUsageBuildInformation>) property.getDiskUsage().getBuildDiskUsage(true);
-        for(DiskUsageBuildInformation information : informations){
-            exceededFiles.add(new File(Jenkins.getInstance().getBuildDirFor(project), information.getId()));
+        exceededFiles.add(project.getBuildDir());
+        //load all - force loading all builds to check state
+        Set<DiskUsageBuildInformation> information = (Set<DiskUsageBuildInformation>) property.getDiskUsage().getBuildDiskUsage(true);
+        //calculate not loaded builds
+        for(String build : property.getDiskUsage().getNotLoadedBuilds()){
+            File notLoadedBuild = new File(project.getBuildDir(),build);
+            Long size = DiskUsageUtil.getFileSize(notLoadedBuild, new ArrayList<File>());
+            property.getDiskUsage().addNotLoadedBuild(notLoadedBuild, size);
         }
         if(project instanceof ItemGroup){
             List<AbstractProject> projects = getAllProjects((ItemGroup) project);
@@ -372,8 +371,9 @@ public class DiskUsageUtil {
                     exceededFiles.add(p.getRootDir());
             }
         }
-        long buildSize = DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles);
-        Long diskUsageWithoutBuilds = property.getDiskUsageWithoutBuilds();
+        long buildSize = project.getBuildDir().length();
+        buildSize += DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles);
+        Long diskUsageWithoutBuilds = property.getDiskUsageWithoutBuildDirectory();
         boolean update = false;
         	if (( diskUsageWithoutBuilds <= 0 ) ||
         			( Math.abs(diskUsageWithoutBuilds - buildSize) > 1024 )) {
@@ -393,23 +393,6 @@ public class DiskUsageUtil {
     }   
       
     
-//    public static void addBuildDiskUsageAction(AbstractBuild build){
-//        BuildDiskUsageAction action = null;
-//        for(Action a: build.getActions()){
-//            if(a instanceof BuildDiskUsageAction){
-//                action = (BuildDiskUsageAction) a;
-//                break;
-//            }
-//        }
-//        if(action == null){
-//            build.addAction(new BuildDiskUsageAction(build));
-//            try {
-//                build.save();
-//            } catch (IOException ex) {
-//                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
-//    }
         public static void calculateDiskUsageForBuild(String buildId, AbstractProject project)
             throws IOException {
             if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
@@ -445,16 +428,19 @@ public class DiskUsageUtil {
         if (( size <= 0 ) || ( Math.abs(size - buildSize) > 1024 )) {
                     if(information!=null){
                         information.setSize(buildSize);
+                        if(build!=null){
+                            information.setLockState(build.isKeepLog());
+                        }
                     }
                     else{
                         if(build!=null){
-                            information = new DiskUsageBuildInformation(buildId, build.getTimeInMillis(), build.getNumber(), buildSize);
+                            information = new DiskUsageBuildInformation(buildId, build.getTimeInMillis(), build.getNumber(), buildSize, build.isKeepLog());
                             property.getDiskUsageOfBuilds().add(information);
                         }
                         else{
                             //should not happen
                             AbstractBuild newLoadedBuild = (AbstractBuild) project._getRuns().getById(buildId);
-                            information = new DiskUsageBuildInformation(buildId, newLoadedBuild.getTimeInMillis(), newLoadedBuild.getNumber(), buildSize);
+                            information = new DiskUsageBuildInformation(buildId, newLoadedBuild.getTimeInMillis(), newLoadedBuild.getNumber(), buildSize, build.isKeepLog());
                             property.getDiskUsageOfBuilds().add(information);
                         }
                     }
@@ -557,6 +543,92 @@ public class DiskUsageUtil {
         }
         return items;
     }
+    
+//    public static void calculateNotUsedData() throws IOException{
+//        checkUnloadedDataForItemGroup(Jenkins.getInstance(),null); 
+//    }
+    
+     public static boolean isJobLoaded(ItemGroup itemGroup, String directoryName){
+        for(Item item : (Collection<Item>)itemGroup.getItems()){
+           if(itemGroup.getRootDirFor(item).getName().equals(directoryName)){
+               return true;
+           }
+        }
+        return false;
+    }
+     
+     public static void calculateDiskUsageNotLoadedJobs(ItemGroup group){
+         DiskUsageItemGroup diskUsage = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getDiskUsageItemGroup(group);
+         File jobsDirectory = diskUsage.getJobDirectory();
+         if(jobsDirectory == null)
+             return;
+         Collection<Item> items = group.getItems();
+         List<File> excluded = new ArrayList<File>();
+         for(Item i : items){
+             excluded.add(i.getRootDir());
+             if(i instanceof ItemGroup){
+                 ItemGroup subGroup = (ItemGroup) i;
+                 calculateDiskUsageNotLoadedJobs(subGroup);
+             }
+         }
+         List<File> notLoaded = new ArrayList<File>();
+        try {
+            checkNotLoadedJobs(jobsDirectory, notLoaded, excluded);
+        } catch (IOException ex) {
+            Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Long size = 0L;
+        for(File file: notLoaded){
+            try {
+                size += getFileSize(file, new ArrayList<File>());
+            } catch (IOException ex) {
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            diskUsage.setSize(file.getAbsolutePath(), size);
+        }
+        diskUsage.save();
+     }
+     
+     public static boolean looksLikeJobDirectory(File file){
+         File config = new File(file,"config.xml");
+         if(config.exists())
+             return true;
+         File builds = new File(file,"builds");
+         if(builds.exists())
+             return true;
+         for(File child: file.listFiles()){
+             if(child.isDirectory())
+                 return false;
+         }
+         return true;
+     }
+     
+     public static boolean looksLikeItemGroupDirectory(File file){
+         File config = new File(file,"config.xml");
+         if(config.exists())
+             return true;
+         for(String jobsDirectoryName : DiskUsageItemGroup.JOB_DIRECTORY){
+             File jobDir = new File(file,jobsDirectoryName);
+             if(jobDir.exists() && jobDir.isDirectory())
+                 return true;
+         }
+         return false;
+     }
+     
+     public static void checkNotLoadedJobs(File file, List<File> notLoadedFiles, List<File> excludedFiles) throws IOException{
+         for(File child : file.listFiles()){
+             if((Util.isSymlink(child) && !child.exists()) || !child.isDirectory() | excludedFiles.contains(child)){
+                 continue;
+             }
+             if(looksLikeJobDirectory(child) || looksLikeItemGroupDirectory(child)){
+                 notLoadedFiles.add(child);
+             }
+             else{
+                 checkNotLoadedJobs(child, notLoadedFiles, excludedFiles);
+             }
+         }
+     }
+    
 
     /**
      * A {@link Callable} which computes disk usage of remote file object

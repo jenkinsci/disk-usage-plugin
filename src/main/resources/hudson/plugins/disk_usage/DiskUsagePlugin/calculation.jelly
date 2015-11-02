@@ -43,4 +43,18 @@
        </j:choose>   
     </form>
     </j:if>
+    <j:if test="${it.getConfiguration().isCalculationNotUsedDataEnabled()}">
+    <form action="recordNotUsedDataDiskUsage">
+        ${%Interval.Message('not used data', it.getCountIntervalForNotUsedData())}<br/>
+        <input type="hidden" name="name" value="${h.name}"/>
+         <j:choose>
+         <j:when test="${it.getNotUsedDataDiskUsageThread().isExecuting()}">
+           ${%Counting of not used data disk usage is executing now.} <br/>
+         </j:when>
+         <j:otherwise>
+           <f:submit value="${%Record not used data Disk Usage}" /><br/>
+         </j:otherwise>
+       </j:choose>   
+    </form>
+    </j:if>
 </j:jelly>

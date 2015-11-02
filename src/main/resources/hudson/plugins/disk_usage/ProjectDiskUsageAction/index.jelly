@@ -1,0 +1,60 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<l:layout title="${%Disk Usage}" secured="true">
+       
+   <!-- 
+     Sorted table of project disk usages
+   -->
+   <l:side-panel>
+    <l:tasks>
+      <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to the job}" />
+    </l:tasks>
+  </l:side-panel>
+
+    <l:main-panel>        
+     <j:set var="projects" value="${it.getNotLoadedBuilds().keySet()}" />  
+     <j:set var="diskUsage" value="${it.getDiskUsage()}" />
+     <j:if test="${errorMessage!=null}">
+      <div class="error" style="margin-bottom:1em">
+        ${errorMessage}
+      </div> 
+     </j:if>
+     <table id="projectstatus" class="sortable pane bigtable">
+      <tr>
+        <th>${%Path}</th> <th>${%Size}</th> <th>${%Action}</th>
+      </tr> 
+      <j:forEach var="build" items="${diskUsage.getNotLoadedBuilds()}">
+        <tr>
+          <td><b>${diskUsage.getPath(build)}</b> </td>
+          <td data="${diskUsage.getSizeOfNotLoadedBuild(build)}">${diskUsage.getSizeOfNotLoadedBuild(build)}</td>
+          <j:choose>
+              <j:when test="${diskUsage.isBuildXmlExists(build)}">
+                  <td>
+                    <form action="reload">
+                      <input type="hidden" name="buildId" value="${build}"/>
+                      <input type="submit" value="${%Reload}"/>
+                     </form>
+                  </td>
+              </j:when> 
+              <j:otherwise>
+                  <td>
+                    <form action="delete">
+                      <input type="hidden" name="buildId" value="${build}"/>
+                      <input type="submit" value="${%Delete}"/>
+                     </form>
+                  </td>
+              </j:otherwise>
+          </j:choose>
+        </tr>
+      </j:forEach>
+      
+      <!-- sum of values -->
+      <tr class="sortbottom">
+        <td data="~~~"><b>${%Total}</b> </td>
+       
+        <td data=""><b></b></td>
+      </tr>
+    </table>
+    
+    </l:main-panel>
+</l:layout>
+</j:jelly>

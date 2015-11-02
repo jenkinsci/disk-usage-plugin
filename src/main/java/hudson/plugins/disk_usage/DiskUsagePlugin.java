@@ -1,19 +1,26 @@
 package hudson.plugins.disk_usage;
 
+import hudson.plugins.disk_usage.unused.DiskUsageNotUsedDataCalculationThread;
 import hudson.Extension;
 import hudson.Plugin;
 import hudson.Util;
 import hudson.model.*;
+import hudson.model.Item;
+import hudson.plugins.disk_usage.unused.DiskUsageItemGroup;
 import hudson.security.Permission;
 import hudson.util.Graph;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -31,12 +38,66 @@ public class DiskUsagePlugin extends Plugin {
     
     private Long diskUsageBuilds = 0l;
     private Long diskUsageJobsWithoutBuilds = 0l;
+    private Long diskUsageNotLoadedJobs = 0l;
+    private Long diskUsageNotLoadedBuilds = 0l;
     private Long diskUsageWorkspaces = 0l;
     private Long diskUsageLockedBuilds = 0l;
     private Long diskUsageNonSlaveWorkspaces = 0l;
     
+    private Map<ItemGroup,DiskUsageItemGroup> diskUsageItemGroups = new ConcurrentHashMap<ItemGroup,DiskUsageItemGroup>(); 
+    
     public DiskUsagePlugin(){
+
     }
+    
+    public void addNewItemGroup(ItemGroup group, DiskUsageItemGroup diskUsage){
+        DiskUsageItemGroup usage = diskUsageItemGroups.get(group);
+        diskUsageItemGroups.put(group, diskUsage);
+        if(usage==null){
+            usage.load();
+        }
+    }
+    
+    protected void loadDiskUsageItemGroups(){
+        diskUsageItemGroups.clear();
+        loadAllDiskUsageItemGroups(Jenkins.getInstance());
+    }
+    
+    protected void loadAllDiskUsageItemGroups(ItemGroup group){
+        DiskUsageItemGroup diskUsage = new DiskUsageItemGroup(group);
+        diskUsage.load();
+        diskUsageItemGroups.put(group,diskUsage);
+        for(Item item : (Collection<Item>)group.getItems()){
+            if(item instanceof ItemGroup){
+                loadAllDiskUsageItemGroups((ItemGroup)item);
+            }
+        }
+    }
+    
+    
+    public Map<ItemGroup,DiskUsageItemGroup> getDiskUsageItemGroups(){
+        return diskUsageItemGroups;
+    }
+    
+    public DiskUsageItemGroup getDiskUsageItemGroup(ItemGroup group){
+        return diskUsageItemGroups.get(group);
+    }
+    
+    public void putDiskUsageItemGroup(ItemGroup group) throws IOException{
+        if(!diskUsageItemGroups.containsKey(group)){
+            DiskUsageItemGroup usage = new DiskUsageItemGroup(group);
+            diskUsageItemGroups.put(group, usage);
+            usage.save();
+        }
+    }
+    
+    public void removeDiskUsageItemGroup(ItemGroup group){
+        diskUsageItemGroups.remove(group);
+    }
+    
+//    public void loadNotUsedDataDiskUsage(){
+//        diskUsageGroupItems.load();
+//    }
     
     public void refreshGlobalInformation() throws IOException{
         diskUsageBuilds = 0l;
@@ -44,6 +105,7 @@ public class DiskUsagePlugin extends Plugin {
         diskUsageJobsWithoutBuilds = 0l;
         diskUsageLockedBuilds = 0l;
         diskUsageNonSlaveWorkspaces = 0l;
+        diskUsageNotLoadedBuilds = 0L;
         for(Item item: Jenkins.getInstance().getItems()){
             if(item instanceof AbstractProject){
                 AbstractProject project = (AbstractProject) item;
@@ -53,6 +115,7 @@ public class DiskUsagePlugin extends Plugin {
                 diskUsageJobsWithoutBuilds += action.getAllDiskUsageWithoutBuilds();
                 diskUsageLockedBuilds += action.getBuildsDiskUsage().get("locked");
                 diskUsageNonSlaveWorkspaces += action.getAllCustomOrNonSlaveWorkspaces();
+                diskUsageNotLoadedBuilds += action.getBuildsDiskUsage().get("notLoaded");
             }
         }
     }
@@ -71,6 +134,10 @@ public class DiskUsagePlugin extends Plugin {
     
     public Long getCashedGlobalLockedBuildsDiskUsage(){
      return diskUsageLockedBuilds;   
+    }
+    
+    public Long getCashedGlobalNotLoadedBuildsDiskUsage(){
+     return diskUsageNotLoadedBuilds;   
     }
     
     public Long getCashedGlobalWorkspacesDiskUsage(){
@@ -116,6 +183,11 @@ public class DiskUsagePlugin extends Plugin {
         return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
     }
     
+    public Long getGlobalNotLoadedBuildsDiskUsageWorkspace() throws IOException{
+        refreshGlobalInformation();
+        return diskUsageNotLoadedBuilds;
+    }
+    
     public BuildDiskUsageCalculationThread getBuildsDiskUsageThread(){
         return AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
     }
@@ -126,6 +198,10 @@ public class DiskUsagePlugin extends Plugin {
     
     public WorkspaceDiskUsageCalculationThread getWorkspaceDiskUsageThread(){
        return AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class); 
+    }
+    
+    public DiskUsageNotUsedDataCalculationThread getNotUsedDataDiskUsageThread(){
+       return AperiodicWork.all().get(DiskUsageNotUsedDataCalculationThread.class); 
     }
     
     /**
@@ -246,6 +322,13 @@ public class DiskUsagePlugin extends Plugin {
             getWorkspaceDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
+    
+    public void doRecordNotUsedDataDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        if(getConfiguration().isCalculationNotUsedDataEnabled() && !getNotUsedDataDiskUsageThread().isExecuting())
+            getNotUsedDataDiskUsageThread().doAperiodicRun();
+        res.forwardToPreviousPage(req);
+    }
        
     
     public String getCountIntervalForBuilds(){
@@ -271,6 +354,46 @@ public class DiskUsagePlugin extends Plugin {
     
     public boolean hasAdministrativePermission(){
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
+    }
+    
+    public String getCountIntervalForNotUsedData(){
+        long nextExecution = getNotUsedDataDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
+            if(nextExecution<=0) //not scheduled
+            nextExecution = getNotUsedDataDiskUsageThread().getRecurrencePeriod();
+        return DiskUsageUtil.formatTimeInMilisec(nextExecution);
+    }
+    
+    public String getTotalSizeOfNotLoadedBuilds(){
+        Long size = 0L;
+        for(Item item : Jenkins.getInstance().getItems()){
+            if(item instanceof AbstractProject){
+                AbstractProject project = (AbstractProject) item;
+                ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
+                size += action.getSizeOfAllNotLoadedBuilds();
+            }
+        }
+        return DiskUsageUtil.getSizeString(size);
+    }
+    
+    public Map<AbstractProject,Long> getNotLoadedBuilds(){
+        Map<AbstractProject,Long> notLoadedBuilds = new HashMap<AbstractProject,Long>();
+        for(Item item : Jenkins.getInstance().getItems()){
+            if(item instanceof AbstractProject){
+                AbstractProject project = (AbstractProject) item;
+                ProjectDiskUsage usage = ((DiskUsageProperty)project.getProperty(DiskUsageProperty.class)).getDiskUsage();
+                ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
+                if(!usage.getNotLoadedBuilds().isEmpty()){
+                    notLoadedBuilds.put(project, action.getSizeOfAllNotLoadedBuilds());
+                }
+            }
+        }
+        return notLoadedBuilds;
+    }
+    
+    public void doUnused(StaplerRequest req, StaplerResponse res) throws IOException, ServletException{
+        Map<AbstractProject,Map<String,Long>> notLoadedBuilds = new HashMap<AbstractProject,Map<String,Long>>();
+        Map<String,Long> notLoadedJobs = new HashMap<String,Long>();
+        req.getView(this, "unused.jelly").forward(req, res);
     }
     
 }

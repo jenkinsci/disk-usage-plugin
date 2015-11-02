@@ -35,6 +35,11 @@
                         <td>${%Non-slave workspaces}</td>
                         <td class="fileSize">${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces())}</td>
                     </tr>
+                    <tr>
+                        <td><img src="/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
+                        <td><a href="diskUsage">${%Not loaded Builds}</a></td>
+                        <td></td>
+                    </tr>
                 </table>
             </t:summary>
         </table>

@@ -9,7 +9,8 @@ import hudson.BulkChange;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Run;
@@ -17,8 +18,10 @@ import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -36,14 +38,137 @@ import org.apache.commons.io.FileUtils;
 public class ProjectDiskUsage implements Saveable{
     
     protected transient Job job;
-    protected Long diskUsageWithoutBuilds = 0l;
+    private Long diskUsageWithoutBuilds = 0l;
     protected Map<String,Map<String,Long>> slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
     private Set<DiskUsageBuildInformation> buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
+    private Map<String,Long> notLoadedBuilds = new ConcurrentHashMap<String, Long>();
     private boolean allBuildsLoaded;
    
     
     public Map<String,Map<String,Long>> getSlaveWorkspacesUsage(){
         return Maps.newHashMap(slaveWorkspacesUsage);
+    }
+    
+    public Long getDiskUsageWithoutBuilds(){
+        if(diskUsageWithoutBuilds == null){
+            //in older versions
+            diskUsageWithoutBuilds = 0L;
+        }
+        return diskUsageWithoutBuilds + getDiskUsageUnloadedBuilds();
+    }
+    
+    public Long getDiskUsage(){
+        return getDiskUsageWithoutBuilds() + getBuildLoadedBuildDiskUsage();
+    }
+    
+    public Long getBuildLoadedBuildDiskUsage(){
+        Long size = 0l;
+        for(DiskUsageBuildInformation info : buildDiskUsage){
+            size += info.getSize();
+        }
+        return size;
+    }
+    
+    public Long getDiskUsageWithoutBuildDirectory(){
+        return diskUsageWithoutBuilds;
+    }
+    
+    public void setDiskUsageWithoutBuilds(Long diskUsage){
+        this.diskUsageWithoutBuilds = diskUsage;
+        save();
+    }
+    
+    public Long getDiskUsageUnloadedBuilds(){
+        Long size = 0L;
+        for(Long s: notLoadedBuilds.values()){
+            size += s;
+        }
+        return size;
+    }
+    
+    /**
+     * Size of all builds - loaded and not loaded. It should be equals to the size of directories in builds directory
+     */
+    public int getCountOfAllBuilds(){
+        return notLoadedBuilds.size() + buildDiskUsage.size();
+    }
+    
+    public Set<String> getNotLoadedBuilds(){
+        Set<String> set = new HashSet<String>();
+        set.addAll(notLoadedBuilds.keySet());
+        return set;
+    }
+    
+    public String getPath(String buildDirName){
+        File file = new File(job.getBuildDir(), buildDirName);
+        return file.getAbsolutePath();
+    }
+    
+    public boolean isBuildXmlExists(String buildDirName){
+        File file = new File(new File(job.getBuildDir(), buildDirName),"build.xml");
+        return file.exists();
+    }
+    
+    public void addNotLoadedBuild(File file, Long size){
+         notLoadedBuilds.put(file.getName(), size);
+         DiskUsageBuildInformation information = getDiskUsageBuildInformation(file.getName());
+         if(information!=null){
+            buildDiskUsage.remove(information); 
+         }
+         save();
+    }
+    
+    public int countLoadedBuilds(){
+        return buildDiskUsage.size();
+    }
+    
+    public void moveToUnloadedBuilds(DiskUsageBuildInformation information){
+        buildDiskUsage.remove(information);
+        notLoadedBuilds.put(information.getId(), information.getSize());
+        save();
+    }
+    
+    public List<File> getDirectoriesOfUnloadableBuilds(){
+        List<File> files = new ArrayList<File>();
+        for(String name : notLoadedBuilds.keySet()){
+            files.add(new File(job.getBuildDir(),name));
+        }
+        return files;
+    }
+    
+    public void moveToLoadedBuilds(AbstractBuild build, Long size){
+       DiskUsageBuildInformation information =  new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size, build.isKeepLog());
+       notLoadedBuilds.remove(build.getId());
+       addBuildInformation(information, build, size);
+       save();
+    }
+    
+    public Long getSizeOfNotLoadedBuild(String directoryName){
+        return notLoadedBuilds.get(directoryName);
+    }
+    
+    public void removeDeletedNotLoadedBuild(File file){
+        notLoadedBuilds.remove(file.getName());
+        save();
+    }
+    
+    private boolean containsDiskUsageBuildInformationForDirectory(File file){
+        for(DiskUsageBuildInformation info : buildDiskUsage){
+            if(info.getId().equals(file.getName())){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean containDataForBuildDirectory(File file){
+        String name = file.getName();
+        return (notLoadedBuilds.get(name)!= null || containsDiskUsageBuildInformationForDirectory(file));
+    }
+    
+    public void removeDeletedNotLoadedBuild(String fileName){
+        notLoadedBuilds.remove(fileName);
+        save();
     }
             
      public XmlFile getConfigFile(){
@@ -59,20 +184,20 @@ public class ProjectDiskUsage implements Saveable{
      }
      
      public Set<DiskUsageBuildInformation> getBuildDiskUsage(boolean needAll){
-         Set<DiskUsageBuildInformation> information = new HashSet<DiskUsageBuildInformation>();
-         AbstractProject p = (AbstractProject) job;
-         if(needAll && !allBuildsLoaded){
+         if(needAll){
              try{
-                loadAllBuilds();
+                ProjectBuildChecker.checkValidityOfBuildData(this);
              }
              catch(Exception e){
                  Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load builds "+getConfigFile(),e);
              }
          }
+         Set<DiskUsageBuildInformation> information = new HashSet<DiskUsageBuildInformation>();
          information.addAll(buildDiskUsage);
          return information;
      }
     
+    @Override
     public synchronized void save() {
         if(BulkChange.contains(this))   return;
         try {
@@ -86,6 +211,7 @@ public class ProjectDiskUsage implements Saveable{
     
     public void removeBuild(DiskUsageBuildInformation information){
         buildDiskUsage.remove(information);
+        save();
     }
     
     private int numberOfBuildFolders() throws IOException{
@@ -93,8 +219,10 @@ public class ProjectDiskUsage implements Saveable{
         int count = 0;
         if(file!=null && file.exists() && file.isDirectory()){
             for(File f : file.listFiles()){
-                if(!FileUtils.isSymlink(f))
+                //file.exists() is called because symlinks to not existed files are not considered as symlinks
+                if(!FileUtils.isSymlink(f) && f.exists()){
                     count++;
+                }
             }
         }
         return count;
@@ -112,6 +240,22 @@ public class ProjectDiskUsage implements Saveable{
         slaveWorkspacesUsage.put(node.getNodeName(), workspacesInfo);
     }
     
+    public Map<String,Long> getUnusedBuilds(){
+        Map<String,Long> unusedBuilds = new HashMap<String,Long>();
+        unusedBuilds.putAll(notLoadedBuilds);
+        return unusedBuilds;
+    }
+    
+    public Long getSizeOfNotLoadedBuilds(){
+        Long size = 0L;
+        for(Long s : notLoadedBuilds.values()){
+            size += s;
+        }
+        return size;
+    }
+    
+    
+    
     public boolean containsBuildWithId(String id){
         for(DiskUsageBuildInformation inf : buildDiskUsage){
             if(inf.getId().equals(id)){
@@ -121,55 +265,44 @@ public class ProjectDiskUsage implements Saveable{
         return false;
     }
     
-    public void loadAllBuilds() throws IOException{
-        load();
-        int loadedBuildInformation = buildDiskUsage.size();
-        if(loadedBuildInformation>=numberOfBuildFolders()){
-            return;
+    public List<File> getFilesOfNotLoadedBuilds(){
+        List<File> files = new ArrayList<File>();
+        for(String dirName : notLoadedBuilds.keySet()){
+            files.add(new File(job.getBuildDir(),dirName));
         }
-        AbstractProject project = (AbstractProject) job;
-        List<Run> list = project.getBuilds();
-        buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
-        for(Run run : list){
-            if(run instanceof AbstractBuild){
-                if(containsBuildWithId(run.getId())){
-                    continue;
-                }
-                AbstractBuild build = (AbstractBuild) run;
-                BuildDiskUsageAction toRemove = null;
-                long buildOldDiskUsage = 0l;
-                //if not present, add
-                for(Action action : build.getActions()){
-                    if(action instanceof BuildDiskUsageAction){
-                       toRemove=(BuildDiskUsageAction) action;
-                       buildOldDiskUsage = toRemove.buildDiskUsage;
-                    }
-                }
-                if(toRemove!=null){
-                    build.getActions().remove(toRemove);
-                }
-                if(build.getWorkspace()!=null){
-                    putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
-                }
-                DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
-                addBuildInformation(information , build);
-                if(information.getSize()==0l){
-                    information.setSize(buildOldDiskUsage);
-                }
-//                if(usage==null){
-//                    run.getActions().add(new BuildDiskUsageAction(build));
-//                    try {
-//                        build.save();
-//                    } catch (IOException ex) {
-//                        Logger.getLogger(ProjectDiskUsage.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
-               // else{
-              //  }
-                //DiskUsageUtil.addBuildDiskUsageAction(build);
+        return files;
+    }
+    
+    public boolean allBuildsExists(){
+        boolean exist = true;
+        for(DiskUsageBuildInformation info : getBuildDiskUsage(false)){
+            File file = new File(job.getBuildDir(),info.getId());
+            if(!file.exists()){
+                removeBuild(info);
+                exist = false;
             }
         }
-        allBuildsLoaded = true;
+        return exist;
+        
+    }
+    
+    public void loadAllBuilds() throws IOException{
+        loadAllBuilds(false);
+    }
+    
+    public void loadAllBuilds(boolean complete) throws IOException{
+        load();
+        int loadedBuildInformation = getCountOfAllBuilds();
+        if(loadedBuildInformation==numberOfBuildFolders() && allBuildsExists()){
+            return;
+        }
+        if(complete && job instanceof AbstractProject){  
+            ProjectBuildChecker.valideBuildData((AbstractProject)job);
+            allBuildsLoaded = true;
+        }
+        else{
+            ProjectBuildChecker.checkValidityOfBuildData(this);
+        }
         DiskUsageProperty property = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);
         property.checkWorkspaces(true);
         save();
@@ -182,7 +315,7 @@ public class ProjectDiskUsage implements Saveable{
             }
             try {
                 file.unmarshal(this);
-                if(buildDiskUsage instanceof HashSet){
+                if(!(buildDiskUsage instanceof CopyOnWriteArraySet)){
                     //saved collection is not serialized in previous versions.
                     Set<DiskUsageBuildInformation> informations = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
                     informations.addAll(buildDiskUsage);
@@ -212,7 +345,7 @@ public class ProjectDiskUsage implements Saveable{
             if(run instanceof AbstractBuild){
                 AbstractBuild build = (AbstractBuild) run;
                 BuildDiskUsageAction usage = run.getAction(BuildDiskUsageAction.class);
-                DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
+                DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l, build.isKeepLog());
                  addBuildInformation(information , build);
                 if(usage!=null){
                     information.setSize(usage.buildDiskUsage);
@@ -231,25 +364,36 @@ public class ProjectDiskUsage implements Saveable{
         }
         return null;
     }
-       
+    
+    public DiskUsageBuildInformation getDiskUsageBuildInformation(String id){
+        for(DiskUsageBuildInformation information : buildDiskUsage){
+            if(information.getId().equals(id)){
+                return information;
+            }
+        }
+        return null;
+    }
+    
+    public void addBuild(AbstractBuild build){
+        DiskUsageBuildInformation information =  new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), 0L, build.isKeepLog());
+        addBuildInformation(information, build);
+    }
+    
     public void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build){
-        System.out.println("addin " + build + " " + info.getSize());
+        addBuildInformation(info, build, 0L);
+    }
+       
+    public void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build, Long size){
         if(!containsBuildWithId(info.getId())){
                 buildDiskUsage.add(info);
             if(build!=null && build.getWorkspace()!=null){
-                putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
+                putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
             }
         }
+        if(notLoadedBuilds.containsKey(info.getId())){
+            notLoadedBuilds.remove(info.getId());
+        }
+        save();
     }
     
-    private void removeDeletedBuilds(){
-        
-        Iterator<DiskUsageBuildInformation> iterator= buildDiskUsage.iterator();
-        while(iterator.hasNext()){
-            DiskUsageBuildInformation information = iterator.next();
-            File buildDir = new File(Jenkins.getInstance().getBuildDirFor(job), information.getId());
-            if(!buildDir.exists())
-                buildDiskUsage.remove(information);
-        }
-    }
 }

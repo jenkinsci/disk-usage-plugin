@@ -46,7 +46,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 diskUsage = new ProjectDiskUsage();
             }
             diskUsage.load();
-            this.diskUsage.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
+            diskUsage.setDiskUsageWithoutBuilds(diskUsageWithoutBuilds);
             saveDiskUsage();
      }
      
@@ -83,6 +83,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      }
      
      public Long getAllDiskUsageOfBuild(String buildId){
+         if(getDiskUsageBuildInformation(buildId) == null){
+             return 0L;
+         }
          return getAllDiskUsageOfBuild(getDiskUsageBuildInformation(buildId).getNumber());
      }
      
@@ -128,6 +131,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
          return diskUsage;
      }
      
+     public Long getDiskUsageWithoutBuildDirectory(){
+         return diskUsage.getDiskUsageWithoutBuildDirectory();
+     }
+     
     @Override
      public void setOwner(Job job){
          super.setOwner(job);
@@ -137,7 +144,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
          //transfer old data
          boolean modified = false;
          if(diskUsageWithoutBuilds!=null){
-             diskUsage.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
+             diskUsage.setDiskUsageWithoutBuilds(diskUsageWithoutBuilds);
              diskUsageWithoutBuilds = null;
              modified = true;
          }
@@ -404,16 +411,11 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 //     }
 
     public Long getDiskUsageWithoutBuilds(){
-        if(diskUsage.diskUsageWithoutBuilds==null){
-            diskUsage.diskUsageWithoutBuilds=0l;
-        }
-        return diskUsage.diskUsageWithoutBuilds;
+        return diskUsage.getDiskUsageWithoutBuilds();
     }
 
     public Long getAllDiskUsageWithoutBuilds(){
-        if(diskUsage.diskUsageWithoutBuilds==null)
-            diskUsage.diskUsageWithoutBuilds=0l;
-       Long usage = diskUsage.diskUsageWithoutBuilds;
+       Long usage = diskUsage.getDiskUsageWithoutBuilds();
        if(owner instanceof ItemGroup){
                  ItemGroup group = (ItemGroup) owner;
                      usage += getDiskUsageWithoutBuildsAllSubItems(group);

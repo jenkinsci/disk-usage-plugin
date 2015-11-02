@@ -65,8 +65,8 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         FreeStyleProject project = (FreeStyleProject) jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) jenkins.getItem("project2");
         //we need all build information are loaded before counting
-        project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
-        project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
+        project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
+        project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
         File file = new File(project.getRootDir(),"fileList");
         Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
         file = new File(project2.getRootDir(),"fileList");
@@ -79,6 +79,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         }
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
+        System.out.println("size of unloaded builds " + project.getProperty(DiskUsageProperty.class).getDiskUsage().getNotLoadedBuilds());
         assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
         assertEquals("Project project2 has wrong job size.", project2Size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
     }
@@ -94,8 +95,8 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         MatrixProject project = (MatrixProject) jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) jenkins.getItem("project2");
         //we need all build information are loaded before counting
-        project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
-        project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();        
+        project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
+        project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);        
         File file = new File(project.getRootDir(),"fileList");
         Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
         file = new File(project2.getRootDir(),"fileList");
@@ -103,7 +104,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         project2Size += project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();        
         for(MatrixConfiguration config: project.getItems()){
-            config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
+            config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
             File f = new File(config.getRootDir(),"fileList");
             Long size = getSize(readFileList(f)) + config.getRootDir().length();
             long diskUsageXML = config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
@@ -114,6 +115,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
             DiskUsageTestUtil.cancelCalculation(calculation);
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
+        System.out.println("matrix get unloaded " + project.getProperty(DiskUsageProperty.class).getDiskUsage().getNotLoadedBuilds());
         assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
         assertEquals("Project project2 has wrong job size.", project2Size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
         for(MatrixConfiguration config: project.getItems()){

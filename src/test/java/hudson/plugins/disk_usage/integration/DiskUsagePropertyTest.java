@@ -253,7 +253,7 @@ public class DiskUsagePropertyTest {
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableWorkspacesDiskUsageCalculation();
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        property.getDiskUsage().loadAllBuilds();
+        property.getDiskUsage().loadAllBuilds(true);
         assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
         assertEquals("Size of build 3 should be loaded from previous configuration.", 23932L, property.getDiskUsageOfBuild(3), 0);
     }
@@ -268,7 +268,7 @@ public class DiskUsagePropertyTest {
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableWorkspacesDiskUsageCalculation();
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        property.getDiskUsage().loadAllBuilds();
+        property.getDiskUsage().loadAllBuilds(true);
         assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
         assertEquals("Size of workspaces should be loaded from previous configuration.", 4096L, property.getAllWorkspaceSize(), 0);
         assertTrue("Path of workspace shoudl be loaded form previous configuration.", property.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
@@ -347,7 +347,7 @@ public class DiskUsagePropertyTest {
        AbstractProject project2 = (AbstractProject) j.jenkins.getItem("project2");
        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
        DiskUsageProperty property2 = (DiskUsageProperty) project2.getProperty(DiskUsageProperty.class);
-       property2.getDiskUsage().loadAllBuilds();
+       property2.getDiskUsage().loadAllBuilds(true);
        assertTrue("Project should contains workspace with path {JENKINS_HOME}/jobs/project1/workspace", property.getSlaveWorkspaceUsage().get("").containsKey("${JENKINS_HOME}/jobs/project1/workspace"));
        assertTrue("Project should contains workspace with path {JENKINS_HOME}/workspace", property2.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));      
    
@@ -510,7 +510,7 @@ public class DiskUsagePropertyTest {
     }
     
     private void checkForConcurrencyException(Exception exception){
-        exception.printStackTrace();
+        exception.printStackTrace(System.err);
         if(exception instanceof ConcurrentModificationException){
             fail("DiskUsageProperty is not thread save. Attribute #diskUsageProperty caused ConcurrentModitifiactionException");
             return;
