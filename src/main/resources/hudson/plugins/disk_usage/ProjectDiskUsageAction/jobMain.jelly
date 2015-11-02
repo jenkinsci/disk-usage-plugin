@@ -6,37 +6,37 @@
 
                 <table class="fileList">
                     <tr>
-                        <td><img src="/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
+                        <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%Job}</td>
                         <td class="fileSize">${from.getSizeInString(from.getJobRootDirDiskUsage())}</td>
                     </tr>
                     <tr>
-                        <td><img src="/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
+                        <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%All builds}</td>
                         <td class="fileSize">${from.getSizeInString(from.getBuildsDiskUsage().get('all'))}</td>
                     </tr>
                     <tr>
-                        <td><img src="/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
+                        <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%Locked builds}</td>
                         <td class="fileSize">${from.getSizeInString(from.getBuildsDiskUsage().get('locked'))}</td>
                     </tr>
                     <tr>
-                        <td><img src="/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
+                        <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%All workspaces}</td>
                         <td class="fileSize">${from.getSizeInString(from.getAllDiskUsageWorkspace())}</td>
                     </tr>
                     <tr>
-                        <td><img src="/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
+                        <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%Slave workspaces}</td>
                         <td class="fileSize">${from.getSizeInString(from.getAllSlaveWorkspaces())}</td>
                     </tr>
                     <tr>
-                        <td><img src="/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
+                        <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%Non-slave workspaces}</td>
                         <td class="fileSize">${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces())}</td>
                     </tr>
                     <tr>
-                        <td><img src="/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
+                        <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td><a href="diskUsage">${%Not loaded Builds}</a></td>
                         <td></td>
                     </tr>

@@ -1,11 +1,13 @@
 <j:jelly xmlns:j="jelly:core">
     <j:if test="${(from.getAllDiskUsageWorkspace() > 0) || (from.getJobRootDirDiskUsage() > 0) || (from.getAllBuildsDiskUsage() > 0)}">
         <j:if test="${from.showGraph()}">
-            <div class="test-trend-caption">
-                ${%Disk Usage Trend}
-            </div>
-            <div>
-                <img src="diskUsage/graph/png?height=200&amp;width=500" lazymap="diskUsage/graph/map" alt="${%Disk Usage Trend}" />
+            <div align="right">
+                <div class="test-trend-caption">
+                    ${%Disk Usage Trend}
+                </div>
+                <div>
+                    <img src="diskUsage/graph/png?height=200&amp;width=500" lazymap="diskUsage/graph/map" alt="${%Disk Usage Trend}" />
+                </div>
             </div>
         </j:if>
     </j:if>
