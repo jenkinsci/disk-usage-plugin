@@ -7,7 +7,9 @@ package hudson.plugins.disk_usage;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
@@ -627,6 +629,19 @@ public class DiskUsageUtil {
                  checkNotLoadedJobs(child, notLoadedFiles, excludedFiles);
              }
          }
+     }
+     
+     public static DiskUsageItemGroupAction getItemGroupAction(ItemGroup group){
+         if(group instanceof AbstractItem){
+                    AbstractItem aItem = (AbstractItem) group;
+                    for(Action action : aItem.getAllActions()){
+                        if(action instanceof DiskUsageItemGroupAction){
+                            DiskUsageItemGroupAction duAction = (DiskUsageItemGroupAction) action;
+                            return duAction;
+                        }
+                    }
+         }
+         return new DiskUsageItemGroupAction((ItemGroup)group);
      }
     
 

@@ -15,8 +15,9 @@
 
      
      <!-- project table -->
-     <!--
+     
      <j:new var="calendar" className="java.util.GregorianCalendar" /> 
+   
      <j:new var="string" className="java.lang.String" /> 
      <f:form action="filter" method="post">
          
@@ -37,8 +38,8 @@
          <input name="submit" type="submit" value="Filter"/>
       
      </f:form> 
-     -->
-     <!--
+     
+     
      <table id="projectstatus" class="sortable pane bigtable">
       <tr>
         <th>${%Project name}</th> <th>${%Jobs}</th> <th>${%Builds all}</th> <th>${%Builds locked}</th><th>${%Not loaded builds}</th> <th>${%All workspace}</th> <th>${%Not current slave workspace}</th>
@@ -48,32 +49,45 @@
       <j:forEach var="i" items="${items}">
         <tr>
           <td><b><a href="${rootURL}/${i.url}">${i.fullDisplayName}</a></b> </td>
-          <j:set var="diskUsage" value="${it.getDiskUsage(i)}" />
-           <j:set var="buildDiskUsage" value="${diskUsage.getBuildsDiskUsage(request.getAttribute('older'), request.getAttribute('younger'))}" />            
-           <j:set var="buildsAll" value="${buildsAll + buildDiskUsage.get('all')}"/>
-           <j:set var="buildsLocked" value="${buildsLocked + buildDiskUsage.get('locked')}"/>
-          <td data="${buildDiskUsage.get('all') + diskUsage.getDiskUsageWithoutBuilds()}">${it.getDiskUsageInString(buildDiskUsage.get('all') + diskUsage.getDiskUsageWithoutBuilds())}</td>
-          <td data="${buildDiskUsage.get('all')}">${it.getDiskUsageInString(buildDiskUsage.get('all'))}</td>
-          <td data="${buildDiskUsage.get('locked')}">${it.getDiskUsageInString(buildDiskUsage.get('locked'))}</td>
-          <td data="${buildDiskUsage.get('notLoaded')}">${it.getDiskUsageInString(buildDiskUsage.get('notLoaded'))}</td>          
-          <td data="${diskUsage.getAllDiskUsageWorkspace()}">${it.getDiskUsageInString(diskUsage.getAllDiskUsageWorkspace())}</td>
-          <td data="${diskUsage.getAllCustomOrNonSlaveWorkspaces()}"><b>${it.getDiskUsageInString(diskUsage.getAllCustomOrNonSlaveWorkspaces())}</b></td>
+         
+          <j:set var="diskUsage" value="${it.getDiskUsageOfItem(i)}" />
+          <j:set var="diskUsageAll" value="{diskUsageAll + diskUsage}" />
+           <j:set var="buildDiskUsage" value="${it.getBuildsDiskUsage(i, request.getAttribute('older'), request.getAttribute('younger'))}" />            
+           <j:set var="builds" value="${buildDiskUsage.get('all')}"/>
+           <j:set var="buildsAll" value="${buildsAll + builds}"/>
+           <j:set var="buildsLocked" value="${buildDiskUsage.get('locked')}"/>
+           <j:set var="buildsLockedAll" value="${buildsLocked + buildsLocked}"/>
+           <j:set var="buildsNotLoaded" value="${buildDiskUsage.get('notLoaded')}"/>
+           <j:set var="buildsNotLoadedAll" value="${buildsNotLoadedAll + buildsNotLoaded}"/>
+           <j:set var="workspaces" value="${it.getAllDiskUsageWorkspace(i)}"/>
+           <j:set var="workspacesAll" value="${workspacesAll + workspaces}"/>
+           <j:set var="customWorkspace" value="${it.getAllCustomOrNonSlaveWorkspaces(i)}"/>
+           <j:set var="customWorkspaceAll" value="${customWorkspaceAll + customWorkspace}"/>
+          <td data="${diskUsage}">${it.getSizeInString(diskUsage)}</td>
+          <td data="${builds}">${it.getSizeInString(builds)}</td>
+          <td data="${buildsLocked}">${it.getSizeInString(buildsLocked)}</td>
+          <td data="${buildsNotLoaded}">${it.getSizeInString(buildsNotLoaded)}</td>          
+          <td data="${workspaces}">${it.getSizeInString(workspaces)}</td>
+          <td data="${customWorkspace}"><b>${it.getSizeInString(customWorkspace)}</b></td>
         </tr>
       </j:forEach>
-      -->
+      
       <!-- sum of values -->
-      <!--
+      
       <tr class="sortbottom">
         <td data="~~~"><b>${%Total}</b> </td>
-        <td data="${it.getCashedGlobalJobsDiskUsage()}"><b>${it.getDiskUsageInString(it.getCashedGlobalJobsWithoutBuildsDiskUsage() + buildsAll)}</b></td>
-        <td data="${buildsAll}"><b>${it.getDiskUsageInString(buildsAll)}</b></td>
-        <td data="${buildsLocked}"><b>${it.getDiskUsageInString(buildsLocked)}</b></td>
-        <td data="${it.getCashedGlobalNotLoadedBuildsDiskUsage()}"><b>${it.getDiskUsageInString(it.getCashedGlobalNotLoadedBuildsDiskUsage())}</b></td>
-        <td data="${it.getCashedGlobalWorkspacesDiskUsage()}"><b>${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())}</b></td>
-        <td data="${it.getCashedNonSlaveDiskUsageWorkspace()}"><b>${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}</b></td>
+        <td data="${diskUsageAll}"><b>${it.getSizeInString(diskUsageAll)}</b></td>
+        <td data="${buildsAll}"><b>${it.getSizeInString(buildsAll)}</b></td>
+        <td data="${buildsLockedAll}"><b>${it.getSizeInString(buildsLockedAll)}</b></td>
+        <td data="${buildsNotLoadedAll}"><b>${it.getSizeInString(buildsNotLoadedAll)}</b></td>
+        <td data="${workspaces}"><b>${it.getSizeInString(workspaces)}</b></td>
+        <td data="${customWorkspace}"><b>${it.getSizeInString(customWorkspace)}</b></td>
       </tr>
     </table>
-    -->
+ <br/>
+ <br/>
+ 
+ 
     <j:set var="items" value="${it.getUnloadedJobs()}" /> 
     <table id="projectstatus" class="sortable pane bigtable">
       <tr>

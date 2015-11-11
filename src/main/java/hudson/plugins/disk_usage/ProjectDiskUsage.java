@@ -57,10 +57,6 @@ public class ProjectDiskUsage implements Saveable{
         return diskUsageWithoutBuilds + getDiskUsageUnloadedBuilds();
     }
     
-    public Long getDiskUsage(){
-        return getDiskUsageWithoutBuilds() + getBuildLoadedBuildDiskUsage();
-    }
-    
     public Long getBuildLoadedBuildDiskUsage(){
         Long size = 0l;
         for(DiskUsageBuildInformation info : buildDiskUsage){

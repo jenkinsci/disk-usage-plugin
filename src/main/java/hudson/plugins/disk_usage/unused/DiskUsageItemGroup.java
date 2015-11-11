@@ -52,18 +52,23 @@ public class DiskUsageItemGroup implements Saveable {
         diskUsageWithoutJobs = diskUsage;
     }
     
-    public Long getDiskUsage(){
-       if(itemGroup instanceof AbstractProject){
-            AbstractProject project = (AbstractProject) itemGroup;
-            DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-            return property.getDiskUsage().getDiskUsage();
-        }
+    
+    public Long getDiskUsageWithoutJobs(){
         return diskUsageWithoutJobs;
     }
+//    
+//    public Long getDiskUsage(){
+//       if(itemGroup instanceof AbstractProject){
+//            AbstractProject project = (AbstractProject) itemGroup;
+//            DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+//            return property.getDiskUsage().getDiskUsage();
+//        }
+//        return diskUsageWithoutJobs;
+//    }
     
-    public void getDiskProjectUsage(){
-        
-    }
+//    public void getDiskProjectUsage(){
+//        
+//    }
     
     private void findJobDirectory(){
         if(jobDirectoryName == null && itemGroup.getItems().size() > 0){
@@ -133,7 +138,7 @@ public class DiskUsageItemGroup implements Saveable {
         return notLoadedJobs.get(directoryName);
     }
     
-    public Map<String,Long> getDiskUsageOfNotLoadedJobs(){
+    public Map<String,Long> getNotLoadedJobs(){
         Map<String,Long> usage = new HashMap<String,Long>();
         usage.putAll(notLoadedJobs);
         return usage;
@@ -143,7 +148,7 @@ public class DiskUsageItemGroup implements Saveable {
         notLoadedJobs.remove(directory);
     }
     
-    public Long getAllDiskUsage(){
+    public Long getDiskUsageOfNotLoadedJobs(){
         Long size = 0L;
         for(Long s : notLoadedJobs.values()){
             size += s;

@@ -7,7 +7,7 @@ import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
-import hudson.util.ChartUtil.NumberOnlyBuildLabel;
+import hudson.plugins.disk_usage.unused.DiskUsageItemGroup;
 import hudson.util.Graph;
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +35,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author dvrzalik
  */
 @ExportedBean(defaultVisibility = 1)
-public class ProjectDiskUsageAction implements ProminentProjectAction {
+public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsageItemAction {
 
     AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project;
     
@@ -68,6 +68,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return getAllDiskUsageWorkspace() - getAllCustomOrNonSlaveWorkspaces();
     }
     
+    @Override
     public Long getAllCustomOrNonSlaveWorkspaces(){
         Long diskUsage = 0l;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
@@ -94,6 +95,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
      * 
      * @return disk usage project and its sub-projects
      */
+    @Override
     public Long getAllDiskUsageWorkspace(){
         Long diskUsage = 0l;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
@@ -119,6 +121,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
        return DiskUsageUtil.getSizeString(size);
     }
     
+    @Override
     public Long getDiskUsageWithoutBuilds(){
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null){
@@ -184,7 +187,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return size;
     }
     
-    private Map<String,Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger) throws IOException{
+    private Map<String,Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger) {
         Map<String,Long> diskUsage = new TreeMap<String,Long>();
         Long buildsDiskUsage = 0l;
         Long locked = 0l;
@@ -256,14 +259,15 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return getBuildsDiskUsage(null, null);
     }
     
-    public Long getAllBuildsDiskUsage() throws IOException{
+    public Long getAllBuildsDiskUsage() {
         return getBuildsDiskUsage(null, null).get("all");
     }
     
     /**
      * @return Disk usage for all builds
      */
-    public Map<String, Long> getBuildsDiskUsage(Date older, Date yonger) throws IOException {
+    @Override
+    public Map<String, Long> getBuildsDiskUsage(Date older, Date yonger) {
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property==null){
             DiskUsageUtil.addProperty(project);
@@ -408,6 +412,16 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
             getDiskUsage().moveToLoadedBuilds(build, getDiskUsage().getSizeOfNotLoadedBuild(buildId));
         }
         req.getView(this, "index.jelly").forward(req, res);
+    }
+    
+    @Override
+    public Long getAllDiskUsage() {
+        Long size = getAllBuildsDiskUsage() + getAllDiskUsageWithoutBuilds() + getSizeOfAllNotLoadedBuilds();
+        if(project instanceof ItemGroup){
+            DiskUsageItemGroup group = DiskUsageUtil.getItemGroupAction((ItemGroup)project).getDiskUsageItemGroup();
+            size += group.getDiskUsageOfNotLoadedJobs();
+        }
+        return size;
     }
 
     /** Shortcut for the jelly view */
