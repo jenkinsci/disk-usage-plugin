@@ -13,6 +13,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TaskListener;
 import hudson.plugins.disk_usage.DiskUsageCalculation;
+import hudson.plugins.disk_usage.DiskUsageJenkinsAction;
 import hudson.plugins.disk_usage.DiskUsagePlugin;
 import hudson.plugins.disk_usage.DiskUsageUtil;
 import hudson.plugins.disk_usage.ProjectBuildChecker;
@@ -62,6 +63,7 @@ public class DiskUsageNotUsedDataCalculationThread extends DiskUsageCalculation 
             }
         }
         DiskUsageUtil.calculateDiskUsageNotLoadedJobs(Jenkins.getInstance());
+        DiskUsageJenkinsAction.getInstance().actualizeCashedNotLoadedJobsData();
 //        plugin.getNotUsedDataDiskUsage().save();
     }
     

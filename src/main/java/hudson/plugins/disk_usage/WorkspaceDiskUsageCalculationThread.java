@@ -57,6 +57,8 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
             catch(Exception e){
                 logger.log(Level.WARNING, "Error when recording disk usage for workspaces.", e);
             }
+            DiskUsageJenkinsAction.getInstance().actualizeCashedNotCustomWorkspaceData();
+            DiskUsageJenkinsAction.getInstance().actualizeCashedWorkspaceData();
         }
         else{
             if(plugin.getConfiguration().isCalculationWorkspaceEnabled()){

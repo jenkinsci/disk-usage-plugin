@@ -18,7 +18,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Lucie Votypkova
  */
 @Extension
-public class DiskUsageManagement extends ManagementLink implements RootAction{
+public class DiskUsageManagement extends ManagementLink {
 
    public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace", "JobDirectory (without builds)"};
 
@@ -36,11 +36,11 @@ public class DiskUsageManagement extends ManagementLink implements RootAction{
 
         @Override public String getDescription() {
             return Messages.Description();
-        }  
+        } 
         
         public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException{
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-            res.sendRedirect(Jenkins.getInstance().getRootUrlFromRequest() + "plugin/disk-usage");
+            res.sendRedirect(Jenkins.getInstance().getRootUrlFromRequest() + "disk-usage");
         }
     
 }

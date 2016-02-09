@@ -23,9 +23,14 @@ public class ProjectConfigListener extends SaveableListener{
            AbstractBuild build = (AbstractBuild) object;
            ProjectDiskUsageAction action = build.getProject().getAction(ProjectDiskUsageAction.class);
            DiskUsageBuildInformation info = action.getDiskUsage().getDiskUsageBuildInformation(build.getId());
-           if(info.isLocked()!= build.isKeepLog()){
-               info.setLockState(build.isKeepLog());
-               action.getDiskUsage().save();
+           if(info==null){
+               action.getDiskUsage().addBuild(build);
+           }
+           else{
+               if(info.isLocked()!= build.isKeepLog()){
+                   info.setLockState(build.isKeepLog());
+                   action.getDiskUsage().save();
+               }
            }
        }
    }

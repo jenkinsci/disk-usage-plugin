@@ -40,8 +40,8 @@ public class ProjectDiskUsageActionTest {
     public void testGetBuildsDiskUsage() throws Exception{
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
-        TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
-        TextAxis axis2 = new TextAxis("axis2", "Aaxis", "Baxis", "Caxis");
+        TextAxis axis1 = new TextAxis("axis", "axisA");
+        TextAxis axis2 = new TextAxis("axis2", "Aaxis");
         AxisList list = new AxisList();
         list.add(axis1);
         list.add(axis2);
@@ -71,7 +71,9 @@ public class ProjectDiskUsageActionTest {
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
             matrixBuild2TotalSize += count*size2;
             count++;
+            
         }
+        ProjectDiskUsage usage = matrixProject.getAction(ProjectDiskUsageAction.class).getDiskUsage();
         Long matrixProjectBuildsTotalSize = matrixBuild1TotalSize + matrixBuild2TotalSize;
         assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
         assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));       
@@ -105,6 +107,7 @@ public class ProjectDiskUsageActionTest {
         int count = 1;
         Long matrixBuild1TotalSize = sizeOfMatrixBuild1;
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
+        Long matrixConfBuild2 = 0l;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
@@ -112,10 +115,12 @@ public class ProjectDiskUsageActionTest {
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
             matrixBuild2TotalSize += count*size2;
+            matrixConfBuild2 += count*size2;
             count++;
         }
         matrixBuild2.delete();
-        Long matrixProjectBuildsTotalSize = matrixBuild1TotalSize + matrixBuild2TotalSize - sizeOfMatrixBuild2;
+        Long matrixProjectBuildsTotalSize = matrixBuild1TotalSize + matrixBuild2TotalSize - sizeOfMatrixBuild2 - matrixConfBuild2;
+        DiskUsageUtil.calculateDiskUsageNotLoadedJobs(matrixProject);
         assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
         assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));       
         

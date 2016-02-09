@@ -13,27 +13,27 @@
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%All builds}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getBuildsDiskUsage().get('all'))}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getBuildsDiskUsage(false).get('all'))}</td>
                     </tr>
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%Locked builds}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getBuildsDiskUsage().get('locked'))}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getBuildsDiskUsage(false).get('locked'))}</td>
                     </tr>
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%All workspaces}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getAllDiskUsageWorkspace())}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getAllDiskUsageWorkspace(false))}</td>
                     </tr>
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%Slave workspaces}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getAllSlaveWorkspaces())}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getAllSlaveWorkspaces(false))}</td>
                     </tr>
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
                         <td>${%Non-slave workspaces}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces())}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces(false))}</td>
                     </tr>
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>

@@ -6,6 +6,7 @@ import hudson.Plugin;
 import hudson.Util;
 import hudson.model.*;
 import hudson.model.Item;
+import hudson.model.RootAction;
 import hudson.plugins.disk_usage.unused.DiskUsageItemGroup;
 import hudson.security.Permission;
 import hudson.util.Graph;
@@ -36,13 +37,13 @@ import org.kohsuke.stapler.StaplerResponse;
 @Extension
 public class DiskUsagePlugin extends Plugin {
     
-    private Long diskUsageBuilds = 0l;
-    private Long diskUsageJobsWithoutBuilds = 0l;
-    private Long diskUsageNotLoadedJobs = 0l;
-    private Long diskUsageNotLoadedBuilds = 0l;
-    private Long diskUsageWorkspaces = 0l;
-    private Long diskUsageLockedBuilds = 0l;
-    private Long diskUsageNonSlaveWorkspaces = 0l;
+//    private Long diskUsageBuilds = 0l;
+//    private Long diskUsageJobsWithoutBuilds = 0l;
+//    private Long diskUsageNotLoadedJobs = 0l;
+//    private Long diskUsageNotLoadedBuilds = 0l;
+//    private Long diskUsageWorkspaces = 0l;
+//    private Long diskUsageLockedBuilds = 0l;
+//    private Long diskUsageNonSlaveWorkspaces = 0l;
     
     private Map<ItemGroup,DiskUsageItemGroup> diskUsageItemGroups = new ConcurrentHashMap<ItemGroup,DiskUsageItemGroup>(); 
     
@@ -60,7 +61,24 @@ public class DiskUsagePlugin extends Plugin {
     
     protected void loadDiskUsageItemGroups(){
         diskUsageItemGroups.clear();
+        List<Action> actions = Jenkins.getInstance().getActions();
+        for(Action a : actions){
+            if(a instanceof DiskUsageJenkinsAction){
+                DiskUsageJenkinsAction jenkinsDUAction = (DiskUsageJenkinsAction) a;
+                diskUsageItemGroups.put(Jenkins.getInstance(), jenkinsDUAction.getDiskUsageItemGroup());
+                loadAllDiskUsageForSubItemGroups(Jenkins.getInstance());
+                return;
+            }
+        }
         loadAllDiskUsageItemGroups(Jenkins.getInstance());
+    }
+    
+    public void loadAllDiskUsageForSubItemGroups(ItemGroup group){
+        for(Item item : (Collection<Item>)group.getItems()){
+            if(item instanceof ItemGroup){
+                loadAllDiskUsageItemGroups((ItemGroup)item);
+            }
+        }
     }
     
     protected void loadAllDiskUsageItemGroups(ItemGroup group){
@@ -79,8 +97,35 @@ public class DiskUsagePlugin extends Plugin {
         return diskUsageItemGroups;
     }
     
+    protected DiskUsageItemGroup loadDiskUsageItemGroupForItemGroup(ItemGroup group){
+        DiskUsageItemGroup diskUsage = new DiskUsageItemGroup(group);
+        if(diskUsage.getConfigFile().exists()){
+            diskUsage.load();
+        }
+        //new one
+        else{
+            diskUsage.save();
+        }
+        diskUsageItemGroups.put(group,diskUsage);
+        return diskUsage;
+    }
+    
+    public DiskUsageItemGroup getDiskUsageItemGrouForJenkinsRootAction(){
+        DiskUsageItemGroup usage = diskUsageItemGroups.get(Jenkins.getInstance());
+        if(usage==null){
+            usage = new DiskUsageItemGroup(Jenkins.getInstance());
+            usage.load();
+            diskUsageItemGroups.put(Jenkins.getInstance(),usage);
+        }
+        return usage;
+    }
+    
     public DiskUsageItemGroup getDiskUsageItemGroup(ItemGroup group){
-        return diskUsageItemGroups.get(group);
+        DiskUsageItemGroup usage = diskUsageItemGroups.get(group);
+        if(usage==null){
+            return loadDiskUsageItemGroupForItemGroup(group);
+        }
+        return usage;
     }
     
     public void putDiskUsageItemGroup(ItemGroup group) throws IOException{
@@ -100,92 +145,75 @@ public class DiskUsagePlugin extends Plugin {
 //    }
     
     public void refreshGlobalInformation() throws IOException{
-        diskUsageBuilds = 0l;
-        diskUsageWorkspaces = 0l;
-        diskUsageJobsWithoutBuilds = 0l;
-        diskUsageLockedBuilds = 0l;
-        diskUsageNonSlaveWorkspaces = 0l;
-        diskUsageNotLoadedBuilds = 0L;
-        for(Item item: Jenkins.getInstance().getItems()){
-            if(item instanceof AbstractProject){
-                AbstractProject project = (AbstractProject) item;
-                ProjectDiskUsageAction action = (ProjectDiskUsageAction) project.getAction(ProjectDiskUsageAction.class);
-                diskUsageBuilds += action.getBuildsDiskUsage().get("all");
-                diskUsageWorkspaces += action.getAllDiskUsageWorkspace();
-                diskUsageJobsWithoutBuilds += action.getAllDiskUsageWithoutBuilds();
-                diskUsageLockedBuilds += action.getBuildsDiskUsage().get("locked");
-                diskUsageNonSlaveWorkspaces += action.getAllCustomOrNonSlaveWorkspaces();
-                diskUsageNotLoadedBuilds += action.getBuildsDiskUsage().get("notLoaded");
-            }
-        }
+        DiskUsageJenkinsAction.getInstance().actualizeAllCashedDate();
     }
     
     public Long getCashedGlobalBuildsDiskUsage(){
-        return diskUsageBuilds;
+        return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("all");
     }
     
     public Long getCashedGlobalJobsDiskUsage(){
-        return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
+        return (getCashedGlobalBuildsDiskUsage() + getCashedGlobalJobsWithoutBuildsDiskUsage());
     }
     
     public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){
-        return diskUsageJobsWithoutBuilds;
+        return getDiskUsageItemGrouForJenkinsRootAction().getCashedDiskUsageWithoutBuilds();
     }
     
     public Long getCashedGlobalLockedBuildsDiskUsage(){
-     return diskUsageLockedBuilds;   
+     return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("locked");   
     }
     
     public Long getCashedGlobalNotLoadedBuildsDiskUsage(){
-     return diskUsageNotLoadedBuilds;   
+     return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("notLoaded");
     }
     
     public Long getCashedGlobalWorkspacesDiskUsage(){
-        return diskUsageWorkspaces;
+        return getDiskUsageItemGrouForJenkinsRootAction().getCashedDiskUsageWorkspaces();
     }
     
     public Long getCashedNonSlaveDiskUsageWorkspace(){
-        return diskUsageNonSlaveWorkspaces;
+        return getDiskUsageItemGrouForJenkinsRootAction().getCashedDiskUsageCustomWorkspaces();
     }
     
     public Long getCashedSlaveDiskUsageWorkspace(){
-        return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
+        return getCashedGlobalWorkspacesDiskUsage() - getCashedNonSlaveDiskUsageWorkspace();
     }
     
     public Long getGlobalBuildsDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return diskUsageBuilds;
+        return getCashedGlobalBuildsDiskUsage();
     }
     
     public Long getGlobalJobsDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
+        return getCashedGlobalJobsDiskUsage();
     }
     
     public Long getGlobalJobsWithoutBuildsDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return diskUsageJobsWithoutBuilds;
+        return getCashedGlobalJobsWithoutBuildsDiskUsage();
     }
     
     public Long getGlobalWorkspacesDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return diskUsageWorkspaces;
+        return this.getCashedGlobalWorkspacesDiskUsage();
     }
     
     
     public Long getGlobalNonSlaveDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
-        return diskUsageNonSlaveWorkspaces;
+        return getCashedNonSlaveDiskUsageWorkspace();
     }
     
     public Long getGlobalSlaveDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
-        return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
+        return getCashedSlaveDiskUsageWorkspace();
     }
     
     public Long getGlobalNotLoadedBuildsDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
-        return diskUsageNotLoadedBuilds;
+        return getCashedGlobalNotLoadedBuildsDiskUsage();
     }
     
     public BuildDiskUsageCalculationThread getBuildsDiskUsageThread(){
@@ -227,7 +255,7 @@ public class DiskUsagePlugin extends Plugin {
                 
                 ProjectDiskUsageAction dua1 = getDiskUsage(o1);
                 ProjectDiskUsageAction dua2 = getDiskUsage(o2);
-                long result = dua2.getJobRootDirDiskUsage() + dua2.getAllDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() - dua1.getAllDiskUsageWorkspace();
+                long result = dua2.getJobRootDirDiskUsage(true) + dua2.getAllDiskUsageWorkspace(true) - dua1.getJobRootDirDiskUsage(true) - dua1.getAllDiskUsageWorkspace(true);
                 
                 if(result > 0) return 1;
                 if(result < 0) return -1;
@@ -261,7 +289,7 @@ public class DiskUsagePlugin extends Plugin {
         if(getConfiguration().getShowFreeSpaceForJobDirectory()){
             maxValue = jobsDir.getTotalSpace();
         }
-        long maxValueWorkspace = Math.max(diskUsageNonSlaveWorkspaces, getCashedSlaveDiskUsageWorkspace());
+        long maxValueWorkspace = Math.max(getCashedNonSlaveDiskUsageWorkspace(), getCashedSlaveDiskUsageWorkspace());
         List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> record = DiskUsageProjectActionFactory.DESCRIPTOR.getHistory();
         //First iteration just to get scale of the y-axis
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record){
@@ -369,7 +397,7 @@ public class DiskUsagePlugin extends Plugin {
             if(item instanceof AbstractProject){
                 AbstractProject project = (AbstractProject) item;
                 ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
-                size += action.getSizeOfAllNotLoadedBuilds();
+                size += action.getAllDiskUsageNotLoadedBuilds(true);
             }
         }
         return DiskUsageUtil.getSizeString(size);
@@ -383,7 +411,7 @@ public class DiskUsagePlugin extends Plugin {
                 ProjectDiskUsage usage = ((DiskUsageProperty)project.getProperty(DiskUsageProperty.class)).getDiskUsage();
                 ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
                 if(!usage.getNotLoadedBuilds().isEmpty()){
-                    notLoadedBuilds.put(project, action.getSizeOfAllNotLoadedBuilds());
+                    notLoadedBuilds.put(project, action.getAllDiskUsageNotLoadedBuilds(true));
                 }
             }
         }

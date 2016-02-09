@@ -12,6 +12,7 @@ import hudson.model.AperiodicWork;
 import hudson.model.FreeStyleBuild;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
@@ -108,12 +109,13 @@ public class BuildDiskUsageCalculationThreadTest {
     
     @Test
     @LocalData
-    public void testExecuteMatrixProject() throws IOException, InterruptedException{
+    public void testExecuteMatrixProject() throws IOException, InterruptedException, ReactorException{
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<AbstractBuild,Long>();
         Map<String,Long> matrixConfigurationBuildsSize = new TreeMap<String,Long>();
+         j.jenkins.reload();
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");  
         AbstractBuild matrixBuild = project.getBuildByNumber(1);

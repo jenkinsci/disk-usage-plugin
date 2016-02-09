@@ -44,6 +44,19 @@ public class ProjectDiskUsage implements Saveable{
     private Map<String,Long> notLoadedBuilds = new ConcurrentHashMap<String, Long>();
     private boolean allBuildsLoaded;
    
+    private Map<String,Long> cashedBuildDiskUsage = new HashMap<String,Long>();
+    private Long cashedDiskUsageWithoutBuilds = 0L;
+    private Long cashedDiskUsageWorkspace = 0L;
+    private Long cashedDiskUsageNonSlaveWorkspace = 0L;
+    
+    public ProjectDiskUsage(){
+        
+    }
+    
+    
+    public void removeNode(Node node){
+        slaveWorkspacesUsage.remove(node.getDisplayName());
+    }
     
     public Map<String,Map<String,Long>> getSlaveWorkspacesUsage(){
         return Maps.newHashMap(slaveWorkspacesUsage);
@@ -390,6 +403,62 @@ public class ProjectDiskUsage implements Saveable{
             notLoadedBuilds.remove(info.getId());
         }
         save();
+    }
+
+    /**
+     * @return the cashedBuildDiskUsage
+     */
+    public Map<String,Long> getCashedBuildDiskUsage() {
+        return cashedBuildDiskUsage;
+    }
+
+    /**
+     * @param cashedBuildDiskUsage the cashedBuildDiskUsage to set
+     */
+    public void setCashedBuildDiskUsage(Map<String,Long> cashedBuildDiskUsage) {
+        this.cashedBuildDiskUsage = cashedBuildDiskUsage;
+    }
+
+    /**
+     * @return the cashedDiskUsageWithoutBuilds
+     */
+    public Long getCashedDiskUsageWithoutBuilds() {
+        return cashedDiskUsageWithoutBuilds;
+    }
+
+    /**
+     * @param cashedDiskUsageWithoutBuilds the cashedDiskUsageWithoutBuilds to set
+     */
+    public void setCashedDiskUsageWithoutBuilds(Long cashedDiskUsageWithoutBuilds) {
+        this.cashedDiskUsageWithoutBuilds = cashedDiskUsageWithoutBuilds;
+    }
+
+    /**
+     * @return the cashedDiskUsageWorkspace
+     */
+    public Long getCashedDiskUsageWorkspace() {
+        return cashedDiskUsageWorkspace;
+    }
+
+    /**
+     * @param cashedDiskUsageWorkspace the cashedDiskUsageWorkspace to set
+     */
+    public void setCashedDiskUsageWorkspace(Long cashedDiskUsageWorkspace) {
+        this.cashedDiskUsageWorkspace = cashedDiskUsageWorkspace;
+    }
+
+    /**
+     * @return the cashedDiskUsageNonSlaveWorkspace
+     */
+    public Long getCashedDiskUsageNonSlaveWorkspace() {
+        return cashedDiskUsageNonSlaveWorkspace;
+    }
+
+    /**
+     * @param cashedDiskUsageNonSlaveWorkspace the cashedDiskUsageNonSlaveWorkspace to set
+     */
+    public void setCashedDiskUsageNonSlaveWorkspace(Long cashedDiskUsageNonSlaveWorkspace) {
+        this.cashedDiskUsageNonSlaveWorkspace = cashedDiskUsageNonSlaveWorkspace;
     }
     
 }

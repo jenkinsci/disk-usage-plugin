@@ -9,6 +9,7 @@ import hudson.Launcher;
 import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
+import hudson.plugins.disk_usage.DiskUsageJenkinsAction;
 import hudson.plugins.disk_usage.DiskUsageUtil;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -30,6 +31,7 @@ public class DiskUsagePostBuildCalculation extends Recorder{
       public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener){
         listener.getLogger().println("append disk usage");
           DiskUsageUtil.calculationDiskUsageOfBuild(build, listener);
+          DiskUsageJenkinsAction.getInstance().actualizeCashedBuildsData();
           return true;
       }
     

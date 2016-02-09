@@ -62,6 +62,10 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
             catch(Exception e){
                 logger.log(Level.WARNING, "Error when recording disk usage for jobs.", e);
             }
+            DiskUsageJenkinsAction.getInstance().actualizeCashedJobWithoutBuildsData();
+            //not loaded builds are detected in calculation for job
+            DiskUsageJenkinsAction.getInstance().actualizeCashedBuildsData();
+            DiskUsageJenkinsAction.getInstance().actualizeCashedNotLoadedJobsData();
         }
         else{
             if(plugin.getConfiguration().isCalculationJobsEnabled()){

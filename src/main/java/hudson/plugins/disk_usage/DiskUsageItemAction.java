@@ -4,6 +4,7 @@
  */
 package hudson.plugins.disk_usage;
 
+import hudson.model.Item;
 import java.util.Date;
 import java.util.Map;
 
@@ -13,14 +14,26 @@ import java.util.Map;
  */
 public interface DiskUsageItemAction {
     
-    public Long getDiskUsageWithoutBuilds();
+    public Map<String,Long> getBuildsDiskUsage(Date older, Date younger, boolean cashed);
     
-    public Map<String,Long> getBuildsDiskUsage(Date older, Date younger);
+    public Long getAllDiskUsageWorkspace(boolean cashed);
     
-    public Long getAllDiskUsageWorkspace();
+    public Long getAllCustomOrNonSlaveWorkspaces(boolean cashed);
     
-    public Long getAllCustomOrNonSlaveWorkspaces();
+    public Long getAllDiskUsage(boolean cashed);
     
-    public Long getAllDiskUsage();
+    public void actualizeCashedData();
     
+    public void actualizeCashedBuildsData();
+    
+    public void actualizeCashedJobWithoutBuildsData();
+    
+    public void actualizeCashedWorkspaceData();
+    
+    public void actualizeCashedNotCustomWorkspaceData();
+    
+    public void actualizeAllCashedDate();
+    
+    public Long getAllDiskUsageWithoutBuilds(boolean cashed);
+
 }

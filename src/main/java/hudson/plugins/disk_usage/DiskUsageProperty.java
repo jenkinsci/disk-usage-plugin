@@ -123,8 +123,13 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
          return 0L;
      }
      
+     
      public ProjectDiskUsage getProjectDiskUsage(){
          return diskUsage;
+     }
+     
+     public void setDiskUsage(ProjectDiskUsage usage){
+         diskUsage = usage;
      }
      
      public ProjectDiskUsage getDiskUsage(){
@@ -138,7 +143,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     @Override
      public void setOwner(Job job){
          super.setOwner(job);
-         diskUsage = new ProjectDiskUsage();
+         if(diskUsage==null){
+            diskUsage = new ProjectDiskUsage();
+         }
+         
          diskUsage.setProject(job);
          loadDiskUsage();
          //transfer old data
@@ -349,7 +357,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                     item = (TopLevelItem) owner.getParent();
                 }
                 try{
-                    if(!isContainedInWorkspace(item, node, path)){      
+                    if(!DiskUsageUtil.isContainedInWorkspace(item, node, path)){      
                         size += paths.get(path);
                     }
                 }
@@ -361,26 +369,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         return size;
     }
     
-    private boolean isContainedInWorkspace(TopLevelItem item, Node node, String path){
-        if(node instanceof Slave){
-            Slave slave = (Slave) node;
-            return path.contains(slave.getRemoteFS());
-        }
-        else{
-            if(node instanceof Jenkins){
-               FilePath file = Jenkins.getInstance().getWorkspaceFor(item);
-               return path.contains(file.getRemote());
-            }
-            else{
-                try{
-                    return path.contains(node.getWorkspaceFor(item).getRemote());
-                }
-                catch(Exception e){
-                    return false;
-                }
-            }
-        }
-    }
 
     public Long getAllWorkspaceSize(){
         Long size = 0l;
@@ -415,12 +403,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     }
 
     public Long getAllDiskUsageWithoutBuilds(){
-       Long usage = diskUsage.getDiskUsageWithoutBuilds();
-       if(owner instanceof ItemGroup){
-                 ItemGroup group = (ItemGroup) owner;
-                     usage += getDiskUsageWithoutBuildsAllSubItems(group);
-       }
-       return usage;
+       return DiskUsageUtil.getDiskUsageItemAction(owner).getAllDiskUsageWithoutBuilds(true);
     }
 
     private Long getDiskUsageWithoutBuildsAllSubItems(ItemGroup group){

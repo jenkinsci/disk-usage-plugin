@@ -27,11 +27,7 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
     private Long size;
     
     public DiskUsageBuildInformation(String id, long timestamp, int number, Long size){
-        this.id = id;
-        this.timestamp = timestamp;
-        this.number = number;
-        this.size = size;
-        this.isLocked = false;
+        this(id, timestamp, number, size, false);
     }
     
     public DiskUsageBuildInformation(String id, long timestamp, int number, Long size, boolean isLocked){
@@ -110,7 +106,7 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
         this.size = size;
     }
     
-    public String toString(){
-        return "Id " + id + " number " + number + " size " + size;
-    }
+//    public String toString(){
+//        return "Id " + id + " number " + number + " size " + size;
+//    }
 }

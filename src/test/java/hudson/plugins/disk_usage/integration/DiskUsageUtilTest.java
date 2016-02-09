@@ -73,6 +73,7 @@ public class DiskUsageUtilTest {
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + project.getRootDir().length();
         size += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         DiskUsageUtil.calculateDiskUsageForProject(project);
+        project.getAction(ProjectDiskUsageAction.class).actualizeCashedData();
         Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds());
         
     }
@@ -86,6 +87,7 @@ public class DiskUsageUtilTest {
         File file = new File(project.getRootDir(), "fileList");
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + project.getRootDir().length();
         size += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
+        size += project.getAction(DiskUsageItemGroupAction.class).getDiskUsageItemGroup().getConfigFile().getFile().length();
         Long sizeAll = size;
         for(MatrixConfiguration config: project.getItems()){
             config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
@@ -93,10 +95,13 @@ public class DiskUsageUtilTest {
             sizeAll += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(f)) + config.getRootDir().length();
             sizeAll += config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         }
+        
         DiskUsageUtil.calculateDiskUsageForProject(project);
-        Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds());
+        project.getAction(ProjectDiskUsageAction.class).actualizeCashedJobWithoutBuildsData();
+        Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsage().getDiskUsageWithoutBuilds());
         for(AbstractProject p: project.getItems()){
             DiskUsageUtil.calculateDiskUsageForProject(p);
+            p.getAction(ProjectDiskUsageAction.class).actualizeCashedJobWithoutBuildsData();
         }
         Assert.assertEquals("Calculation of job disk usage does not return right size of job and its sub-jobs without builds.", sizeAll, project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds());
     
@@ -125,10 +130,12 @@ public class DiskUsageUtilTest {
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave1.getWorkspaceFor(project1).length();
         size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file2)) + slave2.getWorkspaceFor(project1).length();
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
+        project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
         size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave1.getWorkspaceFor(project2).length() + slave2.getWorkspaceFor(project2).length();
         DiskUsageUtil.calculateWorkspaceDiskUsage(project2);
+        project2.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
     }
 
@@ -161,10 +168,13 @@ public class DiskUsageUtilTest {
         Long sizeAxis1 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis1)) + new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis1").length();
         Long sizeAxis2 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis2)) + new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis2").length();
         Long sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis3").length();
+        size = size + sizeAxis1 + sizeAxis2 +sizeAxis3;       
         for(MatrixConfiguration c: project1.getItems()){
             DiskUsageUtil.calculateWorkspaceDiskUsage(c);
+            c.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         }
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
+        project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
@@ -176,10 +186,6 @@ public class DiskUsageUtilTest {
         //test if not active configuration are find and right counted
         // test if works with more complex configurations
         j.buildAndAssertSuccess(project1);
-        for(MatrixConfiguration c: project1.getItems()){
-            DiskUsageUtil.calculateWorkspaceDiskUsage(c);
-        }
-        DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
@@ -190,6 +196,12 @@ public class DiskUsageUtilTest {
         sizeAxis1 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis1)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/slave2").length();
         sizeAxis2 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis2)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/slave2").length();
         sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/slave2").length();
+        for(MatrixConfiguration c: project1.getItems()){
+            DiskUsageUtil.calculateWorkspaceDiskUsage(c);
+            c.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
+        }
+        DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
+        project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1,label=slave2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2,label=slave2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3,label=slave2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
@@ -201,7 +213,9 @@ public class DiskUsageUtilTest {
         j.buildAndAssertSuccess(project1);
         file = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
         size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave2.getWorkspaceFor(project1).length();
+        size = size + sizeAxis1 + sizeAxis2 + sizeAxis3;
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
+        project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
     }
     
@@ -234,6 +248,7 @@ public class DiskUsageUtilTest {
         file = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
         size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave2.getWorkspaceFor(project1).length() + sizeAxis1 + sizeAxis2 + sizeAxis3;
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
+        project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());      
         plugin.getConfiguration().setCheckWorkspaceOnSlave(false);
     }

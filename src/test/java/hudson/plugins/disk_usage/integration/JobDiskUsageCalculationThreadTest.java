@@ -79,7 +79,6 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         }
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        System.out.println("size of unloaded builds " + project.getProperty(DiskUsageProperty.class).getDiskUsage().getNotLoadedBuilds());
         assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
         assertEquals("Project project2 has wrong job size.", project2Size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
     }
@@ -101,23 +100,26 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
         file = new File(project2.getRootDir(),"fileList");
         Long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
-        projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
+       // projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         project2Size += project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();        
         for(MatrixConfiguration config: project.getItems()){
             config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
             File f = new File(config.getRootDir(),"fileList");
             Long size = getSize(readFileList(f)) + config.getRootDir().length();
-            long diskUsageXML = config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
-            matrixConfigurationsSize.put(config.getDisplayName(), size + diskUsageXML);
+            projectSize += size;
+            //long diskUsageXML = config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
+            matrixConfigurationsSize.put(config.getDisplayName(), size);
         }
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
         if(calculation.isExecuting())
             DiskUsageTestUtil.cancelCalculation(calculation);
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        System.out.println("matrix get unloaded " + project.getProperty(DiskUsageProperty.class).getDiskUsage().getNotLoadedBuilds());
-        assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
-        assertEquals("Project project2 has wrong job size.", project2Size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
+        project.getAction(DiskUsageItemGroupAction.class).actualizeCashedData();
+        project2.getAction(ProjectDiskUsageAction.class).actualizeCashedData();
+        project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds(false);
+        assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds(), 0);
+        assertEquals("Project project2 has wrong job size.", project2Size, project2.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds(), 0);
         for(MatrixConfiguration config: project.getItems()){
             assertEquals("Configuration " + config.getDisplayName() + " has wrong job size.", matrixConfigurationsSize.get(config.getDisplayName()), config.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);           
         }

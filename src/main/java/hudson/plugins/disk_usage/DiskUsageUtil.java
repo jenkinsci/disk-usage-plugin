@@ -6,6 +6,7 @@ package hudson.plugins.disk_usage;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
@@ -13,12 +14,15 @@ import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
+import hudson.model.Slave;
 import hudson.model.TaskListener;
+import hudson.model.TopLevelItem;
 import hudson.plugins.disk_usage.unused.DiskUsageItemGroup;
 import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -45,15 +49,15 @@ import org.jenkinsci.remoting.RoleChecker;
  */
 public class DiskUsageUtil {
     
-    public static void addProperty(Item item){
+    public static DiskUsageProperty addProperty(Item item){
+        DiskUsageProperty property = null;
             if(item instanceof AbstractProject){
                 AbstractProject project = (AbstractProject) item;
-                DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                 if(property==null){
                     try {
                         property = new DiskUsageProperty();
                         project.addProperty(property);
-
                     } catch (IOException ex) {
                         Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -63,18 +67,19 @@ public class DiskUsageUtil {
             if(item instanceof ItemGroup){
                 
                 for(AbstractProject project : DiskUsageUtil.getAllProjects((ItemGroup<?>)item)){
-                    DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-                    if(property==null){
+                    DiskUsageProperty p = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                    if(p==null){
                         try {
-                            property = new DiskUsageProperty();
-                            project.addProperty(property);
+                            p = new DiskUsageProperty();
+                            project.addProperty(p);
                         } catch (IOException ex) {
                             Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                    loadData(property, false);
+                    loadData(p, false);
                 }
             }
+            return property; 
     }
     
     protected static void loadData(DiskUsageProperty property, boolean loadAllBuilds){
@@ -374,6 +379,7 @@ public class DiskUsageUtil {
             }
         }
         long buildSize = project.getBuildDir().length();
+        
         buildSize += DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles);
         Long diskUsageWithoutBuilds = property.getDiskUsageWithoutBuildDirectory();
         boolean update = false;
@@ -641,7 +647,62 @@ public class DiskUsageUtil {
                         }
                     }
          }
-         return new DiskUsageItemGroupAction((ItemGroup)group);
+         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+         DiskUsageItemGroup usage = plugin.getDiskUsageItemGroup(group);
+         return new DiskUsageItemGroupAction(usage);
+     }
+     
+     public static boolean isContainedInWorkspace(TopLevelItem item, Node node, String path){
+        if(node instanceof Slave){
+            Slave slave = (Slave) node;
+            return path.contains(slave.getRemoteFS());
+        }
+        else{
+            if(node instanceof Jenkins){
+               FilePath file = Jenkins.getInstance().getWorkspaceFor(item);
+               return path.contains(file.getRemote());
+            }
+            else{
+                try{
+                    return path.contains(node.getWorkspaceFor(item).getRemote());
+                }
+                catch(Exception e){
+                    return false;
+                }
+            }
+        }
+    }
+     
+     
+     //serve only for obtaining information about keep log during loading build - matrix plugin in method whyKeepLog scen builds and causes cycle of method onLoad
+     protected static Boolean isKeepLog(AbstractBuild build) {
+         File file = new File(build.getRootDir(),"config.xml");
+         if(file.exists()){
+             XmlFile config = new XmlFile(file);
+            try {
+                return config.asString().contains("<keepLog>true</keepLog>");
+            } catch (IOException ex) {
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+         }
+         return null;
+     }
+     
+     public static DiskUsageItemAction getDiskUsageItemAction(Item item){
+        if(item instanceof AbstractProject) {
+            AbstractProject project = (AbstractProject) item;
+            return project.getAction(ProjectDiskUsageAction.class);
+        }
+        if(item instanceof ItemGroup){
+            return DiskUsageUtil.getItemGroupAction((ItemGroup)item);
+        }
+        //there is not supported something else
+        return null;
+    }
+     
+     public static void actualizeCashedData(Item item){
+         DiskUsageItemAction action = getDiskUsageItemAction(item);
+         
      }
     
 

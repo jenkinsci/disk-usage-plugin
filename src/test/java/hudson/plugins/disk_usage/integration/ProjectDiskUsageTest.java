@@ -42,8 +42,9 @@ public class ProjectDiskUsageTest {
     @LocalData
     public void testFirstLoad() throws IOException{
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        int builds = project._getRuns().getLoadedBuilds().size();
         Set<DiskUsageBuildInformation> informations = ((DiskUsageProperty)project.getProperty(DiskUsageProperty.class)).getDiskUsage().getBuildDiskUsage(false);
-        assertEquals("Set of DisUsageBuildInformation should not contain information about builds because they are not loaded.", 0, informations.size());
+        assertEquals("Set of DisUsageBuildInformation should not contain information about builds because they are not loaded.", builds, informations.size());
     }
     
     @Test

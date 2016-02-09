@@ -37,6 +37,70 @@ public class DiskUsageItemGroup implements Saveable {
     
     private Long diskUsageWithoutJobs = 0L;
     
+    private transient Long cashedDiskUsageWithoutBuilds = 0L;
+    
+    private transient Map<String,Long> caschedDiskUsageBuilds = new HashMap<String,Long>();
+    
+    private transient Long cashedDiskUsageWorkspaces = 0L;
+    
+    private transient Long cashedDiskUsageCustomWorkspaces = 0L;
+    
+    private transient Long cashedDiskUsageNotLoadedJobs = 0L; 
+    
+    private transient Long cashedDiskUsageWithoutJobs = 0L;
+    
+    public ItemGroup getItemGroup(){
+        return itemGroup;
+    }
+    
+    public Long getCashedDiskUsageWithoutJobs(){
+        return cashedDiskUsageWithoutJobs;
+    }
+    
+    public void setcashedDiskUsageWithoutJobs(Long size){
+        this.cashedDiskUsageWithoutJobs = size;
+    }
+    
+    public Long getCashedDiskUsageNotLoadedJobs(){
+        return cashedDiskUsageNotLoadedJobs;
+    }
+    
+    public void setCashedDiskUsageNotLoadedJobs(Long size){
+        this.cashedDiskUsageNotLoadedJobs = size;
+    }
+    
+    public Long getCashedDiskUsageCustomWorkspaces(){
+        return cashedDiskUsageCustomWorkspaces;
+    }
+    
+    public void setCashedDiskUsageCustomWorkspaces(Long size ){
+        this.cashedDiskUsageCustomWorkspaces = size;
+    }
+    
+    public Long getCashedDiskUsageWorkspaces(){
+        return cashedDiskUsageWorkspaces;
+    }
+    
+    public void setCashedDiskUsageWorkspaces(Long size){
+        this.cashedDiskUsageWorkspaces = size;
+    }
+    
+    public Long getCashedDiskUsageWithoutBuilds(){
+        return cashedDiskUsageWithoutBuilds;
+    }
+    
+    public void setCashedDiskUsageWithoutBuilds(Long size){
+        this.cashedDiskUsageWithoutBuilds = size;
+    }
+    
+    public Map<String,Long> getCaschedDiskUsageBuilds(){
+        return caschedDiskUsageBuilds;
+    }
+    
+    public void setCaschedDiskUsageBuilds(Map<String,Long> size){
+        this.caschedDiskUsageBuilds = size;
+    }
+    
     public DiskUsageItemGroup(ItemGroup item){
         itemGroup = item;
         load();
@@ -148,7 +212,10 @@ public class DiskUsageItemGroup implements Saveable {
         notLoadedJobs.remove(directory);
     }
     
-    public Long getDiskUsageOfNotLoadedJobs(){
+    public Long getDiskUsageOfNotLoadedJobs(boolean cashed){
+        if(cashed){
+            return cashedDiskUsageNotLoadedJobs;
+        }
         Long size = 0L;
         for(Long s : notLoadedJobs.values()){
             size += s;
