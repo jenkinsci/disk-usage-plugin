@@ -67,15 +67,16 @@
         <tr>
           <td><b><a href="${rootURL}/${item.url}">${item.fullDisplayName}</a></b> </td>
           <j:set var="jobs" value="${jobs + it.getAllDiskUsage(item,true)}"/>
-          <j:set var="buildsAll" value="${buildsAll + it.getBuildsDiskUsage(item,null,null,true).get('all')}"/>
-          <j:set var="buildsLocked" value="${buildsLocked + it.getBuildsDiskUsage(item,null,null,true).get('locked')}"/>
-          <j:set var="buildsNotLoaded" value="${buildsNotLoaded + it.getBuildsDiskUsage(item,null,null,true).get('notLoaded')}"/>
+          <j:set var="builds" value="${it.getBuildsDiskUsage(item,older,younger,true)}"/>
+          <j:set var="buildsAll" value="${buildsAll + builds.get('all')}"/>
+          <j:set var="buildsLocked" value="${buildsLocked + builds.get('locked')}"/>
+          <j:set var="buildsNotLoaded" value="${buildsNotLoaded + builds.get('notLoaded')}"/>
           <j:set var="workspace" value="${workspace + it.getAllDiskUsageWorkspace(item, true)}"/>
           <j:set var="notWorkspace" value="${notWorkspace + it.getAllCustomOrNonSlaveWorkspaces(item, true)}"/>
           <td data="${it.getAllDiskUsage(item,true)}">${it.getSizeInString(it.getAllDiskUsage(item,true))}</td>
-          <td data="${it.getBuildsDiskUsage(item,null,null,true).get('all')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('all'))}</td>
-          <td data="${it.getBuildsDiskUsage(item,null,null,true).get('locked')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('locked'))}</td>
-          <td data="${it.getBuildsDiskUsage(item,null,null,true).get('notLoaded')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('notLoaded'))}</td>          
+          <td data="${builds.get('all')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('all'))}</td>
+          <td data="${builds.get('locked')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('locked'))}</td>
+          <td data="${builds.get('notLoaded')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('notLoaded'))}</td>          
           <td data="${it.getAllDiskUsageWorkspace(item, true)}">${it.getSizeInString(it.getAllDiskUsageWorkspace(item, true))}</td>
           <td data="${it.getAllCustomOrNonSlaveWorkspaces(item, true)}"><b>${it.getSizeInString(it.getAllCustomOrNonSlaveWorkspaces(item, true))}</b></td>
         </tr>
