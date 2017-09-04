@@ -3,20 +3,25 @@ package hudson.plugins.disk_usage.integration;
 
 import java.util.ConcurrentModificationException;
 import java.util.GregorianCalendar;
-import hudson.model.FreeStyleBuild;
+
+import hudson.model.*;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.XStream2;
-import hudson.model.AbstractBuild;
 import hudson.matrix.MatrixBuild;
-import hudson.model.TopLevelItem;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.annotation.Annotation;
+
+import org.acegisecurity.wrapper.SavedRequestAwareWrapper;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRecipe;
 import hudson.XmlFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import hudson.model.AbstractProject;
 import java.io.IOException;
+
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import java.io.PrintStream;
 import hudson.FilePath;
@@ -26,15 +31,11 @@ import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import hudson.model.listeners.RunListener;
-import hudson.model.Slave;
 import org.junit.Test;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.AxisList;
 import hudson.matrix.TextAxis;
 import hudson.matrix.MatrixProject;
-import hudson.model.FreeStyleProject;
-import hudson.model.Items;
-import hudson.model.Run;
 import hudson.slaves.OfflineCause;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -563,6 +564,26 @@ public class DiskUsagePropertyTest {
             checkForConcurrencyException(ex);
         }
     }
+
+    @Issue("JENKINS-20176")
+    @Test
+    public void testNewBuildCalculationDoesNotCauseJobConfigSave() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("testJobIsNotSavedAfterNewBuild");
+        SaveableListenerImpl.saved = false;
+        SaveableListenerImpl.stackTrace = null;
+        j.buildAndAssertSuccess(project);
+        Thread.sleep(5000);
+        if(SaveableListenerImpl.saved){
+
+            //print stack trace to know what causes the saving;
+            System.err.println("Stack trace of saving:");
+            for(StackTraceElement el : SaveableListenerImpl.stackTrace){
+                System.err.println("   " + el);
+            }
+            fail("Job should not be saved after new build");
+        }
+
+    }
     
     public class TestThread extends Thread {
        
@@ -621,7 +642,28 @@ public class DiskUsagePropertyTest {
         }
         
     }
-    
+
+    @TestExtension
+    public static class SaveableListenerImpl extends SaveableListener {
+
+        public static boolean saved = false;
+
+        public static StackTraceElement[] stackTrace = null;
+
+        @Override
+        public void onChange(final Saveable o, final XmlFile file) {
+            if(o instanceof Item) {
+                Item item = (Item) o;
+                if("testJobIsNotSavedAfterNewBuild".equals(item.getName())) {
+                    saved = true;
+                    stackTrace = Thread.currentThread().getStackTrace();
+                }
+
+            }
+        }
+    }
+
+
     
     
 }
