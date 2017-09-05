@@ -1,6 +1,7 @@
 package hudson.plugins.disk_usage.integration;
 
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import hudson.model.*;
@@ -8,6 +9,7 @@ import hudson.model.listeners.SaveableListener;
 import hudson.plugins.promoted_builds.Promotion;
 import hudson.plugins.promoted_builds.PromotionProcess;
 import hudson.plugins.promoted_builds.conditions.SelfPromotionCondition;
+import hudson.slaves.SlaveComputer;
 import hudson.util.XStream2;
 import hudson.matrix.MatrixBuild;
 
@@ -593,24 +595,37 @@ public class DiskUsagePropertyTest {
     @Test
     public void testCalculationWorkspaceForItemInNonTopLeverGroupItem() throws Exception {
         Project project = j.createFreeStyleProject("some-project");
+        project.setAssignedNode(j.jenkins);
+        Slave slave = j.createOnlineSlave(j.jenkins.getLabel("test"));
+        //set different workspace then master has
+        Field f = Slave.class.getDeclaredField("remoteFS");
+        f.setAccessible(true);
+        String remoteFS = slave.getRemoteFS();
+        f.set(slave, remoteFS + "/test");
+        f.setAccessible(false);
+
         JobPropertyImpl property = new JobPropertyImpl(project);
         project.addProperty(property);
         PromotionProcess process = property.addProcess("Simple-process");
+        process.assignedLabel = "test";
+        process.setAssignedNode(slave);
+
         process.conditions.add(new SelfPromotionCondition(true));
-        process.getBuildSteps().add(new Shell("echo hello > log.log"));
+        process.getBuildSteps().add(new Shell("echo hello > log.log \n ls -ls"));
         j.buildAndAssertSuccess(project);
         DiskUsageProperty p = process.getProperty(DiskUsageProperty.class);
         Thread.sleep(1000);
         p.getAllNonSlaveOrCustomWorkspaceSize();
+        //check if the workspace is assigned to owner project of promotion
         Promotion promotion = process.getLastBuild();
         FilePath workspace = promotion.getWorkspace();
         FilePath log = new FilePath(workspace,"log.log");
-        Long size = log.length();
+        Long size = log.length() + workspace.length() + project.getLastBuild().getWorkspace().length();
         DiskUsageProperty diskUsageProperty = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnSlave(true);
         diskUsageProperty.checkWorkspaces(true);
+        DiskUsageUtil.calculateWorkspaceDiskUsage(project);
         assertEquals("Size should be counted", size, diskUsageProperty.getAllWorkspaceSize());
-
     }
 
     public class TestThread extends Thread {

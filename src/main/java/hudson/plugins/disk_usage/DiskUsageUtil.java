@@ -652,24 +652,26 @@ public class DiskUsageUtil {
          return new DiskUsageItemGroupAction(usage);
      }
      
-     public static boolean isContainedInWorkspace(TopLevelItem item, Node node, String path){
+     public static boolean isContainedInWorkspace(Item item, Node node, String path){
         if(node instanceof Slave){
             Slave slave = (Slave) node;
             return path.contains(slave.getRemoteFS());
         }
-        else{
-            if(node instanceof Jenkins){
-               FilePath file = Jenkins.getInstance().getWorkspaceFor(item);
-               return path.contains(file.getRemote());
-            }
-            else{
-                try{
-                    return path.contains(node.getWorkspaceFor(item).getRemote());
+        else {
+            if (item instanceof TopLevelItem) {
+                TopLevelItem topLevelItem = (TopLevelItem) item;
+                if (node instanceof Jenkins) {
+                    FilePath file = Jenkins.getInstance().getWorkspaceFor(topLevelItem);
+                    return path.contains(file.getRemote());
+                } else {
+                    try {
+                        return path.contains(node.getWorkspaceFor(topLevelItem).getRemote());
+                    } catch (Exception e) {
+                        return false;
+                    }
                 }
-                catch(Exception e){
-                    return false;
-                }
             }
+            return false;
         }
     }
      

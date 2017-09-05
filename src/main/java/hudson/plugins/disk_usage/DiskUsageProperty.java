@@ -287,7 +287,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                     if(node.toComputer()!=null && node.toComputer().isOnline()){
                         FilePath path =null;
                         try{
-                            path = node.getWorkspaceFor((TopLevelItem)owner);                  
+                            path = node.getWorkspaceFor((TopLevelItem)owner);
                             if(path!=null && path.exists() && (diskUsage.slaveWorkspacesUsage.get(node.getNodeName())==null || !diskUsage.slaveWorkspacesUsage.get(node.getNodeName()).containsKey(path.getRemote()))){
                                 putSlaveWorkspace(node, path.getRemote());
                             }
@@ -349,12 +349,16 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 continue;
             Map<String,Long> paths = getSlaveWorkspaceUsage().get(nodeName);
             for(String path: paths.keySet()){
-                TopLevelItem item = null;
+
+                //find top level item if it is possible
+                Item item = null;
                 if(owner instanceof TopLevelItem){
-                    item = (TopLevelItem) owner;
+                    item = owner;
                 }
                 else{
-                    item = (TopLevelItem) owner.getParent();
+                    if(owner.getParent() instanceof TopLevelItem) {
+                        item = (TopLevelItem) owner.getParent();
+                    }
                 }
                 try{
                     if(!DiskUsageUtil.isContainedInWorkspace(item, node, path)){      
