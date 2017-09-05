@@ -5,6 +5,7 @@ import java.util.*;
 
 import hudson.model.*;
 import hudson.model.listeners.SaveableListener;
+import hudson.plugins.promoted_builds.Promotion;
 import hudson.plugins.promoted_builds.PromotionProcess;
 import hudson.plugins.promoted_builds.conditions.SelfPromotionCondition;
 import hudson.util.XStream2;
@@ -14,6 +15,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.annotation.Annotation;
 
+import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.wrapper.SavedRequestAwareWrapper;
 import org.jvnet.hudson.test.Issue;
@@ -600,6 +602,15 @@ public class DiskUsagePropertyTest {
         DiskUsageProperty p = process.getProperty(DiskUsageProperty.class);
         Thread.sleep(1000);
         p.getAllNonSlaveOrCustomWorkspaceSize();
+        Promotion promotion = process.getLastBuild();
+        FilePath workspace = promotion.getWorkspace();
+        FilePath log = new FilePath(workspace,"log.log");
+        Long size = log.length();
+        DiskUsageProperty diskUsageProperty = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnSlave(true);
+        diskUsageProperty.checkWorkspaces(true);
+        assertEquals("Size should be counted", size, diskUsageProperty.getAllWorkspaceSize());
+
     }
 
     public class TestThread extends Thread {
