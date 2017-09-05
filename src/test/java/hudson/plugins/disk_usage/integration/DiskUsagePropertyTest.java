@@ -1,11 +1,12 @@
 package hudson.plugins.disk_usage.integration;
 
 
-import java.util.ConcurrentModificationException;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 import hudson.model.*;
 import hudson.model.listeners.SaveableListener;
+import hudson.plugins.promoted_builds.PromotionProcess;
+import hudson.plugins.promoted_builds.conditions.SelfPromotionCondition;
 import hudson.util.XStream2;
 import hudson.matrix.MatrixBuild;
 
@@ -13,6 +14,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.annotation.Annotation;
 
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.wrapper.SavedRequestAwareWrapper;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRecipe;
@@ -28,8 +30,7 @@ import hudson.FilePath;
 import hudson.tasks.Shell;
 import hudson.plugins.disk_usage.*;
 import java.io.File;
-import java.util.Map;
-import java.util.Set;
+
 import hudson.model.listeners.RunListener;
 import org.junit.Test;
 import hudson.matrix.MatrixConfiguration;
@@ -43,6 +44,7 @@ import static org.junit.Assert.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.lang.annotation.ElementType.METHOD;
 import static org.mockito.Mockito.*;
+import hudson.plugins.promoted_builds.JobPropertyImpl;
 
 /**
  *
@@ -584,9 +586,24 @@ public class DiskUsagePropertyTest {
         }
 
     }
-    
+
+    @Issue("JENKINS-40728")
+    @Test
+    public void testCalculationWorkspaceForItemInNonTopLeverGroupItem() throws Exception {
+        Project project = j.createFreeStyleProject("some-project");
+        JobPropertyImpl property = new JobPropertyImpl(project);
+        project.addProperty(property);
+        PromotionProcess process = property.addProcess("Simple-process");
+        process.conditions.add(new SelfPromotionCondition(true));
+        process.getBuildSteps().add(new Shell("echo hello > log.log"));
+        j.buildAndAssertSuccess(project);
+        DiskUsageProperty p = process.getProperty(DiskUsageProperty.class);
+        Thread.sleep(1000);
+        p.getAllNonSlaveOrCustomWorkspaceSize();
+    }
+
     public class TestThread extends Thread {
-       
+
         TestThread(String name){
             super(name);
         }
@@ -662,6 +679,9 @@ public class DiskUsagePropertyTest {
             }
         }
     }
+
+
+
 
 
     
