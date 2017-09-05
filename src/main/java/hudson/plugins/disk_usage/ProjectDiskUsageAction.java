@@ -104,7 +104,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                 }
                 else{
                     if(project.getParent() instanceof TopLevelItem) {
-                        item = (TopLevelItem) project.getParent();
+                        item = (TopLevelItem)project.getParent();
                     }
                 }
                 try{
