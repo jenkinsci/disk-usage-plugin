@@ -98,12 +98,14 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                 continue;
             Map<String,Long> paths = diskUsage.getSlaveWorkspacesUsage().get(nodeName);
             for(String path: paths.keySet()){
-                TopLevelItem item = null;
+                Item item = null;
                 if(project instanceof TopLevelItem){
                     item = (TopLevelItem) project;
                 }
                 else{
-                    item = (TopLevelItem) project.getParent();
+                    if(project.getParent() instanceof TopLevelItem) {
+                        item = (TopLevelItem) project.getParent();
+                    }
                 }
                 try{
                     if(!DiskUsageUtil.isContainedInWorkspace(item, node, path)){ 
