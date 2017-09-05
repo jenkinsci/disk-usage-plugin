@@ -616,6 +616,7 @@ public class DiskUsagePropertyTest {
         DiskUsageProperty p = process.getProperty(DiskUsageProperty.class);
         Thread.sleep(1000);
         p.getAllNonSlaveOrCustomWorkspaceSize();
+        project.getAction(ProjectDiskUsageAction.class).getAllCustomOrNonSlaveWorkspaces(false);
         //check if the workspace is assigned to owner project of promotion
         Promotion promotion = process.getLastBuild();
         FilePath workspace = promotion.getWorkspace();
