@@ -28,7 +28,7 @@ public class DiskUsagePluginTest {
     public JenkinsRule j = new JenkinsRule();
     
     @Test
-    public void testRefreshGlobalInformation() throws IOException{
+    public void testRefreshGlobalInformation() throws Exception{
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         FreeStyleBuild build1 = project.createExecutable();
         FreeStyleBuild build2 = project.createExecutable();

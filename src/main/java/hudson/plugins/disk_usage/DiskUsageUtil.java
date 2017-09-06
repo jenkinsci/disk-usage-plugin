@@ -7,16 +7,7 @@ package hudson.plugins.disk_usage;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.Node;
-import hudson.model.Slave;
-import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
+import hudson.model.*;
 import hudson.plugins.disk_usage.unused.DiskUsageItemGroup;
 import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
@@ -49,10 +40,10 @@ import org.jenkinsci.remoting.RoleChecker;
  */
 public class DiskUsageUtil {
     
-    public static DiskUsageProperty addProperty(Item item){
+    public static DiskUsageProperty addProperty(Item item) throws Exception {
         DiskUsageProperty property = null;
-            if(item instanceof AbstractProject){
-                AbstractProject project = (AbstractProject) item;
+            if(item instanceof Job){
+                Job project = (Job) item;
                 property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                 if(property==null){
                     try {
@@ -78,6 +69,10 @@ public class DiskUsageUtil {
                     }
                     loadData(p, false);
                 }
+            }
+            //prevent to NullPointerException in JENKINS-29147 which hardly gives any information about what exactly was wrong and for which item type
+            if(property == null ){
+                throw new Exception("Property can not be added for item of type " + item.getClass().getName());
             }
             return property; 
     }
@@ -353,7 +348,7 @@ public class DiskUsageUtil {
             return size + f.length();
    }
  
-    public static void calculateDiskUsageForProject(AbstractProject project) throws IOException{
+    public static void calculateDiskUsageForProject(AbstractProject project) throws Exception{
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
             return;
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
@@ -402,7 +397,7 @@ public class DiskUsageUtil {
       
     
         public static void calculateDiskUsageForBuild(String buildId, AbstractProject project)
-            throws IOException {
+            throws Exception {
             if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
                 return;
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
@@ -476,7 +471,7 @@ public class DiskUsageUtil {
         return diskUsage;
     }
     
-    public static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
+    public static void calculateWorkspaceDiskUsage(AbstractProject project) throws Exception {
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
             return;
         DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);

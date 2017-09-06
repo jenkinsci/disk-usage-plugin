@@ -38,7 +38,12 @@ public class DiskUsageItemListener extends ItemListener{
     
     @Override
     public void onCreated(Item item){
-        DiskUsageUtil.addProperty(item);
+        try {
+            DiskUsageUtil.addProperty(item);
+        }
+        catch(Exception e){
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
+        }
         if(item instanceof ItemGroup)
             try {
             Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).putDiskUsageItemGroup((ItemGroup)item);
@@ -50,7 +55,12 @@ public class DiskUsageItemListener extends ItemListener{
     
     @Override
     public void onCopied(Item src, Item item){
-        DiskUsageUtil.addProperty(item);
+        try {
+            DiskUsageUtil.addProperty(item);
+        }
+        catch(Exception e){
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
+        }
         if(item instanceof ItemGroup)
             try {
             Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).putDiskUsageItemGroup((ItemGroup)item);
