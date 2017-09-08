@@ -444,7 +444,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     }
     
     public void loadDiskUsage(){
-        AbstractProject job = (AbstractProject) owner;
+        Job job = (Job) owner;
         diskUsage.load(); 
         //ensure that build was not removed without calling listener - badly removed, or badly saved (without build.xml)
         for(DiskUsageBuildInformation information : diskUsage.getBuildDiskUsage(false)){
