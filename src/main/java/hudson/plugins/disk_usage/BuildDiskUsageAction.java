@@ -13,6 +13,7 @@ import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
