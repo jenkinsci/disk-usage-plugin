@@ -4,12 +4,11 @@
  */
 package hudson.plugins.disk_usage.integration;
 
-import hudson.model.AbstractBuild;
-import hudson.model.Action;
+import hudson.model.*;
 import hudson.model.Node.Mode;
-import hudson.model.Slave;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
 import hudson.plugins.disk_usage.DiskUsageCalculation;
+import hudson.plugins.disk_usage.DiskUsageProperty;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
@@ -84,5 +83,20 @@ public class DiskUsageTestUtil {
         PrintStream stream = new PrintStream(file);
         stream.println("hello");
         stream.close();
+    }
+
+    public static synchronized FreeStyleProject prepareProjet(Jenkins jenkins, FreeStyleProject project) throws Exception {
+        project = (FreeStyleProject) Items.load(jenkins,project.getConfigFile().getFile().getParentFile());
+        jenkins.remove(project);
+        jenkins.putItem(project);
+        project.removeProperty(DiskUsageProperty.class);
+        return project;
+    }
+
+    public static synchronized FreeStyleProject getProject(Jenkins jenkins, String name) throws Exception {
+        FreeStyleProject project =  (FreeStyleProject) jenkins.getItem(name);
+        project.removeProperty(DiskUsageProperty.class);
+        return project;
+
     }
 }

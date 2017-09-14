@@ -43,7 +43,9 @@ import org.jvnet.hudson.test.recipes.LocalData;
  *
  * @author Lucie Votypkova
  */
-public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{        
+public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
+
+
     private void waitUntilThreadEnds(WorkspaceDiskUsageCalculationThread calculation) throws InterruptedException{
         Thread thread = null;
         //wait until thread ends
@@ -132,11 +134,11 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         AxisList axes = new AxisList();
         TextAxis axis1 = new TextAxis("axis","axis1 axis2 axis3");
         axes.add(axis1);
-        MatrixProject project1 = createMatrixProject("project1");
+        MatrixProject project1 = jenkins.createProject(MatrixProject.class, "project1");
         project1.setAxes(axes);
         project1.setAssignedNode(slave1);
         buildAndAssertSuccess(project1);
-        MatrixProject project2 = createMatrixProject("project2");
+        MatrixProject project2 = jenkins.createProject(MatrixProject.class,"project2");
         AxisList axes2 = new AxisList();
         TextAxis axis2 = new TextAxis("axis","axis1 axis2");
         axes2.add(axis2);       

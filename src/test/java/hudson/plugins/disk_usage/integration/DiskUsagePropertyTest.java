@@ -499,8 +499,8 @@ public class DiskUsagePropertyTest {
                         GregorianCalendar calendar = new GregorianCalendar();
                         calendar.set(2014, 1, 1);
                         calendar.add(GregorianCalendar.MINUTE, count);
-                        Run.ID_FORMATTER.get().format(calendar.getTime());
-                        diskUsage.addBuildInformation(new DiskUsageBuildInformation(Run.ID_FORMATTER.get().format(calendar.getTime()),calendar.getTimeInMillis(), count, 0l), null);
+                        //Run.ID_FORMATTER.get().format(calendar.getTime());
+                        diskUsage.addBuildInformation(new DiskUsageBuildInformation("" +count,calendar.getTimeInMillis(), count, 0l), null);
                     
                     }
                 } catch (ConcurrentModificationException ex) {

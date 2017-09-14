@@ -32,7 +32,6 @@ import org.kohsuke.stapler.StaplerResponse;
  * Entry point of the the plugin.
  *
  * @author dvrzalik
- * @plugin
  */
 @Extension
 public class DiskUsagePlugin extends Plugin {
