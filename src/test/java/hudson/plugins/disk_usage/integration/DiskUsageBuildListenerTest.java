@@ -9,6 +9,7 @@ import com.github.olivergondza.dumpling.model.jvm.JvmThread;
 import com.github.olivergondza.dumpling.model.jvm.JvmThreadSet;
 import com.github.olivergondza.dumpling.query.BlockingTree;
 import com.github.olivergondza.dumpling.query.Deadlocks;
+import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Items;
@@ -133,6 +134,10 @@ public class DiskUsageBuildListenerTest {
                     //need to force loading of build - so load job again without builds for next loop
                     project = DiskUsageTestUtil.prepareProjet(jenkins,project);
                 } catch (Exception e) {
+                    if(e instanceof NullPointerException){
+                        //addProperty can throw exception;
+                        continue;
+                    }
                     e.printStackTrace();
                 } catch (Error e) {
                     e.printStackTrace();
@@ -166,6 +171,9 @@ public class DiskUsageBuildListenerTest {
                     //need to force loading of build - so load job again without it
                     project = DiskUsageTestUtil.prepareProjet(jenkins,project);
                 } catch (Exception e) {
+                    if(e instanceof NullPointerException){
+                        continue;
+                    }
                     e.printStackTrace();
                 } catch (Error e) {
                     e.printStackTrace();

@@ -48,7 +48,7 @@ public class DiskUsageUtil {
                 return property;
             }
         };
-        //call it as future to not cause deadlock like JENKINS-33219"
+        //call it as future to not cause deadlock like JENKINS-33219
         Future<DiskUsageProperty> f = new FutureTask<DiskUsageProperty>(call);
         DiskUsageProperty p = f.get(1, TimeUnit.SECONDS);
         return p;
