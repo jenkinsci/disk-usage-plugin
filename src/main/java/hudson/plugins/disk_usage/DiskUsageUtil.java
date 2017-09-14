@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.mail.Message.RecipientType;
@@ -39,17 +39,32 @@ import org.jenkinsci.remoting.RoleChecker;
  * @author Lucie Votypkova
  */
 public class DiskUsageUtil {
+
+    private static DiskUsageProperty addProperty(final DiskUsageProperty property, final Job job) throws InterruptedException, ExecutionException, TimeoutException {
+        java.util.concurrent.Callable<DiskUsageProperty> call = new java.util.concurrent.Callable<DiskUsageProperty>() {
+            @Override
+            public DiskUsageProperty call() throws IOException {
+                job.addProperty(property);
+                return property;
+            }
+        };
+        //call it as future to not cause deadlock like JENKINS-33219"
+        Future<DiskUsageProperty> f = new FutureTask<DiskUsageProperty>(call);
+        DiskUsageProperty p = f.get(1, TimeUnit.SECONDS);
+        return p;
+    }
     
     public static DiskUsageProperty addProperty(Item item) throws Exception {
         DiskUsageProperty property = null;
             if(item instanceof Job){
-                Job project = (Job) item;
+                final Job project = (Job) item;
                 property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                 if(property==null){
                     try {
-                        property = new DiskUsageProperty();
-                        project.addProperty(property);
-                    } catch (IOException ex) {
+                        final DiskUsageProperty newProperty = new DiskUsageProperty();
+                        //better than synchronize call it as future with time out
+                        addProperty(newProperty, project);
+                    } catch (Exception ex) {
                         Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
@@ -61,9 +76,10 @@ public class DiskUsageUtil {
                     DiskUsageProperty p = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                     if(p==null){
                         try {
-                            p = new DiskUsageProperty();
-                            project.addProperty(p);
-                        } catch (IOException ex) {
+                            DiskUsageProperty newProperty = new DiskUsageProperty();
+                            //better than synchronize call it as future with time out
+                            addProperty(newProperty, project);
+                        } catch (Exception ex) {
                             Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
