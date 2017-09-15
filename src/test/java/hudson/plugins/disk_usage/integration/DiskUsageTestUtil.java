@@ -85,18 +85,16 @@ public class DiskUsageTestUtil {
         stream.close();
     }
 
-    public static synchronized FreeStyleProject prepareProjet(Jenkins jenkins, FreeStyleProject project) throws Exception {
-        project = (FreeStyleProject) Items.load(jenkins,project.getConfigFile().getFile().getParentFile());
-        jenkins.remove(project);
-        jenkins.putItem(project);
+    public static synchronized FreeStyleProject prepareProjet(Jenkins jenkins, String name) throws Exception {
+        FreeStyleProject project = (FreeStyleProject) jenkins.getItem(name);
+        if(project._getRuns().getLoadedBuilds().size()>0) {
+            project = (FreeStyleProject) Items.load(jenkins, project.getConfigFile().getFile().getParentFile());
+            jenkins.remove(project);
+            jenkins.putItem(project);
+        }
         project.removeProperty(DiskUsageProperty.class);
         return project;
     }
 
-    public static synchronized FreeStyleProject getProject(Jenkins jenkins, String name) throws Exception {
-        FreeStyleProject project =  (FreeStyleProject) jenkins.getItem(name);
-        project.removeProperty(DiskUsageProperty.class);
-        return project;
 
-    }
 }

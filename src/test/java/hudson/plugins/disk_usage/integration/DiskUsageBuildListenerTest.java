@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Logger;
 
 import hudson.FilePath;
 import hudson.plugins.disk_usage.DiskUsageProperty;
@@ -89,11 +90,11 @@ public class DiskUsageBuildListenerTest {
 
 
     @Issue("JENKINS-33219")
-    @Test(timeout = 400000L)
+    @Test(timeout = 700000L)
     @LocalData
     public void testOnLoadCauseDeadLock() throws Exception {
-        // it is necessary to call it many times in cycle and it contains IO operations, so the test can take little longer
-        j.timeout = 400;
+        // it is necessary to call functions with a lot of IO operation many times in cycle, so the test can take little longer
+        j.timeout = 700;
         AddNewProperty onLoad = new AddNewProperty(j.jenkins);
         UpdateNexBuildNumber nextBuildNumber = new UpdateNexBuildNumber(j.jenkins);
         onLoad.start();
@@ -128,17 +129,16 @@ public class DiskUsageBuildListenerTest {
             int count = 0;
             while (count < 100) {
                 try {
-                    //get project without DiskUsageProperty
-                    FreeStyleProject project = DiskUsageTestUtil.getProject(jenkins, "job");
+                    //get project without DiskUsageProperty on without loaded builds
+                    FreeStyleProject project = DiskUsageTestUtil.prepareProjet(jenkins,"job");
                     project.getLazyBuildMixIn().getBuildByNumber(55);
-                    //need to force loading of build - so load job again without builds for next loop
-                    project = DiskUsageTestUtil.prepareProjet(jenkins,project);
                 } catch (Exception e) {
                     if(e instanceof NullPointerException){
-                        //addProperty can throw exception;
                         continue;
                     }
-                    e.printStackTrace();
+                    else {
+                        e.printStackTrace();
+                    }
                 } catch (Error e) {
                     e.printStackTrace();
                 }
@@ -165,16 +165,17 @@ public class DiskUsageBuildListenerTest {
             int count = 0;
             while (count < 100) {
                 try {
-                    //get project without DiskUsageProperty
-                    FreeStyleProject project = DiskUsageTestUtil.getProject(jenkins, "job");
+                    //get project without DiskUsageProperty on without loaded builds
+                    FreeStyleProject project = DiskUsageTestUtil.prepareProjet(jenkins,"job");
                     project.updateNextBuildNumber(107 + count);
-                    //need to force loading of build - so load job again without it
-                    project = DiskUsageTestUtil.prepareProjet(jenkins,project);
+
                 } catch (Exception e) {
                     if(e instanceof NullPointerException){
                         continue;
                     }
-                    e.printStackTrace();
+                    else {
+                        e.printStackTrace();
+                    }
                 } catch (Error e) {
                     e.printStackTrace();
                 }

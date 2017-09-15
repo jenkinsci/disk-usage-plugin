@@ -40,7 +40,25 @@ import org.jenkinsci.remoting.RoleChecker;
  */
 public class DiskUsageUtil {
 
-    private static DiskUsageProperty addProperty(final DiskUsageProperty property, final Job job) throws InterruptedException, ExecutionException, TimeoutException {
+    public DiskUsageProperty getDiskUsageProperty(Job job) {
+        DiskUsageProperty property = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);
+        if(property==null){
+            try {
+                property = addProperty(job);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if(property==null){
+            //adding failed so set it only from property side
+            property = new DiskUsageProperty();
+            property.setOwner(job);
+
+        }
+        return property;
+    }
+
+    private static DiskUsageProperty tryAddProperty(final DiskUsageProperty property, final Job job) {
         java.util.concurrent.Callable<DiskUsageProperty> call = new java.util.concurrent.Callable<DiskUsageProperty>() {
             @Override
             public DiskUsageProperty call() throws IOException {
@@ -50,7 +68,16 @@ public class DiskUsageUtil {
         };
         //call it as future to not cause deadlock like JENKINS-33219
         Future<DiskUsageProperty> f = new FutureTask<DiskUsageProperty>(call);
-        DiskUsageProperty p = f.get(1, TimeUnit.SECONDS);
+        DiskUsageProperty p = null;
+        try {
+            p = f.get(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.FINEST,null, e);
+        } catch (ExecutionException e) {
+            LOGGER.log(Level.FINEST,null, e);
+        } catch (TimeoutException e) {
+            LOGGER.log(Level.FINEST,null, e);
+        }
         return p;
     }
     
@@ -63,7 +90,8 @@ public class DiskUsageUtil {
                     try {
                         final DiskUsageProperty newProperty = new DiskUsageProperty();
                         //better than synchronize call it as future with time out
-                        addProperty(newProperty, project);
+                        property = tryAddProperty(newProperty, project);
+
                     } catch (Exception ex) {
                         Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -78,7 +106,7 @@ public class DiskUsageUtil {
                         try {
                             DiskUsageProperty newProperty = new DiskUsageProperty();
                             //better than synchronize call it as future with time out
-                            addProperty(newProperty, project);
+                            property = tryAddProperty(newProperty, project);
                         } catch (Exception ex) {
                             Logger.getLogger(DiskUsageItemListener.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -86,14 +114,13 @@ public class DiskUsageUtil {
                     loadData(p, false);
                 }
             }
-            //prevent to NullPointerException in JENKINS-29147 which hardly gives any information about what exactly was wrong and for which item type
-            if(property == null ){
-                throw new Exception("Property can not be added for item of type " + item.getClass().getName());
-            }
             return property; 
     }
     
     protected static void loadData(DiskUsageProperty property, boolean loadAllBuilds){
+        if(property==null){
+            return;
+        }
         if(loadAllBuilds){
             try {
                 property.getDiskUsage().loadAllBuilds(loadAllBuilds);

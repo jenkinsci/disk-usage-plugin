@@ -37,15 +37,15 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     
     public BuildDiskUsageAction(AbstractBuild build) {
         this.build = build;       
-        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-        if(property==null){
-            try {
-                property = DiskUsageUtil.addProperty(build.getProject());
-            }
-            catch(Exception e){
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
-            }
-        }
+      //  DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+      //  if(property==null){
+       //     try {
+        //        property = DiskUsageUtil.addProperty(build.getProject());
+       //     }
+       //     catch(Exception e){
+       //         Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
+      //      }
+      //  }
         //DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
     }  
     
