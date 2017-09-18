@@ -42,7 +42,7 @@ public class DiskUsagePluginTest {
         DiskUsagePlugin plugin = j.jenkins.getPlugin(DiskUsagePlugin.class);
         Long workspaceUsage = 20345l;
         Long jobUsage = 5980l;
-        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
         if(property==null){
             property = new DiskUsageProperty();
             project.addProperty(property);
@@ -82,7 +82,7 @@ public class DiskUsagePluginTest {
        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1"); 
        AbstractBuild build = project.getBuild("2013-08-09_13-02-26");
        int loadedBuilds = project._getRuns().getLoadedBuilds().size();
-       DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+       DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
        assertNotNull("Build should be add after its loading (if it is not present before).", property.getDiskUsageOfBuild(2));
        assertEquals("Only required build should be loaded into Jenkins.", project._getRuns().getLoadedBuilds().size(), loadedBuilds);
     }
@@ -92,13 +92,13 @@ public class DiskUsagePluginTest {
     public void testBuildInfoIsNoLoadedMultipleTimes() throws Exception{
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         AbstractBuild build = project.getBuild("2013-08-09_13-02-26");
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
         assertEquals("Only one build should be loaded into disk usage build information.", project._getRuns().getLoadedBuilds().size(), property.getDiskUsageOfBuilds().size());
         int loadedBuilds = property.getDiskUsageOfBuilds().size();
         j.jenkins.reload();
         project = (AbstractProject) j.jenkins.getItem("project1");
         build = project.getBuild("2013-08-09_13-02-26");
-        property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        property = DiskUsageUtil.getDiskUsageProperty(project);
         assertNotNull("Should be loaded build 2", property.getDiskUsageBuildInformation(2));
         assertEquals("Only one build should be loaded into disk usage build information.", loadedBuilds, property.getDiskUsageOfBuilds().size());
         

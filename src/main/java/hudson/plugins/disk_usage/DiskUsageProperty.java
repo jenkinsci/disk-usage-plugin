@@ -96,7 +96,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
              for(Object item : group.getItems()){
                  if(item instanceof AbstractProject){
                      AbstractProject project = (AbstractProject) item;
-                     DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                     DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
                      size += property.getAllDiskUsageOfBuild(buildNumber);
                  }
              }
@@ -419,7 +419,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
             if(item instanceof AbstractProject){
                 AbstractProject p = (AbstractProject) item;
-                DiskUsageProperty property = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
+                DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(p);
                 if(property!=null){
                     usage += property.getDiskUsageWithoutBuilds();
                 }

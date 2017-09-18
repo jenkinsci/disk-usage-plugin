@@ -45,16 +45,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
     
     public ProjectDiskUsageAction(AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project) {
         this.project = project;    
-        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        if(property==null){
-            property = new DiskUsageProperty();
-            try {
-                project.addProperty(property);
-                property.getDiskUsage().load();
-            } catch (IOException ex) {
-                Logger.getLogger(ProjectDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
         diskUsage = property.getDiskUsage();
     }
     
@@ -204,7 +195,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
     }
     
     public DiskUsageProperty getDiskUsageProperty(){
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
         return property;
     }
     

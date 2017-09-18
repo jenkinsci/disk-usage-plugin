@@ -65,14 +65,14 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         FreeStyleProject project = (FreeStyleProject) jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) jenkins.getItem("project2");
         //we need all build information are loaded before counting
-        project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
-        project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
+        DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage().loadAllBuilds(true);
+        DiskUsageUtil.getDiskUsageProperty(project2).getDiskUsage().loadAllBuilds(true);
         File file = new File(project.getRootDir(),"fileList");
         Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
         file = new File(project2.getRootDir(),"fileList");
         Long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
-        projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
-        project2Size += project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length(); 
+        projectSize += DiskUsageUtil.getDiskUsageProperty(project).getProjectDiskUsage().getConfigFile().getFile().length();
+        project2Size += DiskUsageUtil.getDiskUsageProperty(project2).getProjectDiskUsage().getConfigFile().getFile().length();
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
         if(calculation.isExecuting()){
             DiskUsageTestUtil.cancelCalculation(calculation);
@@ -94,16 +94,16 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         MatrixProject project = (MatrixProject) jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) jenkins.getItem("project2");
         //we need all build information are loaded before counting
-        project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
-        project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);        
+        DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage().loadAllBuilds(true);
+        DiskUsageUtil.getDiskUsageProperty(project2).getDiskUsage().loadAllBuilds(true);
         File file = new File(project.getRootDir(),"fileList");
         Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
         file = new File(project2.getRootDir(),"fileList");
         Long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
        // projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
-        project2Size += project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();        
+        project2Size += DiskUsageUtil.getDiskUsageProperty(project2).getProjectDiskUsage().getConfigFile().getFile().length();
         for(MatrixConfiguration config: project.getItems()){
-            config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
+            DiskUsageUtil.getDiskUsageProperty(config).getDiskUsage().loadAllBuilds(true);
             File f = new File(config.getRootDir(),"fileList");
             Long size = getSize(readFileList(f)) + config.getRootDir().length();
             projectSize += size;
@@ -152,7 +152,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         DiskUsageProjectActionFactory.DESCRIPTOR.disableJobsDiskUsageCalculation();
         JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
         calculation.execute(TaskListener.NULL);
-        assertEquals("Disk usage for build should not be counted.", 0, projectWithoutDiskUsage.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), 0);
+        assertEquals("Disk usage for build should not be counted.", 0, DiskUsageUtil.getDiskUsageProperty(projectWithoutDiskUsage).getAllDiskUsageWithoutBuilds(), 0);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
     }
     
@@ -167,8 +167,8 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         excludes.add(exludedJob.getName());
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         calculation.execute(TaskListener.NULL);
-        assertEquals("Disk usage for excluded project should not be counted.", 0, exludedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), 0);
-        assertTrue("Disk usage for included project should be not be counted.", includedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds() > 0);
+        assertEquals("Disk usage for excluded project should not be counted.", 0, DiskUsageUtil.getDiskUsageProperty(exludedJob).getAllDiskUsageWithoutBuilds(), 0);
+        assertTrue("Disk usage for included project should be not be counted.", DiskUsageUtil.getDiskUsageProperty(includedJob).getAllDiskUsageWithoutBuilds() > 0);
         excludes.clear();
     }
     

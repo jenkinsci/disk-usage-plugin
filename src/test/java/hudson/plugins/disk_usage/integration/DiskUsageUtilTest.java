@@ -68,10 +68,10 @@ public class DiskUsageUtilTest {
     public void testCalculateDiskUsageForJob() throws Exception{
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
         //all builds has to be loaded
-        project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
+        DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage().loadAllBuilds(true);
         File file = new File(project.getRootDir(), "fileList");
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + project.getRootDir().length();
-        size += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
+        size += DiskUsageUtil.getDiskUsageProperty(project).getProjectDiskUsage().getConfigFile().getFile().length();
         DiskUsageUtil.calculateDiskUsageForProject(project);
         project.getAction(ProjectDiskUsageAction.class).actualizeCashedData();
         Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds());
@@ -83,17 +83,17 @@ public class DiskUsageUtilTest {
     public void testCalculateDiskUsageForMatrixJob() throws Exception{
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         //all builds has to be loaded
-        project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
+        DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage().loadAllBuilds(true);
         File file = new File(project.getRootDir(), "fileList");
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + project.getRootDir().length();
-        size += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
+        size += DiskUsageUtil.getDiskUsageProperty(project).getProjectDiskUsage().getConfigFile().getFile().length();
         size += project.getAction(DiskUsageItemGroupAction.class).getDiskUsageItemGroup().getConfigFile().getFile().length();
         Long sizeAll = size;
         for(MatrixConfiguration config: project.getItems()){
-            config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds(true);
+            DiskUsageUtil.getDiskUsageProperty(config).getDiskUsage().loadAllBuilds(true);
             File f = new File(config.getRootDir(), "fileList");
             sizeAll += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(f)) + config.getRootDir().length();
-            sizeAll += config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
+            sizeAll += DiskUsageUtil.getDiskUsageProperty(config).getProjectDiskUsage().getConfigFile().getFile().length();
         }
         
         DiskUsageUtil.calculateDiskUsageForProject(project);
@@ -264,7 +264,7 @@ public class DiskUsageUtilTest {
         project1.setAssignedNode(slave1);
         j.buildAndAssertSuccess(project1);
         
-        DiskUsageProperty prop = project1.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty prop = DiskUsageUtil.getDiskUsageProperty(project1);
         if(prop == null){
             prop = new DiskUsageProperty();
             project1.addProperty(prop);

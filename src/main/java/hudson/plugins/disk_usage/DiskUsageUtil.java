@@ -40,7 +40,7 @@ import org.jenkinsci.remoting.RoleChecker;
  */
 public class DiskUsageUtil {
 
-    public DiskUsageProperty getDiskUsageProperty(Job job) {
+    public static DiskUsageProperty getDiskUsageProperty(Job job) {
         DiskUsageProperty property = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);
         if(property==null){
             try {
@@ -214,12 +214,7 @@ public class DiskUsageUtil {
     
     public static void controlWorkspaceExceedSize(AbstractProject project){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-
-        if(property == null) {
-            return;
-        }
-
+        DiskUsageProperty property = getDiskUsageProperty(project);
         Long size = property.getAllWorkspaceSize();
         if(plugin.getConfiguration().warnAboutJobWorkspaceExceedSize() && size>plugin.getConfiguration().getJobWorkspaceExceedSize()){
             StringBuilder builder = new StringBuilder();
@@ -326,11 +321,7 @@ public class DiskUsageUtil {
             Long startTimeOfBuildCalculation = System.currentTimeMillis();
                 DiskUsageUtil.calculateDiskUsageForBuild(build.getId(), build.getProject());
                 listener.getLogger().println("Finished Calculation of disk usage of build in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfBuildCalculation));
-                DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-                if(property==null){
-                    DiskUsageUtil.addProperty(build.getProject());
-                    property =  (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-                }
+                DiskUsageProperty property = getDiskUsageProperty(build.getProject());
                 if(build.getWorkspace()!=null){
                     ArrayList<FilePath> exceededFiles = new ArrayList<FilePath>();
                     AbstractProject project = build.getProject();
@@ -338,11 +329,7 @@ public class DiskUsageUtil {
                     if(project instanceof ItemGroup){
                         List<AbstractProject> projects = DiskUsageUtil.getAllProjects((ItemGroup) project);
                         for(AbstractProject p: projects){
-                            DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
-                            if(prop==null){
-                                prop = new DiskUsageProperty();
-                                p.addProperty(prop);
-                            }
+                            DiskUsageProperty prop = getDiskUsageProperty(p);
                             prop.checkWorkspaces();
                             Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
                             if(paths!=null && !paths.isEmpty()){
@@ -396,10 +383,10 @@ public class DiskUsageUtil {
             return;
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         List<File> exceededFiles = new ArrayList<File>();       
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty property = getDiskUsageProperty(project);
          if(property==null){
             addProperty(project);
-            property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+            property =  getDiskUsageProperty(project);
         }
         exceededFiles.add(project.getBuildDir());
         //load all - force loading all builds to check state
@@ -464,11 +451,7 @@ public class DiskUsageUtil {
                 //addBuildDiskUsageAction(build);
             }
         }
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        if(property==null){
-            addProperty(project);
-            property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        }
+        DiskUsageProperty property = getDiskUsageProperty(project);
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(buildId);
         Long size = property.getDiskUsageOfBuild(buildId);
         if (( size <= 0 ) || ( Math.abs(size - buildSize) > 1024 )) {
@@ -517,11 +500,7 @@ public class DiskUsageUtil {
     public static void calculateWorkspaceDiskUsage(AbstractProject project) throws Exception {
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
             return;
-        DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        if(property==null){
-            addProperty(project);
-            property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        }
+        DiskUsageProperty property =  getDiskUsageProperty(project);
         
         property.checkWorkspaces();
         for(String nodeName: property.getSlaveWorkspaceUsage().keySet()){
@@ -548,11 +527,7 @@ public class DiskUsageUtil {
                         if(project instanceof ItemGroup){
                             List<AbstractProject> projects = getAllProjects((ItemGroup) project);
                             for(AbstractProject p: projects){
-                                DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
-                                if(prop==null){
-                                    prop = new DiskUsageProperty();
-                                    p.addProperty(prop);
-                                }
+                                DiskUsageProperty prop = getDiskUsageProperty(p);
                                 prop.checkWorkspaces();
                                 Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
                                 if(paths!=null && !paths.isEmpty()){

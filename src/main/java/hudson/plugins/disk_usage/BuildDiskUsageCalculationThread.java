@@ -45,11 +45,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                     if (item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
                       //  if (!project.isBuilding()) {
-                            DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-                            if(property==null){
-                                property = new DiskUsageProperty();
-                                project.addProperty(property);
-                            }
+                            DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
                             ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
                             for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)){ 
                                 Map<Integer,AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();

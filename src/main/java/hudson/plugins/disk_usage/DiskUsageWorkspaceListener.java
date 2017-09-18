@@ -20,10 +20,8 @@ public class DiskUsageWorkspaceListener extends WorkspaceListener{
     
     @Override
     public void afterDelete(AbstractProject project){
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        if(property!=null){
-            property.checkWorkspaces();
-        }
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
+        property.checkWorkspaces();
     }
     
 }

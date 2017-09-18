@@ -151,7 +151,7 @@ public class ProjectBuildChecker {
      * This method can takes long time
      */
     public static void valideBuildData(AbstractProject project){
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
         ProjectDiskUsage usage = property.getDiskUsage();
         //loading all builds
         Iterator<Run> iterator = project.getBuilds().iterator();

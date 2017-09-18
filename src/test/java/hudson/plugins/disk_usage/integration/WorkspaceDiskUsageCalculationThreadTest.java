@@ -201,7 +201,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         DiskUsageProjectActionFactory.DESCRIPTOR.disableWorkspacesDiskUsageCalculation();
         BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
-        assertEquals("Disk usage for build should not be counted.", 0, projectWithoutDiskUsage.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
+        assertEquals("Disk usage for build should not be counted.", 0, DiskUsageUtil.getDiskUsageProperty(projectWithoutDiskUsage).getAllWorkspaceSize(), 0);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
     }
     
@@ -229,7 +229,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         t.start();
         Thread.sleep(1000);
         testCalculation.doRun();
-        assertEquals("Disk usage should not start calculation if preview calculation is in progress.", 0, project.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
+        assertEquals("Disk usage should not start calculation if preview calculation is in progress.", 0, DiskUsageUtil.getDiskUsageProperty(project).getAllWorkspaceSize(), 0);
         t.interrupt();
     }
     
@@ -262,8 +262,8 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         buildAndAssertSuccess(includedJob);
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
-        assertEquals("Disk usage for excluded project should not be counted.", 0, excludedJob.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
-        assertTrue("Disk usage for included project should be counted.", includedJob.getProperty(DiskUsageProperty.class).getAllWorkspaceSize() > 0);
+        assertEquals("Disk usage for excluded project should not be counted.", 0, DiskUsageUtil.getDiskUsageProperty(excludedJob).getAllWorkspaceSize(), 0);
+        assertTrue("Disk usage for included project should be counted.", DiskUsageUtil.getDiskUsageProperty(includedJob).getAllWorkspaceSize() > 0);
         excludes.clear();
     }
     

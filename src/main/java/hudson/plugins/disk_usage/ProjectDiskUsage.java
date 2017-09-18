@@ -312,7 +312,7 @@ public class ProjectDiskUsage implements Saveable{
         else{
             ProjectBuildChecker.checkValidityOfBuildData(this);
         }
-        DiskUsageProperty property = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(job);
         property.checkWorkspaces(true);
         save();
     }

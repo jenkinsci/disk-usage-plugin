@@ -38,23 +38,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     
     @Override
     public void onDeleted(AbstractBuild build){
-        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-        if(property==null){
-            try {
-                property = DiskUsageUtil.addProperty(build.getProject());
-            }
-            catch(Exception e){
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
-                //try to find file and remove without property, until cause of the issue JENKINS-29147 is found
-                ProjectDiskUsage diskUsage = new ProjectDiskUsage();
-                diskUsage.setProject(build.getProject());
-                if(diskUsage.getConfigFile().exists()) {
-                    diskUsage.load();
-                    diskUsage.removeBuild(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.number, 0l));
-                    diskUsage.save();
-                }
-            }
-        }
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(build.getProject());
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
         if(information!=null){;
             property.getDiskUsage().removeBuild(information);
@@ -65,23 +49,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     
     @Override
     public void onStarted(AbstractBuild build, TaskListener listener){
-        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-        if(property==null){
-            try {
-                property = DiskUsageUtil.addProperty(build.getProject());
-            }
-            catch(Exception e){
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
-                //try to find file and add without property, until cause of the issue JENKINS-29147 is found
-                ProjectDiskUsage diskUsage = new ProjectDiskUsage();
-                diskUsage.setProject(build.getProject());
-                if(diskUsage.getConfigFile().exists()) {
-                    diskUsage.load();
-                    diskUsage.addBuild(build);
-                    diskUsage.save();
-                }
-            }
-        }
+        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(build.getProject());
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
         if(information==null){
             property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), 0l, build.isKeepLog()), build);

@@ -407,7 +407,7 @@ public class DiskUsagePlugin extends Plugin {
         for(Item item : Jenkins.getInstance().getItems()){
             if(item instanceof AbstractProject){
                 AbstractProject project = (AbstractProject) item;
-                ProjectDiskUsage usage = ((DiskUsageProperty)project.getProperty(DiskUsageProperty.class)).getDiskUsage();
+                ProjectDiskUsage usage = DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage();
                 ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
                 if(!usage.getNotLoadedBuilds().isEmpty()){
                     notLoadedBuilds.put(project, action.getAllDiskUsageNotLoadedBuilds(true));
