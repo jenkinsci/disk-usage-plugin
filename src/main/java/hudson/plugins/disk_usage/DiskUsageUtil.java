@@ -32,6 +32,7 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
 import org.jenkinsci.remoting.RoleChecker;
 
 /**
@@ -42,6 +43,7 @@ public class DiskUsageUtil {
 
     public static DiskUsageProperty getDiskUsageProperty(Job job) {
         DiskUsageProperty property = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);
+
         if(property==null){
             try {
                 property = addProperty(job);
@@ -59,25 +61,33 @@ public class DiskUsageUtil {
     }
 
     private static DiskUsageProperty tryAddProperty(final DiskUsageProperty property, final Job job) {
-        java.util.concurrent.Callable<DiskUsageProperty> call = new java.util.concurrent.Callable<DiskUsageProperty>() {
-            @Override
-            public DiskUsageProperty call() throws IOException {
+        java.util.concurrent.Callable<DiskUsageProperty> call = new java.util.concurrent.Callable<DiskUsageProperty>(){
+
+            public DiskUsageProperty call() throws IOException{
                 job.addProperty(property);
                 return property;
             }
         };
         //call it as future to not cause deadlock like JENKINS-33219
-        Future<DiskUsageProperty> f = new FutureTask<DiskUsageProperty>(call);
+        Future<DiskUsageProperty> f = Timer.get().submit(call);
+        //call it as future to not cause deadlock like JENKINS-33219
         DiskUsageProperty p = null;
         try {
+            System.err.println(new GregorianCalendar().getTime());
+
             p = f.get(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            LOGGER.log(Level.FINEST,null, e);
+            System.err.println(new GregorianCalendar().getTime());
+            LOGGER.log(Level.FINEST,e.getMessage(), e);
         } catch (ExecutionException e) {
-            LOGGER.log(Level.FINEST,null, e);
+            System.err.println(new GregorianCalendar().getTime());
+            LOGGER.log(Level.FINEST, e.getMessage(), e);
         } catch (TimeoutException e) {
-            LOGGER.log(Level.FINEST,null, e);
+            System.err.println(new GregorianCalendar().getTime());
+            LOGGER.log(Level.FINEST,e.getMessage(), e);
         }
+
+
         return p;
     }
     
@@ -104,7 +114,7 @@ public class DiskUsageUtil {
                     DiskUsageProperty p = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                     if(p==null){
                         try {
-                            DiskUsageProperty newProperty = new DiskUsageProperty();
+                            final DiskUsageProperty newProperty = new DiskUsageProperty();
                             //better than synchronize call it as future with time out
                             property = tryAddProperty(newProperty, project);
                         } catch (Exception ex) {
