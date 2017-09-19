@@ -65,6 +65,9 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         AbstractProject project = build.getProject();
         DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
+        if(information==null){
+            information = property.getDiskUsageBuildInformation(build.getNumber());
+        }
         if(information!=null){
             information.setSize(size);
         }
@@ -84,7 +87,11 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     public Long getDiskUsage() {
         AbstractProject project = build.getProject();
         DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
-        return property.getDiskUsageOfBuild(build.getId());
+        Long size = property.getDiskUsageOfBuild(build.getId());
+        if(size==null || !(size>0)) {
+            size = property.getDiskUsageOfBuild(build.getNumber());
+        }
+        return size;
     }
     
     public Long getAllDiskUsage(){

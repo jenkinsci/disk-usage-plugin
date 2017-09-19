@@ -40,6 +40,10 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     public void onDeleted(AbstractBuild build){
         DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(build.getProject());
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
+        if(information==null){
+            //in case of old build we have to recognize by number
+            information = property.getDiskUsageBuildInformation(build.getNumber());
+        }
         if(information!=null){;
             property.getDiskUsage().removeBuild(information);
             property.getDiskUsage().save();
@@ -51,6 +55,10 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
     public void onStarted(AbstractBuild build, TaskListener listener){
         DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(build.getProject());
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
+        if(information == null){
+            //in case of old builds, we have to recognize by number
+            information = property.getDiskUsageBuildInformation(build.getNumber());
+        }
         if(information==null){
             property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), 0l, build.isKeepLog()), build);
         }

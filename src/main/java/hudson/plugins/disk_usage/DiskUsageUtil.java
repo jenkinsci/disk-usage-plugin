@@ -455,7 +455,7 @@ public class DiskUsageUtil {
         Collection<AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds().values();
         AbstractBuild build = null;
         for(AbstractBuild b : loadedBuilds){
-            if(b.getId().equals(buildId)){
+            if(b.getId().equals(buildId) || String.valueOf(b.getNumber()).equals(buildId)){
                 build = b;
                 break;
                 //addBuildDiskUsageAction(build);

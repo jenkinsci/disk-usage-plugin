@@ -98,7 +98,7 @@ public class BuildDiskUsageCalculationThreadTest {
         waitUntilThreadEnds(calculation);
         for(AbstractBuild build: buildSizesProject1.keySet()){
             Long size = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();
-            assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject1.get(build), size, 0);        
+            assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject1.get(build), size, 0);
         }
         for(AbstractBuild build: buildSizesProject2.keySet()){
             Long size = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();

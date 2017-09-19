@@ -237,7 +237,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                         Collection<AbstractBuild> loadedBuilds = (Collection<AbstractBuild>) p._getRuns().getLoadedBuilds().values();
                         AbstractBuild build = null;
                         for (AbstractBuild b : loadedBuilds){
-                            if(b.getId().equals(information.getId())){
+                            if(b.getId().equals(information.getId()) || b.getNumber()==information.getNumber()){
                                 build = b;
                             }
                         }
@@ -334,7 +334,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
             Collection<AbstractBuild> loadedBuilds = (Collection<AbstractBuild>) project._getRuns().getLoadedBuilds().values();
             AbstractBuild build = null;
             for (AbstractBuild b : loadedBuilds){
-                if(b.getId().equals(information.getId())){
+                if(b.getId().equals(information.getId()) || b.getNumber()==information.getNumber()){
                     build = b;
                 }
             }
@@ -400,6 +400,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         for (int i=builds.size()-1; i>=0; i--) {
             DiskUsageBuildInformation build = builds.get(i);
             Long usage = diskUsage.getDiskUsageBuildInformation(build.getId()).getSize();
+            if(usage==null || !(usage>0)){
+                usage = diskUsage.getDiskUsageBuildInformation(build.getNumber()).getSize();
+            }
                 usages.add(new Object[]{build.getNumber(), getJobRootDirDiskUsage(true), usage, getAllSlaveWorkspaces(true), getAllCustomOrNonSlaveWorkspaces(true)});
                 maxValue = Math.max(maxValue, usage);
         }

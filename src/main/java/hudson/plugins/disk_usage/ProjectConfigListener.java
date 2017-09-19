@@ -24,6 +24,9 @@ public class ProjectConfigListener extends SaveableListener{
            ProjectDiskUsageAction action = build.getProject().getAction(ProjectDiskUsageAction.class);
            DiskUsageBuildInformation info = action.getDiskUsage().getDiskUsageBuildInformation(build.getId());
            if(info==null){
+               info = action.getDiskUsage().getDiskUsageBuildInformation(build.getNumber());
+           }
+           if(info==null){
                action.getDiskUsage().addBuild(build);
            }
            else{

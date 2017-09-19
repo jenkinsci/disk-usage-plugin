@@ -162,11 +162,17 @@ public class ProjectBuildChecker {
             if(run instanceof AbstractBuild){
                 AbstractBuild build = (AbstractBuild) run;
                 Long size = usage.getSizeOfNotLoadedBuild(build.getId());
+                if(size==null || !(size>0)){
+                    size = usage.getSizeOfNotLoadedBuild(String.valueOf(build.getNumber()));
+                }
                 if(size!=null){
                     usage.moveToLoadedBuilds(build, size);
                     continue;
                 }
                 DiskUsageBuildInformation information = usage.getDiskUsageBuildInformation(build.getId());
+                if(information==null){
+                    information = usage.getDiskUsageBuildInformation(build.getNumber());
+                }
                 if(information==null){
                     usage.addBuild(build);
                 }
