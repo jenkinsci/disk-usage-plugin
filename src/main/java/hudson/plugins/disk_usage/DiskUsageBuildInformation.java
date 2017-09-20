@@ -72,6 +72,10 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
         return id;
     }
 
+    public String getOldId(){
+        return id;
+    }
+
     public long getTimestamp() {
         return timestamp;
     }

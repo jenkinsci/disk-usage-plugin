@@ -203,10 +203,10 @@ public class DiskUsagePropertyTest {
     public void testGetAllNonSlaveOrCustomWorkspaceSizeWithOnlySlaves() throws Exception{
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         project.getBuildersList().add(new Shell("echo hello > log"));
-        Slave slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"SlaveWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"SlaveWorkspace").getAbsolutePath(), j.jenkins, j.createComputerLauncher(null));
         Slave slave1 = j.createOnlineSlave();
         Slave slave2= j.createOnlineSlave();
-        File workspaceSlave1 = new File(slave3.getRemoteFS(), project.getName()+ "/log");
+        File workspaceSlave1 = new File(slave3.getWorkspaceFor(project).getRemote(), "log");
         //DiskUsageTestUtil.createFileWithContent(workspaceSlave1);
         File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
         //DiskUsageTestUtil.createFileWithContent(workspaceSlave2);
@@ -230,7 +230,7 @@ public class DiskUsagePropertyTest {
         assertEquals("", customWorkspaceSlaveSize, DiskUsageUtil.getDiskUsageProperty(project).getAllNonSlaveOrCustomWorkspaceSize(), 0);
         //change remote fs
         slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"ChangedWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
-        customWorkspaceSlaveSize = customWorkspaceSlaveSize + workspaceSlave1.length();
+        customWorkspaceSlaveSize = customWorkspaceSlaveSize + workspaceSlave1.length() + workspaceSlave1.getParentFile().length();
         assertEquals("", customWorkspaceSlaveSize, DiskUsageUtil.getDiskUsageProperty(project).getAllNonSlaveOrCustomWorkspaceSize(), 0);
     }
     
@@ -360,7 +360,7 @@ public class DiskUsagePropertyTest {
     @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml, jobs/project1/builds/2013-08-09_13-02-27/build.xml, jobs/project1/builds/2013-08-09_13-02-28/build.xml")
     @LocalData
     public void testCheckWorkspacesWithLoadingBuilds() throws IOException {
-       File file = new File(j.jenkins.getRootDir(),"jobs/project2/builds/2013-08-09_13-02-26/build.xml");
+       File file = new File(j.jenkins.getRootDir(),"jobs/project2/builds/2/build.xml");
        XmlFile f = new XmlFile(new XStream2(), file);
        String newBuildXml = f.asString().replace("${JENKINS_HOME}",j.jenkins.getRootDir().getAbsolutePath());
        PrintStream st = new PrintStream(file);

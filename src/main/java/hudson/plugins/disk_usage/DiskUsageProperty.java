@@ -66,7 +66,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      
      public Long getDiskUsageOfBuild(String buildId){
          for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(false)){
-             if(buildId.equals(information.getId())){
+             if(buildId.equals(information.getId()) || buildId.equals(information.getOldId())){
                  return information.getSize();
              }       
          }
@@ -75,7 +75,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
      
      public DiskUsageBuildInformation getDiskUsageBuildInformation(String buildId){
          for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(false)){
-             if(buildId.equals(information.getId())){
+             if(buildId.equals(information.getId()) || buildId.equals(information.getOldId())){
                  return information;
              }       
          }
@@ -349,7 +349,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 continue;
             Map<String,Long> paths = getSlaveWorkspaceUsage().get(nodeName);
             for(String path: paths.keySet()){
-
                 //find top level item if it is possible
                 Item item = null;
                 if(owner instanceof TopLevelItem){
@@ -361,7 +360,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                     }
                 }
                 try{
-                    if(!DiskUsageUtil.isContainedInWorkspace(item, node, path)){      
+                    if(!DiskUsageUtil.isContainedInWorkspace(item, node, path)){
                         size += paths.get(path);
                     }
                 }
