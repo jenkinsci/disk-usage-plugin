@@ -379,7 +379,9 @@ public class DiskUsageUtil {
             	if (fileList != null) for (File child : fileList) {
                     if(exceedFiles.contains(child))
                         continue; //do not count exceeded files
-                    if (!isSymlink(child)) size += getFileSize(child, exceedFiles);
+                    if (!isSymlink(child)) {
+                        size += getFileSize(child, exceedFiles);
+                    }
                 }
                 else {
             		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
@@ -394,10 +396,6 @@ public class DiskUsageUtil {
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         List<File> exceededFiles = new ArrayList<File>();       
         DiskUsageProperty property = getDiskUsageProperty(project);
-         if(property==null){
-            addProperty(project);
-            property =  getDiskUsageProperty(project);
-        }
         exceededFiles.add(project.getBuildDir());
         //load all - force loading all builds to check state
         Set<DiskUsageBuildInformation> information = (Set<DiskUsageBuildInformation>) property.getDiskUsage().getBuildDiskUsage(true);

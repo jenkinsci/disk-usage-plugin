@@ -41,12 +41,10 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
     AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project;
     
-    private ProjectDiskUsage diskUsage;
+
     
     public ProjectDiskUsageAction(AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project) {
-        this.project = project;    
-        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
-        diskUsage = property.getDiskUsage();
+        this.project = project;
     }
     
         public String getIconFileName() {
@@ -73,6 +71,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
     
     @Override
     public Long getAllCustomOrNonSlaveWorkspaces(boolean cashed){
+        ProjectDiskUsage diskUsage = getDiskUsage();
         if(cashed){
             return diskUsage.getCashedDiskUsageNonSlaveWorkspace();
         }
@@ -131,6 +130,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
      */
     @Override
     public Long getAllDiskUsageWorkspace(boolean cashed){
+        ProjectDiskUsage diskUsage = getDiskUsage();
         if(cashed){
             return diskUsage.getCashedDiskUsageWorkspace();
         }
@@ -175,6 +175,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
     
     @Override
     public Long getAllDiskUsageWithoutBuilds(boolean cashed){
+        ProjectDiskUsage diskUsage = getDiskUsage();
         if(cashed){
             return diskUsage.getCashedDiskUsageWithoutBuilds();
         }
@@ -200,7 +201,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
     }
     
     public ProjectDiskUsage getDiskUsage(){
-        return diskUsage;
+        return DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage();
     }
     
     public Long getAllDiskUsageNotLoadedBuilds(boolean cashed) {
@@ -210,6 +211,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
     
     //todo better to do check somewhere else,it is used for view level too
     private Map<String,Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger) {
+        ProjectDiskUsage diskUsage = getDiskUsage();
         Map<String,Long> usage = new TreeMap<String,Long>();
         Long buildsDiskUsage = 0l;
         Long locked = 0l;
@@ -306,6 +308,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
      */
     @Override
     public Map<String, Long> getBuildsDiskUsage(Date older, Date younger, boolean cashed) {
+        ProjectDiskUsage diskUsage = getDiskUsage();
         if(cashed && older==null && younger == null){
             // it is necessary go grab all information if it is filtered
             return diskUsage.getCashedBuildDiskUsage();
@@ -378,7 +381,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
     }
     
     public Set<DiskUsageBuildInformation> getBuildsInformation() throws IOException{
-        return diskUsage.getBuildDiskUsage(false);
+        return getDiskUsage().getBuildDiskUsage(false);
     }
 
     /**
@@ -393,6 +396,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         maxValueWorkspace = Math.max(getAllCustomOrNonSlaveWorkspaces(true), getAllSlaveWorkspaces(true));
         Long jobRootDirDiskUsage = getJobRootDirDiskUsage(true);
         maxValue = jobRootDirDiskUsage;
+        ProjectDiskUsage diskUsage = getDiskUsage();
         //First iteration just to get scale of the y-axis
         ArrayList<DiskUsageBuildInformation> builds = new ArrayList<DiskUsageBuildInformation>();
         builds.addAll(diskUsage.getBuildDiskUsage(false));
@@ -466,6 +470,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
 
     private void actualizeCashedData(boolean parent) {
+        ProjectDiskUsage diskUsage = getDiskUsage();
         diskUsage.setCashedBuildDiskUsage(getBuildsDiskUsage(false));
         diskUsage.setCashedDiskUsageNonSlaveWorkspace(getAllCustomOrNonSlaveWorkspaces(false));
         diskUsage.setCashedDiskUsageWithoutBuilds(getAllDiskUsageWithoutBuilds(false));
@@ -483,7 +488,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
    @Override
     public void actualizeCashedBuildsData() {
-        diskUsage.setCashedBuildDiskUsage(getBuildsDiskUsage(null, null, false));
+       getDiskUsage().setCashedBuildDiskUsage(getBuildsDiskUsage(null, null, false));
         if(project.getParent() != null){
             DiskUsageUtil.getItemGroupAction(project.getParent()).actualizeCashedBuildsData();
         }
@@ -491,7 +496,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
     @Override
     public void actualizeCashedWorkspaceData() {
-        diskUsage.setCashedDiskUsageWorkspace(getAllDiskUsageWorkspace(false));
+        getDiskUsage().setCashedDiskUsageWorkspace(getAllDiskUsageWorkspace(false));
         if(project.getParent() != null){
             DiskUsageUtil.getItemGroupAction(project.getParent()).actualizeCashedWorkspaceData();
         }
@@ -499,7 +504,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
     @Override
     public void actualizeCashedNotCustomWorkspaceData() {
-        diskUsage.setCashedDiskUsageNonSlaveWorkspace(getAllCustomOrNonSlaveWorkspaces(false));
+        getDiskUsage().setCashedDiskUsageNonSlaveWorkspace(getAllCustomOrNonSlaveWorkspaces(false));
         if(project.getParent() != null){
             DiskUsageUtil.getItemGroupAction(project.getParent()).actualizeCashedNotCustomWorkspaceData();
         }
@@ -507,7 +512,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
     @Override
     public void actualizeCashedJobWithoutBuildsData() {
-        diskUsage.setCashedDiskUsageWithoutBuilds(getAllDiskUsageWithoutBuilds(false));
+        getDiskUsage().setCashedDiskUsageWithoutBuilds(getAllDiskUsageWithoutBuilds(false));
         if(project.getParent() != null){
             DiskUsageUtil.getItemGroupAction(project.getParent()).actualizeCashedJobWithoutBuildsData();
         }

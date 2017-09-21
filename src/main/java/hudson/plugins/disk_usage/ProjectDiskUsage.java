@@ -119,6 +119,10 @@ public class ProjectDiskUsage implements Saveable{
     }
     
     public void addNotLoadedBuild(File file, Long size){
+        if(file.equals(new File(job.getBuildDir(),"legacyIds"))){
+            //it is not build.
+            return;
+        }
          notLoadedBuilds.put(file.getName(), size);
          DiskUsageBuildInformation information = getDiskUsageBuildInformation(file.getName());
          if(information!=null){
