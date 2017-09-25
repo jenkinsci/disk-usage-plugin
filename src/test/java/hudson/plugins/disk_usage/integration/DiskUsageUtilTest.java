@@ -38,7 +38,7 @@ public class DiskUsageUtilTest {
         AbstractBuild build = project.getBuildByNumber(2);
         File file = new File(build.getRootDir(), "fileList");
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + build.getRootDir().length();
-        DiskUsageUtil.calculateDiskUsageForBuild(build.getId(), project);
+        DiskUsageUtil.calculateDiskUsageForBuild(String.valueOf(build.getNumber()), project);
         Assert.assertEquals("Calculation of build disk usage does not return right size of build directory.", size, DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage());
     }
     
@@ -55,10 +55,10 @@ public class DiskUsageUtilTest {
             File f = new File(b.getRootDir(), "fileList");
             sizeAll += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(f)) + b.getRootDir().length();
         }
-        DiskUsageUtil.calculateDiskUsageForBuild(build.getId(), project);
+        DiskUsageUtil.calculateDiskUsageForBuild(String.valueOf(build.getNumber()), project);
         Assert.assertEquals("Matrix project project1 has disk usage size.", size, DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage());
         for(MatrixConfiguration config: project.getActiveConfigurations()){
-            DiskUsageUtil.calculateDiskUsageForBuild(config.getBuildByNumber(1).getId(), config);
+            DiskUsageUtil.calculateDiskUsageForBuild(String.valueOf(config.getBuildByNumber(1).getNumber()), config);
         }
         Assert.assertEquals("Matrix project project1 has wrong size for its build.", sizeAll, DiskUsageTestUtil.getBuildDiskUsageAction(build).getAllDiskUsage());
     }
