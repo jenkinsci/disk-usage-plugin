@@ -129,6 +129,7 @@ public class ProjectDiskUsageActionTest {
     @Test
      public void getAllBuildDiskUsageFiltered() throws Exception{
         ProjectTest project = new ProjectTest(j.jenkins, "project");
+        project.assignBuildNumber();
         Calendar calendar1 = new GregorianCalendar();
         Calendar calendar2 = new GregorianCalendar();
         Calendar calendar3 = new GregorianCalendar();
@@ -184,7 +185,7 @@ public class ProjectDiskUsageActionTest {
        
     }
      
-     public class ProjectTest extends Project<ProjectTest,ProjectTestBuild> implements TopLevelItem{
+     public static class ProjectTest extends Project<ProjectTest,ProjectTestBuild> implements TopLevelItem{
          
          ProjectTest(ItemGroup group, String name){
              super(group, name);
@@ -206,8 +207,8 @@ public class ProjectDiskUsageActionTest {
         }
         
         public ProjectTestBuild createExecutable(Calendar calendar) throws IOException{
-            ProjectTestBuild build = new ProjectTestBuild(this, calendar);
-            builds.put(getNextBuildNumber(), build);
+            ProjectTestBuild build = super.createExecutable();
+            build.setTimestamp(calendar);
             return build;
         }
                 
@@ -224,9 +225,10 @@ public class ProjectDiskUsageActionTest {
             //do not save fake project
             getRootDir().mkdirs();
         }
+
      }
      
-     public class ProjectTestBuild extends Build<ProjectTest,ProjectTestBuild>{        
+     public static class ProjectTestBuild extends Build<ProjectTest,ProjectTestBuild>{
 
          
         public ProjectTestBuild(ProjectTest project) throws IOException {
@@ -240,6 +242,13 @@ public class ProjectDiskUsageActionTest {
         public ProjectTestBuild(ProjectTest project, File buildDir) throws IOException {
             super(project, buildDir);
         }
+
+
+        public void setTimestamp(Calendar c){
+            this.timestamp = c.getTimeInMillis();
+        }
+
+
 
      }
     
