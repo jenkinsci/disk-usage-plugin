@@ -54,7 +54,6 @@ public class DiskUsageTestUtil {
         DumbSlave slave = new DumbSlave(name, "dummy",
             remoteFS, "2", Mode.NORMAL, "", launcher,
             RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
-        System.err.println("put slave " + name);
     	jenkins.addNode(slave);
         while(slave.toComputer()==null || !slave.toComputer().isOnline()){
             Thread.sleep(100);

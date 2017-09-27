@@ -35,13 +35,11 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
-        System.err.println("start build usage " + !isCancelled() + startExecution());
         if(!isCancelled() && startExecution()){
             try{
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
                 items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
-                System.err.println("calculation for porjects");
                 for (Object item : items) {
                     if (item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
@@ -56,7 +54,6 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                                     continue;
                                 }
                                 try{
-                                    System.err.println("calculate fo r " + project + " " + information.getId());
                                     DiskUsageUtil.calculateDiskUsageForBuild(information.getId(), project);
                                 }
                                 catch(Exception e){
@@ -108,7 +105,6 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     private boolean startExecution(){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         if(!plugin.getConfiguration().isCalculationBuildsEnabled()) {
-            System.err.println("is dissabled");
             return false;
         }
         return !isExecutingMoreThenOneTimes();

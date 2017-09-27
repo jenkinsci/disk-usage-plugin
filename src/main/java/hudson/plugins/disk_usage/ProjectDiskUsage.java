@@ -244,7 +244,6 @@ public class ProjectDiskUsage implements Saveable{
     }
     
     public void putSlaveWorkspaceSize(Node node, String path, Long size){
-        System.err.println("put " + node + " " + path + " " + size);
         Map<String,Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
         if(workspacesInfo==null)
             workspacesInfo = new ConcurrentHashMap<String,Long>();

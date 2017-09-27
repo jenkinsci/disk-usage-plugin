@@ -81,17 +81,13 @@ public class DiskUsageUtil {
         //call it as future to not cause deadlock like JENKINS-33219
         DiskUsageProperty p = null;
         try {
-            System.err.println(new GregorianCalendar().getTime());
 
             p = f.get(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            System.err.println(new GregorianCalendar().getTime());
             LOGGER.log(Level.FINEST,e.getMessage(), e);
         } catch (ExecutionException e) {
-            System.err.println(new GregorianCalendar().getTime());
             LOGGER.log(Level.FINEST, e.getMessage(), e);
         } catch (TimeoutException e) {
-            System.err.println(new GregorianCalendar().getTime());
             LOGGER.log(Level.FINEST,e.getMessage(), e);
         }
 
@@ -458,7 +454,6 @@ public class DiskUsageUtil {
 //                }
 //            }
 //      }
-            System.err.println("calculation for " + buildId);
         Collection<AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds().values();
         AbstractBuild build = null;
         for(AbstractBuild b : loadedBuilds){
@@ -471,7 +466,6 @@ public class DiskUsageUtil {
         DiskUsageProperty property = getDiskUsageProperty(project);
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(buildId);
         Long size = property.getDiskUsageOfBuild(buildId);
-        System.err.println("calculated size " + buildSize);
         if (( size <= 0 ) || ( Math.abs(size - buildSize) > 1024 )) {
                     if(information!=null){
                         information.setSize(buildSize);
@@ -491,9 +485,7 @@ public class DiskUsageUtil {
                             property.getDiskUsage().addBuildInformation(information, newLoadedBuild);
                         }
                     }
-                    System.err.println("property saved " + property);
                     property.saveDiskUsage();
-                    System.err.println("get build size saved " + buildId + " saved : " + property.getDiskUsageOfBuild(buildId));
         }
         if(plugin.getConfiguration().warnAboutBuildExceetedSize() && buildSize>plugin.getConfiguration().getBuildExceedSize()){
             try {

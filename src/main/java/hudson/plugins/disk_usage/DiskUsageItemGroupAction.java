@@ -352,16 +352,13 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
             return diskUsage.getCashedDiskUsageWithoutBuilds();
         }
         Long size = 0L;
-        System.err.println("disk usage v item group " + size);
         if(group instanceof AbstractProject){
             AbstractProject project = (AbstractProject) group;
             size += project.getAction(ProjectDiskUsageAction.class).getDiskUsage().getDiskUsageWithoutBuilds();
-            System.err.println("after add " + size);
         }
         for(Item item : getItems()){
                 DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
                 size += action.getAllDiskUsageWithoutBuilds(cashed);
-                System.err.println("configuration add " + size);
         }
         diskUsage.setCashedDiskUsageWithoutBuilds(size);
         return size;

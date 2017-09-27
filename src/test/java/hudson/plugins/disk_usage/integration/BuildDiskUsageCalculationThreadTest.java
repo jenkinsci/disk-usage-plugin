@@ -95,18 +95,12 @@ public class BuildDiskUsageCalculationThreadTest {
         if(calculation.isExecuting()){
           waitUntilThreadEnds(calculation);  
         }
-        System.err.println("start calculation");
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        System.err.println("property in test  " + DiskUsageUtil.getDiskUsageProperty(project) );
-        System.err.println("TESTE");
         for(AbstractBuild build: buildSizesProject1.keySet()){
-            System.err.println("TEST " + build);
             Long size = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();
-            System.err.println("size is " + size + " second size is " + buildSizesProject1.get(build));
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject1.get(build), size, 0);
         }
-        System.err.println("TEST part too");
         for(AbstractBuild build: buildSizesProject2.keySet()){
             Long size = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject2.get(build), size, 0);

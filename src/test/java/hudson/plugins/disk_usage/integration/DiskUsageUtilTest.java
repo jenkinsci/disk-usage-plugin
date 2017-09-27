@@ -177,7 +177,6 @@ public class DiskUsageUtilTest {
         }
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
-        System.err.println(project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
