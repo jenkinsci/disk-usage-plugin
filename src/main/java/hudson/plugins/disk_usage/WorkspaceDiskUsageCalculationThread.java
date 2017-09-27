@@ -33,7 +33,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
     }  
 
     @Override
-    public void execute(TaskListener listener) throws IOException, InterruptedException {                
+    public void execute(TaskListener listener) throws IOException, InterruptedException {
          DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         if(!isCancelled() && startExecution()){
             try{

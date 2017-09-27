@@ -143,6 +143,7 @@ public class DiskUsageUtilTest {
     @LocalData
     public void testCalculateDiskUsageWorkspaceForMatrixProjectWithConfigurationInSameDirectory() throws Exception{
          //turn off run listener
+
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         j.jenkins.setNumExecutors(0);
@@ -155,6 +156,7 @@ public class DiskUsageUtilTest {
         project1.setAssignedNode(slave1);
         j.buildAndAssertSuccess(project1);
         Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        slave2.toComputer().setTemporarilyOffline(true,null);
         ArrayList<String> slaves = new ArrayList<String>();
         slaves.add("slave2");
         LabelAxis axis2 = new LabelAxis("label",slaves);
@@ -175,12 +177,13 @@ public class DiskUsageUtilTest {
         }
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
+        System.err.println(project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        
+        slave2.toComputer().setTemporarilyOffline(false, null);
         
         //next build - configuration are builded on next slave
         //test if not active configuration are find and right counted

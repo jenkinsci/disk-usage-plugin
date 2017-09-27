@@ -76,6 +76,7 @@ public class BuildDiskUsageCalculationThreadTest {
     @LocalData
     public void testExecute() throws IOException, InterruptedException{
         //turn off run listener
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<AbstractBuild, Long> buildSizesProject1 = new TreeMap<AbstractBuild,Long>();
@@ -94,12 +95,18 @@ public class BuildDiskUsageCalculationThreadTest {
         if(calculation.isExecuting()){
           waitUntilThreadEnds(calculation);  
         }
+        System.err.println("start calculation");
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
+        System.err.println("property in test  " + DiskUsageUtil.getDiskUsageProperty(project) );
+        System.err.println("TESTE");
         for(AbstractBuild build: buildSizesProject1.keySet()){
+            System.err.println("TEST " + build);
             Long size = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();
+            System.err.println("size is " + size + " second size is " + buildSizesProject1.get(build));
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject1.get(build), size, 0);
         }
+        System.err.println("TEST part too");
         for(AbstractBuild build: buildSizesProject2.keySet()){
             Long size = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject2.get(build), size, 0);
@@ -110,6 +117,7 @@ public class BuildDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testExecuteMatrixProject() throws IOException, InterruptedException, ReactorException{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -150,6 +158,7 @@ public class BuildDiskUsageCalculationThreadTest {
     
     @Test
     public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
         FreeStyleProject projectWithoutDiskUsage = j.jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
         FreeStyleBuild build = projectWithoutDiskUsage.createExecutable();
         build.save();
@@ -162,6 +171,7 @@ public class BuildDiskUsageCalculationThreadTest {
     
     @Test
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
         TestFreeStyleProject project = new TestFreeStyleProject(j.jenkins, "project");  
         FreeStyleBuild build = new FreeStyleBuild(project);
         project.addBuild(build);
@@ -215,6 +225,7 @@ public class BuildDiskUsageCalculationThreadTest {
     
     @Test
     public void testDoNotCalculateExcludedJobs() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
         FreeStyleProject exludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
         FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "incudedJob");
         List<String> excludes = new ArrayList<String>();
@@ -233,6 +244,7 @@ public class BuildDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testDoNotBreakLazyLoading() throws IOException, InterruptedException{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1"); 
        
        //method isBuilding() is used for determining disk usage and its calling load some builds

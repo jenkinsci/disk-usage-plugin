@@ -244,6 +244,7 @@ public class ProjectDiskUsage implements Saveable{
     }
     
     public void putSlaveWorkspaceSize(Node node, String path, Long size){
+        System.err.println("put " + node + " " + path + " " + size);
         Map<String,Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
         if(workspacesInfo==null)
             workspacesInfo = new ConcurrentHashMap<String,Long>();
@@ -402,7 +403,16 @@ public class ProjectDiskUsage implements Saveable{
         if(!containsBuildWithId(info.getId())){
                 buildDiskUsage.add(info);
             if(build!=null && build.getWorkspace()!=null){
-                putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
+                boolean exists = false;
+                try {
+                     exists = build.getWorkspace().exists();
+                    }
+                catch(Exception ex){
+                    Logger.getLogger(getClass().getName()).log(Level.FINEST, ex.getMessage(), ex);
+                }
+                if(exists) {
+                    putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
+                }
             }
         }
         if(notLoadedBuilds.containsKey(info.getId())){
