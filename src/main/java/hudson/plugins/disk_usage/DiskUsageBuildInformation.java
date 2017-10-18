@@ -17,7 +17,7 @@ import jenkins.model.Jenkins;
  */
 public class DiskUsageBuildInformation implements Serializable, Comparable{
     
-    private static final DateFormat LEGACY_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    protected static final DateFormat LEGACY_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
     private String id;
     private long timestamp;
@@ -29,7 +29,23 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
     public DiskUsageBuildInformation(String id, long timestamp, int number, Long size){
         this(id, timestamp, number, size, false);
     }
-    
+
+    public DiskUsageBuildInformation(String id) {
+        if(id.matches("\\d+")){
+            this.number = Integer.decode(id);
+        }
+        else{
+            try{
+                this.timestamp = LEGACY_ID_FORMATTER.parse(id).getTime();
+            }
+            catch(ParseException e){
+                //never mind
+            }
+        }
+        this.id = id;
+        isLocked = false;
+    }
+
     public DiskUsageBuildInformation(String id, long timestamp, int number, Long size, boolean isLocked){
         this.id = id;
         this.timestamp = timestamp;

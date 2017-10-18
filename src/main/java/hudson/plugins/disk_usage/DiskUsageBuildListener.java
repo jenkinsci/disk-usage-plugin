@@ -49,6 +49,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
             property.getDiskUsage().save();
         }
         DiskUsageJenkinsAction.getInstance().actualizeCashedBuildsData();
+
     }
     
     @Override

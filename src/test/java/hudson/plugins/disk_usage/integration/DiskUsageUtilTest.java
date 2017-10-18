@@ -6,6 +6,7 @@ import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import org.junit.Assert;
 import org.jvnet.hudson.test.recipes.LocalData;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class DiskUsageUtilTest {
     @Test
     @LocalData
     public void testCalculateDiskUsageForBuild() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
         AbstractBuild build = project.getBuildByNumber(2);
         File file = new File(build.getRootDir(), "fileList");
@@ -45,6 +47,7 @@ public class DiskUsageUtilTest {
     @Test
     @LocalData
     public void testCalculateDiskUsageForMatrixBuild() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         AbstractBuild build = project.getBuildByNumber(1);
         File file = new File(build.getRootDir(), "fileList");
@@ -66,6 +69,7 @@ public class DiskUsageUtilTest {
     @Test
     @LocalData
     public void testCalculateDiskUsageForJob() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
         //all builds has to be loaded
         DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage().loadAllBuilds(true);
@@ -81,6 +85,7 @@ public class DiskUsageUtilTest {
     @Test
     @LocalData
     public void testCalculateDiskUsageForMatrixJob() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         //all builds has to be loaded
         DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage().loadAllBuilds(true);
@@ -112,6 +117,7 @@ public class DiskUsageUtilTest {
     public void testCalculateDiskUsageWorkspaceForProject() throws Exception{
          //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
         Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
@@ -142,8 +148,8 @@ public class DiskUsageUtilTest {
     @Test
     @LocalData
     public void testCalculateDiskUsageWorkspaceForMatrixProjectWithConfigurationInSameDirectory() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
          //turn off run listener
-
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         j.jenkins.setNumExecutors(0);
@@ -224,6 +230,7 @@ public class DiskUsageUtilTest {
     @Test
     @LocalData
     public void testCalculateDiskUsageWorkspaceWhenReferenceFromJobDoesNotExists() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
          //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -258,6 +265,7 @@ public class DiskUsageUtilTest {
     
     @Test
     public void testCalculateDiskUsageWorkspaceUpdateIformationIfSavedWorkspaceDoesNotExists() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
@@ -279,6 +287,7 @@ public class DiskUsageUtilTest {
     
     @Test
     public void testParseExcludedJobsFromString() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject projectWithSpace = j.createFreeStyleProject("Project with space");
         FreeStyleProject project = j.createFreeStyleProject("Project");
         FreeStyleProject project2 = j.createFreeStyleProject("Project2");

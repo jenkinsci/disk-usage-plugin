@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+              <f:entry>
+              <table>
+               <f:entry title="${%Time interval for calculation}">
+           	     <f:textbox name="countIntervalBuilds" value="${it.getCountIntervalForBuilds()}" />
+               </f:entry>
+               <f:checkbox title="Exact info about build" name="exactInfo" checked="${it.isInfoAboutBuildsExact()}" />
+             </table>
+             </f:entry>
+
+
+</j:jelly>

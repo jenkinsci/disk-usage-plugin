@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -60,6 +62,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     public void testExecute() throws IOException, InterruptedException{
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         jenkins.getExtensionList(RunListener.class).remove(listener);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
         FreeStyleProject project = (FreeStyleProject) jenkins.getItem("project1");
@@ -88,6 +91,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     public void testMatrixProject() throws IOException, InterruptedException{
         //turn off run listener
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<String,Long> matrixConfigurationsSize = new TreeMap<String,Long>();
@@ -126,6 +130,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     }
     
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
         DiskUsageTestUtil.cancelCalculation(calculation);
         FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, contextPath);
@@ -148,6 +153,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     }
     
     public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject projectWithoutDiskUsage = jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
         DiskUsageProjectActionFactory.DESCRIPTOR.disableJobsDiskUsageCalculation();
         JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
@@ -158,6 +164,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     
     @Test
     public void testDoNotCalculateExcludedJobs() throws Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
         if(calculation.isExecuting())
             DiskUsageTestUtil.cancelCalculation(calculation);

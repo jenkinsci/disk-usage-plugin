@@ -34,7 +34,8 @@
      
      <!-- project table -->
      <j:new var="calendar" className="java.util.GregorianCalendar" /> 
-     <j:new var="string" className="java.lang.String" /> 
+     <j:new var="string" className="java.lang.String" />
+
      <f:form action="filter" method="post">
          
          ${%Builds older than }<input type="text" name="older" value="${request.getParameter('older')}"/>

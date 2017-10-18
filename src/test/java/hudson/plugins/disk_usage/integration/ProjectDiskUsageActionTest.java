@@ -1,6 +1,7 @@
 package hudson.plugins.disk_usage.integration;
 
 import hudson.model.AbstractProject;
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.plugins.disk_usage.*;
 import hudson.model.TopLevelItem;
@@ -38,6 +39,7 @@ public class ProjectDiskUsageActionTest {
     
     @Test
     public void testGetBuildsDiskUsage() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA");
@@ -82,6 +84,7 @@ public class ProjectDiskUsageActionTest {
     
     @Test
     public void testGetBuildsDiskUsageNotDeletedConfigurations() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -128,6 +131,7 @@ public class ProjectDiskUsageActionTest {
     
     @Test
      public void getAllBuildDiskUsageFiltered() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         ProjectTest project = new ProjectTest(j.jenkins, "project");
         project.assignBuildNumber();
         Calendar calendar1 = new GregorianCalendar();
@@ -176,6 +180,7 @@ public class ProjectDiskUsageActionTest {
     @Test
     @LocalData
     public void testNotToBreakLazyLoading() throws IOException{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         project.isBuilding();
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();

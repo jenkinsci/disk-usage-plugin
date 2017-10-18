@@ -3,6 +3,8 @@ package hudson.plugins.disk_usage.integration;
 import hudson.model.Action;
 import java.util.List;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
+import hudson.plugins.disk_usage.DiskUsagePlugin;
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import org.junit.Test;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixBuild;
@@ -26,6 +28,7 @@ public class BuildDiskUsageActionTest {
     
     @Test
     public void testGetAllDiskUsage() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -68,6 +71,7 @@ public class BuildDiskUsageActionTest {
     
     @Test
     public void getBuildUsageStringMatrixProject() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
         TextAxis axis2 = new TextAxis("axis2", "Aaxis", "Baxis", "Caxis");
@@ -105,6 +109,7 @@ public class BuildDiskUsageActionTest {
     
     @Test
     public void getBuildUsageStringFreeStyleProject() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         j.buildAndAssertSuccess(project);
         AbstractBuild build = project.getLastBuild();

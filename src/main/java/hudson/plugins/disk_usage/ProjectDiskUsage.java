@@ -169,7 +169,7 @@ public class ProjectDiskUsage implements Saveable{
     
     private boolean containsDiskUsageBuildInformationForDirectory(File file){
         for(DiskUsageBuildInformation info : buildDiskUsage){
-            if(info.getId().equals(file.getName())){
+            if(info.getId().equals(file.getName()) || info.getOldId().equals(file.getName())){
                 return true;
             }
         }
@@ -273,7 +273,7 @@ public class ProjectDiskUsage implements Saveable{
     
     public boolean containsBuildWithId(String id){
         for(DiskUsageBuildInformation inf : buildDiskUsage){
-            if(inf.getId().equals(id)){
+            if(inf.getId().equals(id) || inf.getOldId().equals(id)){
                 return true;
             }
         }
@@ -388,14 +388,45 @@ public class ProjectDiskUsage implements Saveable{
         }
         return null;
     }
+
+    public void addNotExactBuildInformation(DiskUsageBuildInformation info){
+        if(!containsBuildWithId(info.getId()) || !containsBuildWithId(info.getOldId())){
+            buildDiskUsage.add(info);
+        }
+        if(notLoadedBuilds.containsKey(info.getId()) || notLoadedBuilds.containsKey(info.getOldId())){
+            notLoadedBuilds.remove(info.getId());
+        }
+        save();
+    }
+
+    public void addBuildInformation(Run run, long size){
+
+    }
     
     public void addBuild(AbstractBuild build){
         DiskUsageBuildInformation information =  new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), 0L, build.isKeepLog());
         addBuildInformation(information, build);
+
     }
     
     public void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build){
         addBuildInformation(info, build, 0L);
+    }
+
+    public void addBuildInformation(Run run, Long size){
+        DiskUsageBuildInformation information = null;
+        if(!containsBuildWithId(run.getId())){
+            information = new DiskUsageBuildInformation(run.getId(), run.getStartTimeInMillis(), run.getNumber(), size);
+            buildDiskUsage.add(information);
+        }
+        else{
+            information = getDiskUsageBuildInformation(run.getId());
+            information.setSize(size);
+        }
+        if(notLoadedBuilds.containsKey(information.getId()) || notLoadedBuilds.containsKey(information.getOldId())){
+            notLoadedBuilds.remove(information.getId());
+        }
+        save();
     }
        
     public void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build, Long size){
@@ -414,7 +445,7 @@ public class ProjectDiskUsage implements Saveable{
                 }
             }
         }
-        if(notLoadedBuilds.containsKey(info.getId())){
+        if(notLoadedBuilds.containsKey(info.getId()) || notLoadedBuilds.containsKey(info.getOldId())){
             notLoadedBuilds.remove(info.getId());
         }
         save();

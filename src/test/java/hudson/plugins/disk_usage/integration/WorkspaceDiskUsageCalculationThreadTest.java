@@ -17,6 +17,7 @@ import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
@@ -93,6 +94,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testExecute() throws IOException, InterruptedException, Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -126,6 +128,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testExecuteMatrixProject() throws Exception {
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -196,6 +199,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     
     @Test
     public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject projectWithoutDiskUsage = jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
         FreeStyleBuild build = projectWithoutDiskUsage.createExecutable();
         DiskUsageProjectActionFactory.DESCRIPTOR.disableWorkspacesDiskUsageCalculation();
@@ -208,6 +212,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         WorkspaceDiskUsageCalculationThread testCalculation = new WorkspaceDiskUsageCalculationThread();
         DiskUsageTestUtil.cancelCalculation(testCalculation);
         FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, "project1");
@@ -236,6 +241,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testDoNotBreakLazyLoading() throws Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         AbstractProject project = (AbstractProject) jenkins.getItem("project1");
         project.isBuilding();
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
@@ -249,6 +255,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testDoNotCalculateExcludedJobs() throws Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         List<String> excludes = new ArrayList<String>();
         excludes.add("excludedJob");
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
@@ -270,6 +277,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testDoNotCountSizeTheSameWorkspaceTwice() throws Exception{
+        jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject job = jenkins.createProject(FreeStyleProject.class, "project1");
         Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(jenkins.getRootDir(),"workspace1").getPath(), jenkins, createComputerLauncher(null));
         job.setAssignedLabel(slave1.getSelfLabel());

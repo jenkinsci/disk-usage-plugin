@@ -14,9 +14,8 @@ import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Items;
 import hudson.model.listeners.RunListener;
-import hudson.plugins.disk_usage.BuildDiskUsageAction;
-import hudson.plugins.disk_usage.DiskUsageBuildListener;
-import hudson.plugins.disk_usage.DiskUsageUtil;
+import hudson.plugins.disk_usage.*;
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.tasks.Shell;
 import java.io.File;
@@ -32,7 +31,6 @@ import java.util.Stack;
 import java.util.logging.Logger;
 
 import hudson.FilePath;
-import hudson.plugins.disk_usage.DiskUsageProperty;
 import hudson.model.AbstractProject;
 import jenkins.model.Jenkins;
 import jenkins.model.lazy.BuildReference;
@@ -66,6 +64,7 @@ public class DiskUsageBuildListenerTest {
 
     @Test
     public void testOnDeleted() throws Exception {
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         AbstractProject project = j.createFreeStyleProject();
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
@@ -79,6 +78,7 @@ public class DiskUsageBuildListenerTest {
 
     @Test
     public void testOnCompleted() throws Exception {
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         j.timeout = 10000;
         FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(new Shell("echo ahoj > log.log"));
@@ -94,6 +94,7 @@ public class DiskUsageBuildListenerTest {
     @Test(timeout = 700000L)
     @LocalData
     public void testOnLoadCauseDeadLock() throws Exception {
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         // it is necessary to call functions with a lot of IO operation many times in cycle, so the test can take little longer
         j.timeout = 700;
         AddNewProperty onLoad = new AddNewProperty(j.jenkins);

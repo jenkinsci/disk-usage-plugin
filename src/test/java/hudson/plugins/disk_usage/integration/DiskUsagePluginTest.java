@@ -7,6 +7,7 @@ package hudson.plugins.disk_usage.integration;
 import hudson.model.RootAction;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.plugins.disk_usage.*;
 import org.junit.Test;
@@ -29,6 +30,7 @@ public class DiskUsagePluginTest {
     
     @Test
     public void testRefreshGlobalInformation() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         FreeStyleBuild build1 = project.createExecutable();
         FreeStyleBuild build2 = project.createExecutable();
@@ -59,6 +61,7 @@ public class DiskUsagePluginTest {
     @Test
     @LocalData
     public void testNotBreakLazyLoading() throws IOException{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         assertTrue("This tests does not sense if there are loaded all builds.",8>loadedBuilds);
@@ -70,6 +73,7 @@ public class DiskUsagePluginTest {
     @Test
     @LocalData
     public void testDoNotLoadAllBuildsDuringStart(){
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         AbstractProject project2 = (AbstractProject) j.jenkins.getItem("project2");
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
@@ -79,6 +83,7 @@ public class DiskUsagePluginTest {
     @Test
     @LocalData
     public void testDoLoadBuildInformationWhenBuildIsLoaded(){
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1"); 
        AbstractBuild build = project.getBuild("2013-08-09_13-02-26");
        int loadedBuilds = project._getRuns().getLoadedBuilds().size();
@@ -90,6 +95,7 @@ public class DiskUsagePluginTest {
     @Test
     @LocalData    
     public void testBuildInfoIsNoLoadedMultipleTimes() throws Exception{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         AbstractBuild build = project.getBuild("2013-08-09_13-02-26");
         DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);

@@ -1,0 +1,63 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+             <f:entry title="${%Time interval for calculation}">
+                       	     <f:textbox name="countIntervalJobs" value="${it.calculationInterval()}" />
+                           </f:entry>
+                           <f:entry title="${%Show disk usage trend graph on the project page}">
+                                                      <f:checkbox name="showGraph" checked="${it.showGraph()}" />
+              </f:entry>
+
+
+
+
+
+
+
+           <f:optionalBlock name="jobWarning" title="${%Warn if job exceeds some size}" checked="${it.isSentWarningAboutJobSize()}">
+                 <j:set var="jobSize" value="${it.getJobSize()}" />
+                 <f:entry title="${%Exceeded size for one job}">
+             	 <input name="jobSize" value="${descriptor.getValue(jobSize)}" />
+                  <select name="jobSizeUnit">
+                     <f:option value="B" selected="${buildSize==null || (descriptor.getUnit(jobSize).equals('B'))}">B</f:option>
+                     <f:option value="KB" selected="${it.getJobUnit(buildSize).equals('KB')}">KB</f:option>
+                     <f:option value="MB" selected="${descriptor.getUnit(buildSize).equals('MB')}">MB</f:option>
+                     <f:option value="GB" selected="${descriptor.getUnit(buildSize).equals('GB')}">GB</f:option>
+                     <f:option value="TB" selected="${descriptor.getUnit(buildSize).equals('TB')}">TB</f:option>
+                     </select>
+                  </f:entry>
+             </f:optionalBlock>
+             <f:optionalBlock name="jobsWarning" title="${%Warn if all jobs exceed some size}" checked="${it.isSentWarningAboutJobsSize()}">
+                 <f:entry title="${%Exceeded size for all jobs}">
+                   <j:set var="allJobsSize" value="${it.getAllJobSize()}" />
+             	   <input name="allJobsSize" value="${descriptor.getValue(allJobsSize)}" />
+                   <select name="JobsSizeUnit">
+                      <f:option value="B" selected="${allJobsSize==null || (descriptor.getUnit(allJobsSize).equals('B'))}">B</f:option>
+                      <f:option value="KB" selected="${descriptor.getUnit(allJobsSize).equals('KB')}">KB</f:option>
+                      <f:option value="MB" selected="${descriptor.getUnit(allJobsSize).equals('MB')}">MB</f:option>
+                      <f:option value="GB" selected="${descriptor.getUnit(allJobsSize).equals('GB')}">GB</f:option>
+                      <f:option value="TB" selected="${descriptor.getUnit(allJobsSize).equals('TB')}">TB</f:option>
+                    </select>
+                  </f:entry>
+             </f:optionalBlock>
+             <f:optionalBlock name="buildWarning" title="${%Warn if build exceeds some size}" checked="${it.isSentWarning()}">
+                              <j:set var="buildSize" value="${it.getBuildSize()}" />
+                              <f:entry title="${%Exceeded size for one build}">
+                          	 <input name="buildSize" value="${it.getBuildValue()}" />
+                               <select name="buildSizeUnit">
+                                  <f:option value="B" selected="${buildSize==null || (it.getBuildUnit().equals('B'))}">B</f:option>
+                                  <f:option value="KB" selected="${it.getBuildUnit().equals('KB')}">KB</f:option>
+                                  <f:option value="MB" selected="${it.getBuildUnit().equals('MB')}">MB</f:option>
+                                  <f:option value="GB" selected="${it.getBuildUnit().equals('GB')}">GB</f:option>
+                                  <f:option value="TB" selected="${it.getBuildUnit().equals('TB')}">TB</f:option>
+                                  </select>
+                               </f:entry>
+             </f:optionalBlock>
+             <f:optionalBlock name="calculationPerBuild" title="${%Enable recalculation of disk usage per builds}" checked="${it.areBuilsCalculatedSeparately()}">
+                         <f:entry>
+                         <table>
+                             <st:include page="build-configuration.jelly" it="${it.getBuildConfiguration()}"/>
+                         </table>
+                         </f:entry>
+              </f:optionalBlock>
+
+</j:jelly>

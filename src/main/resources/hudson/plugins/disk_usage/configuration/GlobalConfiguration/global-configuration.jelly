@@ -1,0 +1,66 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+      <!--  <f:form method="POST" action="doConfigure">-->
+         
+         <!-- caclulation settings -->
+
+         <f:entry>
+
+          <table>
+           <f:optionalBlock name="calculationPerJob" title="${%Enable calculation of disk usage per jobs}" checked="${it.isDiskUsageCalculatedPerJobs()}">
+
+            <f:entry>
+
+              <table>
+
+             <st:include page="job-configuration.jelly" it="${it.getJobConfiguration()}"/>
+
+             </table>
+
+             </f:entry>
+           </f:optionalBlock>
+         </table>
+         </f:entry>
+         <f:entry>
+         <table>
+           <f:optionalBlock name="calculationWorkspaces" title="${%Enable calculation of disk usage of workspace}" checked="${it.isDiskUsageCalculatedForWorkspace()}">
+             <f:entry>
+
+              <table>
+                 <st:include page="workspace-configuration.jelly" it="${it}"/>
+              </table>
+              </f:entry>
+           </f:optionalBlock>
+         </table>
+         </f:entry>
+         <f:entry>
+         <table>
+           <f:optionalBlock name="calculationNotUsedData" title="${%Enable calculation of not used data}" checked="${it.areNonUsedDataCalculated()}">
+            <f:entry title="${%Time interval for calculation}">
+	          <f:textbox name="countIntervalNotUsedData" value="${it.getCountIntervalForNotUsedData()}" />
+            </f:entry>
+            </f:optionalBlock>
+          </table>
+          </f:entry>
+          <f:entry>
+          <table>
+            <f:entry title="${%E-mail}">
+	          <f:textbox name="email" value="${it.getEmail()}" />
+            </f:entry>
+
+
+            <f:entry title="${%Show free space of jobs directory in global graph}">
+              <f:checkbox name="showFreeSpaceForJobDirectory" checked="${it.getShowFreeSpaceForJobDirectory()}" />
+            </f:entry>
+            <f:entry title="${%Length of global disk usage history}">
+              <input name="historyLength" value="${it.getHistoryLength()}" />
+            </f:entry>
+          </table>
+          </f:entry>
+
+
+       <!--  </f:section>-->
+      <!--     <f:submit name="Submit" value="Submit"/>
+      </f:form>   -->
+
+</j:jelly>

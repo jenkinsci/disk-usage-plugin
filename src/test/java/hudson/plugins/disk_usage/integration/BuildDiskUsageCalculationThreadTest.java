@@ -12,6 +12,8 @@ import hudson.model.AperiodicWork;
 import hudson.model.FreeStyleBuild;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.model.FreeStyleProject;
@@ -76,7 +78,8 @@ public class BuildDiskUsageCalculationThreadTest {
     @LocalData
     public void testExecute() throws IOException, InterruptedException{
         //turn off run listener
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
+        //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<AbstractBuild, Long> buildSizesProject1 = new TreeMap<AbstractBuild,Long>();
@@ -111,7 +114,7 @@ public class BuildDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testExecuteMatrixProject() throws IOException, InterruptedException, ReactorException{
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -152,7 +155,7 @@ public class BuildDiskUsageCalculationThreadTest {
     
     @Test
     public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject projectWithoutDiskUsage = j.jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
         FreeStyleBuild build = projectWithoutDiskUsage.createExecutable();
         build.save();
@@ -165,7 +168,7 @@ public class BuildDiskUsageCalculationThreadTest {
     
     @Test
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         TestFreeStyleProject project = new TestFreeStyleProject(j.jenkins, "project");  
         FreeStyleBuild build = new FreeStyleBuild(project);
         project.addBuild(build);
@@ -219,12 +222,15 @@ public class BuildDiskUsageCalculationThreadTest {
     
     @Test
     public void testDoNotCalculateExcludedJobs() throws Exception{
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         FreeStyleProject exludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
         FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "incudedJob");
         List<String> excludes = new ArrayList<String>();
         excludes.add(exludedJob.getName());
-        DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setExcludedJobs(excludes);
+        System.err.println("excluded " +  j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().isExcluded(exludedJob));
+        System.err.println("excluded " + j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().getExcludedJobsInString());
+        System.err.println("excluded " + j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().getConfiguration().getJobConfiguration().getExcludedJobs());
         j.buildAndAssertSuccess(exludedJob);
         j.buildAndAssertSuccess(includedJob);
         BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
@@ -238,7 +244,7 @@ public class BuildDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testDoNotBreakLazyLoading() throws IOException, InterruptedException{
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().enableBuildsDiskUsageCalculation();
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1"); 
        
        //method isBuilding() is used for determining disk usage and its calling load some builds

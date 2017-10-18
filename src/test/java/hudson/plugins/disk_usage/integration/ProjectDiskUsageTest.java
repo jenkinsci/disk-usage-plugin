@@ -10,6 +10,8 @@ import hudson.plugins.disk_usage.DiskUsageBuildInformation;
 import hudson.plugins.disk_usage.ProjectDiskUsageAction;
 import java.io.IOException;
 import java.util.Set;
+
+import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -29,6 +31,7 @@ public class ProjectDiskUsageTest {
     @Test
     @LocalData
     public void testAllInfoLoaded() throws IOException{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
@@ -41,6 +44,7 @@ public class ProjectDiskUsageTest {
     @Test
     @LocalData
     public void testFirstLoad() throws IOException{
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int builds = project._getRuns().getLoadedBuilds().size();
         Set<DiskUsageBuildInformation> informations = DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage().getBuildDiskUsage(false);
@@ -50,6 +54,7 @@ public class ProjectDiskUsageTest {
     @Test
     @LocalData
     public void testLoadingAllBuildInformationFromPreviousVersion(){
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
        DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
        assertEquals("Builds information should be loaded.", 8, property.getDiskUsage().getBuildDiskUsage(true).size(), 0);

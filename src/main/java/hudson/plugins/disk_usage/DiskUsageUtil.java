@@ -14,15 +14,8 @@ import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.text.ParseException;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -393,6 +386,60 @@ public class DiskUsageUtil {
             }
             return size + f.length();
    }
+
+   public static Long calculateDiskUsageBuildsDirForProject(AbstractProject project) {
+       File buildsDir = project.getBuildDir();
+       long nonBuildsFileSize = 0;
+       if(buildsDir.exists()){
+           DiskUsageProperty property = getDiskUsageProperty(project);
+           for(File file : buildsDir.listFiles()){
+               try {
+                   if (file.isDirectory() && !DiskUsageUtil.isSymlink(file)) {
+                        if(isBuildDirName(file)){
+                            DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(file.getName());
+                            long size = DiskUsageUtil.getFileSize(file, Collections.EMPTY_LIST);
+                            //try to find more info, but do not cause loading of run
+                            for(Object run :project._getRuns().getLoadedBuilds().values()){
+                                if(run instanceof Run){
+                                    if(((Run) run).getRootDir().getName().equals(file.getName())){
+                                        property.getDiskUsage().addBuildInformation((Run)run, size);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if(information==null){
+                                property.getDiskUsage().addNotExactBuildInformation(new DiskUsageBuildInformation(file.getName()));
+                            }
+                            else{
+                                information.setSize(size);
+                            }
+                        }
+                        else{
+                            nonBuildsFileSize = nonBuildsFileSize + DiskUsageUtil.getFileSize(file, Collections.EMPTY_LIST);
+                        }
+                   }
+               }
+               catch(IOException e){
+                   Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Failed calculation of build directory for file ." + file.getAbsolutePath(), e);
+               }
+           }
+       }
+       return nonBuildsFileSize;
+   }
+
+   protected static boolean isBuildDirName(File file){
+        if(file.getName().matches("\\d+")){
+            return true;
+        }
+        try {
+            DiskUsageBuildInformation.LEGACY_ID_FORMATTER.parse(file.getName());
+        }
+        catch(ParseException e){
+            return false;
+        }
+        return true;
+   }
  
     public static void calculateDiskUsageForProject(AbstractProject project) throws Exception{
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
@@ -416,7 +463,9 @@ public class DiskUsageUtil {
             }
         }
         long buildSize = project.getBuildDir().length();
-        
+        if(!DiskUsageProjectActionFactory.DESCRIPTOR.getConfiguration().getJobConfiguration().getBuildConfiguration().isInfoAboutBuildsExact()) {
+            buildSize = calculateDiskUsageBuildsDirForProject(project);
+        }
         buildSize += DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles);
         Long diskUsageWithoutBuilds = property.getDiskUsageWithoutBuildDirectory();
         boolean update = false;
