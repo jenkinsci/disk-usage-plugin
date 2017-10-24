@@ -228,9 +228,6 @@ public class BuildDiskUsageCalculationThreadTest {
         List<String> excludes = new ArrayList<String>();
         excludes.add(exludedJob.getName());
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setExcludedJobs(excludes);
-        System.err.println("excluded " +  j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().isExcluded(exludedJob));
-        System.err.println("excluded " + j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().getExcludedJobsInString());
-        System.err.println("excluded " + j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().getConfiguration().getJobConfiguration().getExcludedJobs());
         j.buildAndAssertSuccess(exludedJob);
         j.buildAndAssertSuccess(includedJob);
         BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);

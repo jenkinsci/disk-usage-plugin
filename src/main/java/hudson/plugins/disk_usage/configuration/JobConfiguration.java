@@ -7,6 +7,7 @@ import hudson.plugins.disk_usage.JobWithoutBuildsDiskUsageCalculation;
 import net.sf.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  */
 public class JobConfiguration {
 
-    private String countIntervalJobs = "0 */7 * * *";
+    private String countIntervalJobs = "0 1 * * 7";
 
     private String jobSize;
 
@@ -111,9 +112,7 @@ public class JobConfiguration {
     }
 
     public boolean showGraph(){
-        if(buildConfiguration != null)
-            return showGraph;
-        return false;
+        return showGraph;
     }
 
     public int getJobSizeValue(){
@@ -137,6 +136,20 @@ public class JobConfiguration {
             return Collections.EMPTY_LIST;
         }
          return excludedJobs;
+    }
+
+    public String getExcludedJobsInString(){
+        StringBuilder builder = new StringBuilder();
+        boolean first = true;
+        for (String name : getExcludedJobs()) {
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            builder.append(name);
+        }
+        return builder.toString();
     }
 
     public void removeExcludedJob(String name){
@@ -176,42 +189,54 @@ public class JobConfiguration {
         this.showGraph=showGraph;
     }
 
+    public String getUnit(String unit){
+        if(unit==null)
+            return null;
+        return unit.split(" ")[1];
+    }
+
+    public String getValue(String size){
+        if(size==null)
+            return null;
+        return size.split(" ")[0];
+    }
+
     public static JobConfiguration configureJobsCalculation(JSONObject form, JobConfiguration oldConfiguration){
-        String allJobsSizeWarning = form.containsKey("jobsWarning")? (form.getJSONObject("jobsWarning").getInt("allJobsSize") + " " + form.getJSONObject("jobsWarning").getString("JobsSizeUnit")) : null;
+        if(form==null || form.isNullObject()){
+            if(oldConfiguration!=null){
+                AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class).cancel();
+            }
+            return null;
+        }
+        String allJobsSizeWarning = form.containsKey("jobsWarning")? (form.getJSONObject("jobsWarning").getInt("allJobsSize") + " " + form.getJSONObject("jobsWarning").getString("jobsSizeUnit")) : null;
         String jobSizeWarning = form.containsKey("jobWarning")? (form.getJSONObject("jobWarning").getInt("jobSize") + " " + form.getJSONObject("jobWarning").getString("jobSizeUnit")) : null;
-        String buildSizeWarning = form.containsKey("jobWarning")? (form.getJSONObject("jobWarning").getInt("buildSize") + " " + form.getJSONObject("jobWarning").getString("buildSizeUnit")) : null;
+        String buildSizeWarning = form.containsKey("buildWarning")? (form.getJSONObject("buildWarning").getInt("buildSize") + " " + form.getJSONObject("buildWarning").getString("buildSizeUnit")) : null;
 
         boolean graph = form.getBoolean("showGraph");
 
         String excluded = form.getString("excludedJobs");
         List<String> jobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
         String recalculationInterval = null;
-        if(form.containsKey("calculationJobs")){
-            recalculationInterval = form.getJSONObject("calculationJobs").getString("countIntervalJobs");
-            if(oldConfiguration == null || oldConfiguration.countIntervalJobs == null || !oldConfiguration.countIntervalJobs.equals(recalculationInterval)){
-                AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class).reschedule();
-            }
-        }
+         recalculationInterval = form.getString("countIntervalJobs");
+         if(oldConfiguration == null || oldConfiguration.countIntervalJobs == null || !oldConfiguration.countIntervalJobs.equals(recalculationInterval)){
+             AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class).reschedule();
+         }
         else{
             if(oldConfiguration!=null && oldConfiguration.countIntervalJobs!=null){
                 AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class).cancel();
             }
         }
-        BuildConfiguration buildConfig = null;
-        JSONObject buildCalculation = form.getJSONObject("calculationPerBuild");
-        if(buildCalculation!=null){
-            buildConfig = BuildConfiguration.configureBuildsCalculation(buildCalculation, oldConfiguration.buildConfiguration);
-        }
+        BuildConfiguration buildConfig = BuildConfiguration.configureBuildsCalculation(form.getJSONObject("calculationPerBuild"), oldConfiguration!=null? oldConfiguration.buildConfiguration:null);
         return new JobConfiguration(jobs, buildSizeWarning, jobSizeWarning, allJobsSizeWarning, recalculationInterval, buildConfig, graph);
     }
 
 
     public static JobConfiguration getLowPerformanceConfiguration(){
-        return new JobConfiguration(null, null, null, null, "0 1 * * 7", BuildConfiguration.getLowPerformanceConfiguration(), false);
+        return new JobConfiguration(null, null, null, null, "0 1 * * 7", null, true);
     }
 
     public static JobConfiguration getMediumPerformanceConfiguration(){
-        return new JobConfiguration(null, null, null, null, "0 1 * * 7", BuildConfiguration.getMedionPerformanceConfiguration(), true);
+        return new JobConfiguration(null, null, null, null, "0 1 * * 7", BuildConfiguration.getMediumPerformanceConfiguration(), true);
     }
 
     public static JobConfiguration getHighPerformanceConfiguration() {

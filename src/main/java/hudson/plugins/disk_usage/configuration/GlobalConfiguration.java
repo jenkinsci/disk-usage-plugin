@@ -1,6 +1,7 @@
 package hudson.plugins.disk_usage.configuration;
 
 import hudson.model.AperiodicWork;
+import hudson.plugins.disk_usage.DiskUsageProjectActionFactory;
 import hudson.plugins.disk_usage.unused.DiskUsageNotUsedDataCalculationThread;
 import net.sf.json.JSONObject;
 
@@ -78,9 +79,6 @@ public class GlobalConfiguration {
     }
 
     public String getCalculationIntervalForNonUsedData(){
-        if(jobConfiguration==null){
-            return null;
-        }
         return countNotUsedData;
     }
 
@@ -118,17 +116,18 @@ public class GlobalConfiguration {
                 AperiodicWork.all().get(DiskUsageNotUsedDataCalculationThread.class).cancel();
             }
         }
+
         JobConfiguration jobConfiguration = JobConfiguration.configureJobsCalculation(form.getJSONObject("calculationPerJob"), oldConfiguration.jobConfiguration);
-        WorkspaceConfiguration workspaceConfiguration = WorkspaceConfiguration.configureWorkspacesCalculation(form.getJSONObject("calculationWorkspace"), oldConfiguration.workspaceConfiguration);
+        WorkspaceConfiguration workspaceConfiguration = WorkspaceConfiguration.configureWorkspacesCalculation(form.getJSONObject("calculationWorkspaces"), oldConfiguration.workspaceConfiguration);
         return new GlobalConfiguration(email, freeSpaceForJobDirectory, histlen, jobConfiguration, workspaceConfiguration, recalculation);
     }
 
 
-    public static GlobalConfiguration getLowPerformanceConfiguration(){
+    public static GlobalConfiguration getLowestPerformanceConfiguration(){
         return new GlobalConfiguration(null, true, 100, null, null, null);
     }
 
-    public static GlobalConfiguration getLowestPerformanceConfiguration(){
+    public static GlobalConfiguration getLowPerformanceConfiguration(){
         return new GlobalConfiguration(null, true, 100, JobConfiguration.getLowPerformanceConfiguration(), null, null);
     }
 
@@ -199,18 +198,17 @@ public class GlobalConfiguration {
             }
 
             public String getName(){
-                return "Hight";
+                return "High";
             }
 
             public String getValue(){
-                return "HIGHT";
+                return "HIGH";
             };
         },
 
         CUSTOM {
             public GlobalConfiguration getConfiguration() {
-                //use saved configuration in descriptor
-                return null;
+               return DiskUsageProjectActionFactory.DESCRIPTOR.getCustomConfiguration();
             }
 
             public String getName(){

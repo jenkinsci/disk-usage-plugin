@@ -44,7 +44,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
             load();
         }
 
-        private GlobalConfiguration configuration = null;
+        protected GlobalConfiguration configuration = null;
 
         private GlobalConfiguration.ConfigurationType type = GlobalConfiguration.ConfigurationType.LOW;
 
@@ -125,8 +125,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         private Integer timeoutWorkspace = 5;
 
         public Object readResolve(){
-            System.err.println("read resolve " );
-            if(configuration==null && type==null && timeoutWorkspace==null) {
+            if(configuration==null && type==null) {
                 //old setting
                 BuildConfiguration buildConfiguration = null;
                 JobConfiguration jobConfiguration = null;
@@ -173,11 +172,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                 countNotUsedData = null;
             }
             else{
-                if(configuration==null) {
+                if(type==null) {
                     type = GlobalConfiguration.ConfigurationType.LOW;
                 }
             }
-            System.err.println("read");
             return this;
         }
 
@@ -201,6 +199,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     
     public Long getCashedGlobalWorkspacesDiskUsage(){
         return diskUsageWorkspaces;
+    }
+
+    public GlobalConfiguration getCustomConfiguration(){
+        return configuration;
     }
 
     public GlobalConfiguration getConfiguration(){
@@ -270,7 +272,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
     public String getCountIntervalForBuilds(){
     	if(isCalculationBuildsEnabled()){
-            getConfiguration().getJobConfiguration().getBuildConfiguration().getCalculationInterval();
+            return getConfiguration().getJobConfiguration().getBuildConfiguration().getCalculationInterval();
         }
         return null;
     }
@@ -516,13 +518,12 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         String type = form.getJSONObject("type").getString("value");
         if(type.equals("CUSTOM")) {
-            GlobalConfiguration config = GlobalConfiguration.configureJobsCalculation(form, configuration);
+            GlobalConfiguration config = GlobalConfiguration.configureJobsCalculation(form.getJSONObject("type"), getConfiguration());
             configuration = config;
             this.type = GlobalConfiguration.ConfigurationType.CUSTOM;
         }
         else{
             this.type = GlobalConfiguration.ConfigurationType.valueOf(type);
-            System.err.println("type is " + type);
             configuration = null;
         }
         save();
@@ -554,17 +555,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     
     public String getExcludedJobsInString(){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
-            StringBuilder builder = new StringBuilder();
-            boolean first = true;
-            for (String name : getConfiguration().getJobConfiguration().getExcludedJobs()) {
-                if (first) {
-                    first = false;
-                } else {
-                    builder.append(", ");
-                }
-                builder.append(name);
-            }
-            return builder.toString();
+            return getConfiguration().getJobConfiguration().getExcludedJobsInString();
         }
         return "";
     }

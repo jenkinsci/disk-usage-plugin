@@ -80,6 +80,9 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     }
     
     public CronTab getCronTab() throws ANTLRException{
+        if(!DiskUsageProjectActionFactory.DESCRIPTOR.isCalculationBuildsEnabled()){
+            return new CronTab("0 1 * * 7");
+        }
         String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
         CronTab tab = new CronTab(cron);
         return tab;

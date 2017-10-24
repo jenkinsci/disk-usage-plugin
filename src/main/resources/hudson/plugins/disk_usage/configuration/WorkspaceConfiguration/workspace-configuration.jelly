@@ -1,0 +1,27 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+            <f:optionalBlock name="workspaceWarning" title="${%Warn if workspaces of one job exceed some size}" checked="${it.isWarningSent()}">
+              <f:entry title="${%Exceed size for workspaces of one job}">
+                <j:set var="jobWorkspaceExceedSize" value="${it.getWorskpaceExceedSize()}" />
+            	<input name="jobWorkspaceExceedSize" value="${it.getValue(jobWorkspaceExceedSize)}" />
+                <select name="jobWorkspaceExceedSizeUnit">
+                   <f:option value="B" selected="${jobWorkspaceExceedSize==null || it.getUnit(jobWorkspaceExceedSize).equals('B')}">B</f:option>
+                   <f:option value="KB" selected="${it.getUnit(jobWorkspaceExceedSize).equals('KB')}">KB</f:option>
+                   <f:option value="MB" selected="${it.getUnit(jobWorkspaceExceedSize).equals('MB')}">MB</f:option>
+                   <f:option value="GB" selected="${it.getUnit(jobWorkspaceExceedSize).equals('GB')}">GB</f:option>
+                   <f:option value="TB" selected="${it.getUnit(jobWorkspaceExceedSize).equals('TB')}">TB</f:option>
+                </select>
+              </f:entry>
+             </f:optionalBlock>
+             <f:entry title="${%Time out for calculation of slave workspace in minutes}">
+                 <input name="timeoutWorkspace" value="${it.getTimeout()}" />
+             </f:entry>
+             <f:entry title="${%Control workspace from slave side too}">
+                <f:checkbox name="checkWorkspaceOnSlave" checked="${it.isCheckWorkspaceOnSlave()}" />
+             </f:entry>
+             <f:optionalBlock name="recalculationWorkspace" title="${%Enable recalculation of workspace}" checked="${it.isWorskpaceSizeRecalculated()}">
+               <f:entry title="${%Time interval for calculation}">
+           	     <f:textbox name="countIntervalWorkspaces" value="${it.getCalculationIntervalWorkspace()==null? '0 1 * * 7' : it.getCalculationIntervalWorkspace()}" />
+               </f:entry>
+             </f:optionalBlock>
+</j:jelly>

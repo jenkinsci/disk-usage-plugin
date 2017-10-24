@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class WorkspaceConfiguration {
 
-    private String countIntervalWorkspace ="0 */6 * * *";
+    private String countIntervalWorkspace ="0 1 * * 7";
 
     private boolean checkWorkspaceOnSlave = false;
 
@@ -46,7 +46,7 @@ public class WorkspaceConfiguration {
         countIntervalWorkspace = null;
         checkWorkspaceOnSlave = false;
         jobWorkspaceExceedSize = null;
-        this.timeoutWorkspace = 5;
+        timeoutWorkspace = 5;
     }
 
     public void setCheckWorkspaceOnSlave(boolean checkWorkspaceOnSlave){
@@ -94,13 +94,29 @@ public class WorkspaceConfiguration {
         this.timeoutWorkspace = timeoutWorkspace;
     }
 
+    public String getUnit(String unit){
+        if(unit==null)
+            return null;
+        return unit.split(" ")[1];
+    }
+
+    public String getValue(String size){
+        if(size==null)
+            return null;
+        return size.split(" ")[0];
+    }
+
     public static WorkspaceConfiguration configureWorkspacesCalculation(JSONObject form, WorkspaceConfiguration oldConfiguration){
+        if(form==null || form.isNullObject()){
+            return null;
+        }
+        System.out.println("calculation workspaces " + form);
         boolean check = form.getBoolean("checkWorkspaceOnSlave");
         int timeout = form.getInt("timeoutWorkspace");
         String warning = form.containsKey("workspaceWarning")? (form.getJSONObject("workspaceWarning").getInt("jobWorkspaceExceedSize") + " " + form.getJSONObject("workspaceWarning").getString("jobWorkspaceExceedSizeUnit")) : null;
         String recalculation = null;
-        if(form.containsKey("calculationWorkspace")){
-            recalculation = form.getJSONObject("calculationWorkspace").getString("countIntervalWorkspace");
+        if(form.containsKey("recalculationWorkspace")){
+            recalculation = form.getJSONObject("recalculationWorkspace").getString("countIntervalWorkspaces");
             if(oldConfiguration==null || !oldConfiguration.countIntervalWorkspace.equals(recalculation)){
                 AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class).reschedule();
             }

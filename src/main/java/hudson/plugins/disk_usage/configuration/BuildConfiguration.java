@@ -9,7 +9,7 @@ import net.sf.json.JSONObject;
  */
 public class BuildConfiguration {
 
-    private String countIntervalBuilds = "0 */6 * * *";
+    private String countIntervalBuilds = "0 1 * * 7";
 
     private boolean exactInfoAboutBuilds = false;
 
@@ -22,6 +22,11 @@ public class BuildConfiguration {
         exactInfoAboutBuilds = false;
         countIntervalBuilds = null;
     }
+
+    public String getDefaultCountInterval(){
+        return "0 1 * * 7";
+    }
+
 
     public boolean isInfoAboutBuildsExact(){
         return exactInfoAboutBuilds;
@@ -49,43 +54,19 @@ public class BuildConfiguration {
 
 
     public static BuildConfiguration configureBuildsCalculation(JSONObject form, BuildConfiguration oldConfiguration){
-        System.err.println("builds " + form);
-        String calculation = form.getString("build");
-        if(calculation.equals("onlyInfoPerBuild")){
-            BuildConfiguration configuration = new BuildConfiguration();
-            if(oldConfiguration.countIntervalBuilds != null){
-                AperiodicWork.all().get(BuildDiskUsageCalculationThread.class).cancel();
-            }
-            return configuration;
+        if(form==null || form.isNullObject()){
+            AperiodicWork.all().get(BuildDiskUsageCalculationThread.class).cancel();
+            return null;
         }
-        if(calculation.equals("calculateBuild")){
-            JSONObject warning = form.getJSONObject("buildWarning");
-            String size = null;
-            if(warning!=null){
-                size = warning.getInt("buildSize") + " " + warning.getString("buildSizeUnit");
-            }
-            if(form.getBoolean("calculationBuilds")) {
-                BuildConfiguration configuration = new BuildConfiguration(form.getBoolean("exactInfo"), form.getString("countIntervalBuilds"));
-                if(oldConfiguration==null || oldConfiguration.countIntervalBuilds!=null && !configuration.countIntervalBuilds.equals(oldConfiguration.countIntervalBuilds)){
-                    AperiodicWork.all().get(BuildDiskUsageCalculationThread.class).reschedule();
-                }
-                return configuration;
-            }
-            else{
-                BuildConfiguration configuration = new BuildConfiguration(false, null);
-                if(oldConfiguration.countIntervalBuilds!=null){
-                    AperiodicWork.all().get(BuildDiskUsageCalculationThread.class).cancel();
-                }
-            }
+        String calculationInterval = form.getString("countIntervalBuilds");
+        boolean exactly = form.getBoolean("exactInfo");
+        if(oldConfiguration==null || oldConfiguration.countIntervalBuilds!=null && !calculationInterval.equals(oldConfiguration.countIntervalBuilds)){
+           AperiodicWork.all().get(BuildDiskUsageCalculationThread.class).reschedule();
         }
-        return null;
+        return new BuildConfiguration(exactly, calculationInterval);
     }
 
-    public static BuildConfiguration getLowPerformanceConfiguration(){
-        return new BuildConfiguration();
-    }
-
-    public static BuildConfiguration getMedionPerformanceConfiguration(){
+    public static BuildConfiguration getMediumPerformanceConfiguration(){
         return new BuildConfiguration(false, "0 1 * * 7");
     }
 

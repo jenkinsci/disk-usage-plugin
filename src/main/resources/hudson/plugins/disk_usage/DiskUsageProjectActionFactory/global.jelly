@@ -8,12 +8,12 @@
          <j:forEach var="type" items="${descriptor.getConfigurationTypes()}">
             <f:radioBlock name="type" value="${type.getValue()}" title="${type.getName()}" checked="${type==descriptor.getType()}">
 
-              <j:if test="${type.getConfiguration()!=null}">
+              <j:if test="${!type.getName().equals('Custom')}">
               <f:advanced title="show configuration details">
                <st:include page="global-configuration.jelly" it="${type.getConfiguration()}"/>
               </f:advanced>
               </j:if>
-              <j:if test="${type.getConfiguration()==null}">
+              <j:if test="${type.getName().equals('Custom')}">
                 <st:include page="global-configuration.jelly" it="${descriptor.getConfiguration()}"/>
 
               </j:if>

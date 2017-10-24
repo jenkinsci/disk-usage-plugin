@@ -27,7 +27,7 @@
              <f:entry>
 
               <table>
-                 <st:include page="workspace-configuration.jelly" it="${it}"/>
+                 <st:include page="workspace-configuration.jelly" it="${it.getWorkspaceConfiguration()}"/>
               </table>
               </f:entry>
            </f:optionalBlock>
@@ -37,7 +37,7 @@
          <table>
            <f:optionalBlock name="calculationNotUsedData" title="${%Enable calculation of not used data}" checked="${it.areNonUsedDataCalculated()}">
             <f:entry title="${%Time interval for calculation}">
-	          <f:textbox name="countIntervalNotUsedData" value="${it.getCountIntervalForNotUsedData()}" />
+	          <f:textbox name="countIntervalNotUsedData" value="${it.getCalculationIntervalForNonUsedData()==null? '0 1 * * 7' : it.getCalculationIntervalForNonUsedData()}" />
             </f:entry>
             </f:optionalBlock>
           </table>
@@ -50,7 +50,7 @@
 
 
             <f:entry title="${%Show free space of jobs directory in global graph}">
-              <f:checkbox name="showFreeSpaceForJobDirectory" checked="${it.getShowFreeSpaceForJobDirectory()}" />
+              <f:checkbox name="showFreeSpaceForJobDirectory" checked="${it.showFreeSpaceForJobDirectory()}" />
             </f:entry>
             <f:entry title="${%Length of global disk usage history}">
               <input name="historyLength" value="${it.getHistoryLength()}" />

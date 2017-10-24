@@ -85,6 +85,9 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
 
     @Override
     public CronTab getCronTab() throws ANTLRException {
+        if(!DiskUsageProjectActionFactory.DESCRIPTOR.isCalculationWorkspaceEnabled()){
+            return new CronTab("0 1 * * 7");
+        }
         String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForWorkspaces();
         CronTab tab = new CronTab(cron);
         return tab;

@@ -12,11 +12,7 @@ import hudson.model.AperiodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TaskListener;
-import hudson.plugins.disk_usage.DiskUsageCalculation;
-import hudson.plugins.disk_usage.DiskUsageJenkinsAction;
-import hudson.plugins.disk_usage.DiskUsagePlugin;
-import hudson.plugins.disk_usage.DiskUsageUtil;
-import hudson.plugins.disk_usage.ProjectBuildChecker;
+import hudson.plugins.disk_usage.*;
 import hudson.scheduler.CronTab;
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +44,9 @@ public class DiskUsageNotUsedDataCalculationThread extends DiskUsageCalculation 
     }
 
     public CronTab getCronTab() throws ANTLRException{
+        if(!DiskUsageProjectActionFactory.DESCRIPTOR.isCalculationNotUsedDataEnabled()){
+            return new CronTab("0 1 * * 7");
+        }
         String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForNotUsedData();
         CronTab tab = new CronTab(cron);
         return tab;
