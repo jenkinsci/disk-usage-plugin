@@ -23,7 +23,7 @@
              	 <input name="jobSize" value="${it.getValue(jobSize)}" />
                   <select name="jobSizeUnit">
                      <f:option value="B" selected="${jobSize==null || (it.getUnit(jobSize).equals('B'))}">B</f:option>
-                     <f:option value="KB" selected="${it.getJobUnit(jobSize).equals('KB')}">KB</f:option>
+                     <f:option value="KB" selected="${it.getUnit(jobSize).equals('KB')}">KB</f:option>
                      <f:option value="MB" selected="${it.getUnit(jobSize).equals('MB')}">MB</f:option>
                      <f:option value="GB" selected="${it.getUnit(jobSize).equals('GB')}">GB</f:option>
                      <f:option value="TB" selected="${it.getUnit(jobSize).equals('TB')}">TB</f:option>

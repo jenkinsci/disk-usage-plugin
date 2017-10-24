@@ -68,19 +68,19 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 			};
 
         @Deprecated
-        private String countIntervalBuilds = "0 */6 * * *";
+        private String countIntervalBuilds;
 
         @Deprecated
         private Boolean calculationBuilds = true;
 
         @Deprecated
-        private String countIntervalJobs = "0 */6 * * *";
+        private String countIntervalJobs;
 
         @Deprecated
         private Boolean calculationJobs = true;
 
         @Deprecated
-        private String countIntervalWorkspace ="0 */6 * * *";
+        private String countIntervalWorkspace;
 
         @Deprecated
         private Boolean calculationWorkspace = true;
@@ -89,7 +89,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         private Boolean checkWorkspaceOnSlave = false;
 
         @Deprecated
-        private String countNotUsedData ="0 */6 * * *";
+        private String countNotUsedData;
 
         @Deprecated
         private Boolean calculationNotUsedData = false;
@@ -125,7 +125,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         private Integer timeoutWorkspace = 5;
 
         public Object readResolve(){
-            if(configuration==null && type==null) {
+            if(countIntervalJobs!=null || countIntervalWorkspace!=null || countNotUsedData !=null || countIntervalBuilds!=null) {
                 //old setting
                 BuildConfiguration buildConfiguration = null;
                 JobConfiguration jobConfiguration = null;
@@ -171,6 +171,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                 showFreeSpaceForJobDirectory = null;
                 historyLength = null;
                 countNotUsedData = null;
+                save();
             }
             else{
                 if(type==null) {
