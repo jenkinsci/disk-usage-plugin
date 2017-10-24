@@ -130,6 +130,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                 BuildConfiguration buildConfiguration = null;
                 JobConfiguration jobConfiguration = null;
                 WorkspaceConfiguration workspaceConfiguration = null;
+                type = GlobalConfiguration.ConfigurationType.CUSTOM;
                 if (calculationBuilds) {
                     buildConfiguration = new BuildConfiguration(true, countIntervalBuilds);
                 } else {
