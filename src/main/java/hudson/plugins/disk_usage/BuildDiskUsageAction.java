@@ -91,6 +91,9 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         if(size==null || !(size>0)) {
             size = property.getDiskUsageOfBuild(build.getNumber());
         }
+        if(size==null || !(size>0)) {
+            size = property.getDiskUsageOfBuild(String.valueOf(build.getNumber()));
+        }
         return size;
     }
     

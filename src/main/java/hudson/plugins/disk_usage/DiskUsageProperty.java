@@ -429,6 +429,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
     @Initializer(after = InitMilestone.PLUGINS_STARTED)
     public static void transitionAuth() throws IOException {
+
         DiskUsageDescriptor that = (DiskUsageDescriptor) Hudson.getInstance().getDescriptor(DiskUsageProperty.class);
         if(that == null){
             LOGGER.warning("Cannot convert DiskUsageProjectActions, DiskUsageDescripto is null, check log for previous DI error, e.g. Guice errors.");

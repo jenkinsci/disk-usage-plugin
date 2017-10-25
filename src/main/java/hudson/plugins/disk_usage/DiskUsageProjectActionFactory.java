@@ -7,6 +7,8 @@ import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import hudson.plugins.disk_usage.configuration.JobConfiguration;
 import hudson.plugins.disk_usage.configuration.WorkspaceConfiguration;
 import hudson.security.Permission;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -232,7 +234,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     
     public String getJobWorkspaceExceedSizeInString(){
         if(getConfiguration().isDiskUsageCalculatedForWorkspace() && getConfiguration().getWorkspaceConfiguration().isExceededSizeSet()) {
-            getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize();
+            return getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize();
         }
         return null;
 

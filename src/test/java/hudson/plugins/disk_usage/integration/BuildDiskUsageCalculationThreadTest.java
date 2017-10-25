@@ -1,24 +1,18 @@
 package hudson.plugins.disk_usage.integration;
 
 import hudson.XmlFile;
-import hudson.model.AbstractProject;
+import hudson.model.*;
 import hudson.plugins.disk_usage.*;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
-import java.util.TreeMap;
-import java.util.Map;
-import hudson.model.AbstractBuild;
-import hudson.model.AperiodicWork;
-import hudson.model.FreeStyleBuild;
+
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.recipes.LocalData;
-import hudson.model.FreeStyleProject;
-import hudson.model.ItemGroup;
-import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,8 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -252,5 +245,39 @@ public class BuildDiskUsageCalculationThreadTest {
        calculation.execute(TaskListener.NULL);
        waitUntilThreadEnds(calculation);
        assertEquals("Calculation of build disk usage should not cause loading of builds.", loadedBuilds, project._getRuns().getLoadedBuilds().size());
+    }
+
+    @Test
+    @LocalData
+    public void testCalculateNotExactDataWithoutLoadingBuildsWithOldBuildsDir() throws Exception {
+        AbstractProject job = (AbstractProject) j.jenkins.getItem("job");
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.MEDIUM, null);
+        int loaded = job._getRuns().getLoadedBuilds().size();
+        assertTrue("All builds are loaded, it is imposible to do test", loaded<50);
+        BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
+        calculation.execute(TaskListener.NULL);
+        waitUntilThreadEnds(calculation);
+        assertTrue("Build calculation without exact info about builds should not cause loading of builds.", loaded == job._getRuns().getLoadedBuilds().size());
+        long size = DiskUsageUtil.getFileSize(job.getLastBuild().getRootDir(), Collections.EMPTY_LIST);
+        DiskUsageProperty p = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);
+        assertEquals("Build has calculated size ", size, p.getDiskUsageBuildInformation("50").getSize(), 0);
+        assertEquals("Build is able to find its disk usage", size, job.getLastBuild().getAction(BuildDiskUsageAction.class).getDiskUsage(), 0);
+    }
+
+    @Test
+    @LocalData
+    public void testCalculateNotExactDataWithoutLoadingBuilds() throws Exception {
+        AbstractProject job = (AbstractProject) j.jenkins.getItem("job");
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.MEDIUM, null);
+        int loaded = job._getRuns().getLoadedBuilds().size();
+        assertTrue("All builds are loaded, it is imposible to do test", loaded<50);
+        BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
+        calculation.execute(TaskListener.NULL);
+        waitUntilThreadEnds(calculation);
+        assertTrue("Build calculation without exact info about builds should not cause loading of builds.", loaded == job._getRuns().getLoadedBuilds().size());
+        long size = DiskUsageUtil.getFileSize(job.getLastBuild().getRootDir(), Collections.EMPTY_LIST);
+        DiskUsageProperty p = (DiskUsageProperty) job.getProperty(DiskUsageProperty.class);
+        assertEquals("Build has calculated size ", size, p.getDiskUsageBuildInformation("50").getSize(), 0l);
+        assertEquals("Build is able to find its disk usage", size, job.getLastBuild().getAction(BuildDiskUsageAction.class).getDiskUsage(), 0);
     }
 }

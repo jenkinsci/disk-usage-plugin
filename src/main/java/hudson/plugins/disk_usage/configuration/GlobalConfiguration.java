@@ -42,6 +42,7 @@ public class GlobalConfiguration {
         this.countNotUsedData = countNotUsedData;
         this.email = email;
         this.showFreeSpaceForJobDirectory = showFreeSpaceForJobDirectory;
+        this.historyLength = historyLength;
     }
 
     public void setHistoryLength(int length){
