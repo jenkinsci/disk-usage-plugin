@@ -4,6 +4,8 @@
  */
 package hudson.plugins.disk_usage;
 
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.util.VersionNumber;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -44,6 +46,13 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
         }
         this.id = id;
         isLocked = false;
+    }
+
+    public void obtainInformation(Run run){
+        if(timestamp==0 || number==0){
+            timestamp = run.getTimeInMillis();
+            number = run.getNumber();
+        }
     }
 
     public DiskUsageBuildInformation(String id, long timestamp, int number, Long size, boolean isLocked){

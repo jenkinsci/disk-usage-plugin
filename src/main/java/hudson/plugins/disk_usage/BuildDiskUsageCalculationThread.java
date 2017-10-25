@@ -2,15 +2,13 @@ package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.AperiodicWork;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.scheduler.CronTab;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -46,7 +44,8 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                       //  if (!project.isBuilding()) {
                             DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
                             ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
-                            for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)){ 
+                            if(DiskUsageProjectActionFactory.DESCRIPTOR.getConfiguration().getJobConfiguration().getBuildConfiguration().isInfoAboutBuildsExact()){
+                              for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)){
                                 Map<Integer,AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
                                 AbstractBuild build = loadedBuilds.get(information.getNumber());
                                 //do not calculat builds in progress
@@ -59,8 +58,32 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                                 catch(Exception e){
                                     logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), e);
                                 }
+                              }
+
                             }
-                       // } 
+                            else{
+                                File buildDir = project.getBuildDir();
+                                for(File build : buildDir.listFiles()){
+                                    if(DiskUsageUtil.isBuildDirName(build)){
+                                        DiskUsageBuildInformation info = diskUsage.getDiskUsageBuildInformation(build.getName());
+                                        if(info==null){
+                                            info = new DiskUsageBuildInformation(build.getName());
+                                            diskUsage.addNotExactBuildInformation(info);
+
+                                        }
+                                        Map<Integer,Run> loadedBuilds = project._getRuns().getLoadedBuilds();
+                                        for(Run run : loadedBuilds.values()){
+                                            if(run.getRootDir().getAbsolutePath().equals(build.getAbsolutePath())){
+                                                info.obtainInformation(run);
+                                            }
+                                        }
+                                        DiskUsageUtil.calculateDiskUsageForBuild(build.getName(), project);
+                                    }
+                                    else{
+                                        diskUsage.addNotLoadedBuild(build,DiskUsageUtil.getFileSize(build, Collections.EMPTY_LIST));
+                                    }
+                                }
+                            }
                     }
                 }
             } catch (Exception ex) {
