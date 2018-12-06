@@ -26,11 +26,11 @@
 
      <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>  
      
-     <p> <b>${%Jobs}: </b>${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())}, 
-         <b>${%Builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalBuildsDiskUsage())},
-         <b>${%Locked builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalLockedBuildsDiskUsage())}, 
-         <b> ${%All workspace}: </b>${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())},
-         <b> ${%Not current workspace}: </b>${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}<br/></p>
+     <p> <b>${%Jobs}:</b> ${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())},
+         <b>${%Builds}:</b> ${it.getDiskUsageInString(it.getCashedGlobalBuildsDiskUsage())},
+         <b>${%Locked builds}:</b> ${it.getDiskUsageInString(it.getCashedGlobalLockedBuildsDiskUsage())},
+         <b>${%All workspace}:</b> ${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())},
+         <b>${%Not current workspace}:</b> ${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}<br/></p>
      
      <!-- project table -->
      <j:new var="calendar" className="java.util.GregorianCalendar" /> 

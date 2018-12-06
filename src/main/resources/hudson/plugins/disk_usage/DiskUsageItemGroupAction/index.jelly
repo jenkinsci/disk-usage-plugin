@@ -26,11 +26,11 @@
 
      <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>  
      
-     <p> <b>${%Jobs}: </b>${it.getSizeInString(it.getAllDiskUsage(true))}, 
-         <b>${%Builds}: </b>${it.getSizeInString(it.getBuildsDiskUsage(null, null, true).get("all"))},
-         <b>${%Locked builds}: </b>${it.getSizeInString(it.getBuildsDiskUsage(null, null, true).get("locked"))}, 
-         <b> ${%All workspace}: </b>${it.getSizeInString(it.getAllDiskUsageWorkspace(true))},
-         <b> ${%Not current workspace}: </b>${it.getSizeInString(it.getAllCustomOrNonSlaveWorkspaces(true))}<br/></p>
+     <p> <b>${%Jobs}:</b> ${it.getSizeInString(it.getAllDiskUsage(true))},
+         <b>${%Builds}:</b> ${it.getSizeInString(it.getBuildsDiskUsage(null, null, true).get("all"))},
+         <b>${%Locked builds}:</b> ${it.getSizeInString(it.getBuildsDiskUsage(null, null, true).get("locked"))},
+         <b>${%All workspace}:</b> ${it.getSizeInString(it.getAllDiskUsageWorkspace(true))},
+         <b>${%Not current workspace}:</b> ${it.getSizeInString(it.getAllCustomOrNonSlaveWorkspaces(true))}<br/></p>
      
      <!-- project table -->
      <j:new var="calendar" className="java.util.GregorianCalendar" /> 
