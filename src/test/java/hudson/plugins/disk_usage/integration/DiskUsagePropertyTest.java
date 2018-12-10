@@ -620,7 +620,7 @@ public class DiskUsagePropertyTest {
     @Test
     public void testCalculationWorkspaceForItemInNonTopLeverGroupItem() throws Exception {
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
-        Project project = j.createFreeStyleProject("some-project");
+        FreeStyleProject project = j.createFreeStyleProject("some-project");
         project.setAssignedNode(j.jenkins);
         Slave slave = j.createOnlineSlave(j.jenkins.getLabel("test"));
         //set different workspace then master has

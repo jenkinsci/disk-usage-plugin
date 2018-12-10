@@ -65,7 +65,7 @@ public class DiskUsageBuildListenerTest {
     @Test
     public void testOnDeleted() throws Exception {
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
-        AbstractProject project = j.createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
