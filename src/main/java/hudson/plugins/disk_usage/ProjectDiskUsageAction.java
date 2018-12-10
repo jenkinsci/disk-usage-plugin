@@ -386,7 +386,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
     /**
      * Generates a graph with disk usage trend
-     * 
+     *
+     * @return XXX
+     * @throws IOException XXX
      */
     public Graph getGraph() throws IOException {
         //TODO if(nothing_changed) return;
@@ -452,7 +454,12 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         }
         req.getView(this, "index.jelly").forward(req, res);
     }
-    
+
+    /**
+     *
+     * @param cached XXX
+     * @return XXX
+     */
     @Override
     public Long getAllDiskUsage(boolean cached) {
         Long size = getAllBuildsDiskUsage(cached) + getAllDiskUsageWithoutBuilds(cached) + getAllDiskUsageNotLoadedBuilds(cached);
@@ -463,7 +470,11 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         return size;
     }
 
-    /** Shortcut for the jelly view */
+    /**
+     * Shortcut for the jelly view
+     *
+     * @return XXX
+     */
     public boolean showGraph() {
         return Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().isShowGraph();
     }

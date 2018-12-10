@@ -27,6 +27,11 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension
 public class DiskUsageProjectActionFactory extends TransientProjectActionFactory implements Describable<DiskUsageProjectActionFactory> {
 
+    /**
+     *
+     * @param job XXX
+     * @return XXX
+     */
     @Override
     public Collection<? extends Action> createFor(AbstractProject job) {
         ProjectDiskUsageAction action = new ProjectDiskUsageAction(job);
@@ -36,6 +41,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
+    /**
+     *
+     * @return XXX
+     */
     public Descriptor<DiskUsageProjectActionFactory> getDescriptor() {
         return DESCRIPTOR;
     }
@@ -126,6 +135,10 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         @Deprecated
         private Integer timeoutWorkspace = 5;
 
+        /**
+         *
+         * @return XXX
+         */
         public Object readResolve(){
             if(countIntervalJobs!=null || countIntervalWorkspace!=null || countNotUsedData !=null || countIntervalBuilds!=null) {
                 //old setting
@@ -184,404 +197,629 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
 
         // Timeout for a single Project's workspace analyze (in mn)
-        
-    public Long getCachedGlobalBuildsDiskUsage(){
-        return diskUsageBuilds;
-    }
-    
-    public Long getCachedGlobalJobsDiskUsage(){
-        return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
-    }
-    
-    public Long getCachedGlobalJobsWithoutBuildsDiskUsage(){
-        return diskUsageJobsWithoutBuilds;
-    }
-    
-    public Long getCachedGlobalLockedBuildsDiskUsage(){
-     return diskUsageLockedBuilds;   
-    }
-    
-    public Long getCachedGlobalWorkspacesDiskUsage(){
-        return diskUsageWorkspaces;
-    }
 
-    public GlobalConfiguration getCustomConfiguration(){
-        return configuration;
-    }
+        /**
+         *
+         * @return XXX
+         */
+        public Long getCachedGlobalBuildsDiskUsage(){
+            return diskUsageBuilds;
+        }
 
-    public GlobalConfiguration getConfiguration(){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM){
+        /**
+         *
+         * @return XXX
+         */
+        public Long getCachedGlobalJobsDiskUsage(){
+            return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public Long getCachedGlobalJobsWithoutBuildsDiskUsage(){
+            return diskUsageJobsWithoutBuilds;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public Long getCachedGlobalLockedBuildsDiskUsage(){
+         return diskUsageLockedBuilds;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public Long getCachedGlobalWorkspacesDiskUsage(){
+            return diskUsageWorkspaces;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public GlobalConfiguration getCustomConfiguration(){
             return configuration;
         }
-        else{
-            return type.getConfiguration();
-        }
-    }
 
-    public GlobalConfiguration.ConfigurationType getType(){
-        if(type==null){
-            return GlobalConfiguration.ConfigurationType.LOW;
+        /**
+         *
+         * @return XXX
+         */
+        public GlobalConfiguration getConfiguration(){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM){
+                return configuration;
+            }
+            else{
+                return type.getConfiguration();
+            }
         }
-        return type;
-    }
 
-    public Long getJobWorkspaceExceedSize(){
-        if(getConfiguration().isDiskUsageCalculatedForWorkspace() && getConfiguration().getWorkspaceConfiguration().isExceededSizeSet()) {
-            return DiskUsageUtil.getSizeInBytes(getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize());
+        /**
+         *
+         * @return XXX
+         */
+        public GlobalConfiguration.ConfigurationType getType(){
+            if(type==null){
+                return GlobalConfiguration.ConfigurationType.LOW;
+            }
+            return type;
         }
-        return null;
-    }
-    
-    public String getJobWorkspaceExceedSizeInString(){
-        if(getConfiguration().isDiskUsageCalculatedForWorkspace() && getConfiguration().getWorkspaceConfiguration().isExceededSizeSet()) {
-            return getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize();
-        }
-        return null;
+        /**
+         *
+         * @return XXX
+         */
 
-    }
-    
-    public boolean isShowGraph() {
-        if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
-            return getConfiguration().getJobConfiguration().showGraph();
-        }
-        return false;
-    }
-
-    public void setShowGraph(Boolean showGraph) {
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerBuilds()) {
-            getConfiguration().getJobConfiguration().setShowGraph(showGraph);
-        }
-    }
-
-    public int getHistoryLength() {
-        return getConfiguration().getHistoryLength();
-    }
-
-    public void setHistoryLength(Integer historyLength) {
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM) {
-            getConfiguration().setHistoryLength(historyLength);
-        }
-    }
-
-    public boolean isBuildCalculatedExactly(){
-        if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
-            return getConfiguration().getJobConfiguration().getBuildConfiguration().isInfoAboutBuildsExact();
-        }
-        return false;
-    }
-
-    public List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> getHistory(){
-        return history;
-    }
-
-    public String getCountIntervalForBuilds(){
-    	if(isCalculationBuildsEnabled()){
-            return getConfiguration().getJobConfiguration().getBuildConfiguration().getCalculationInterval();
-        }
-        return null;
-    }
-    
-    public String getCountIntervalForJobs(){
-        if(isCalculationJobsEnabled()){
-            return getConfiguration().getJobConfiguration().calculationInterval();
-        }
-        return null;
-    }
-    
-    public String getCountIntervalForWorkspaces(){
-
-        if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            return getConfiguration().getWorkspaceConfiguration().getCalculationIntervalWorkspace();
-        }
-        return null;
-    }
-    
-    public String getCountIntervalForNotUsedData(){
-        return getConfiguration().getCalculationIntervalForNonUsedData();
-    }
-    
-    public boolean getCheckWorkspaceOnSlave(){
-        if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            return getConfiguration().getWorkspaceConfiguration().isCheckWorkspaceOnSlave();
-        }
-        return false;
-    }
-    
-    public void setCheckWorkspaceOnSlave(boolean check){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            getConfiguration().getWorkspaceConfiguration().setCheckWorkspaceOnSlave(check);
-        }
-    }
-    
-    public void setExcludedJobs(List<String> excludedJobs){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
-            getConfiguration().getJobConfiguration().setExcludedJobs(excludedJobs);
-        }
-    }
-    
-     public boolean isCalculationWorkspaceEnabled() {
-
-         if (getConfiguration().isDiskUsageCalculatedForWorkspace()) {
-            return getConfiguration().getWorkspaceConfiguration().isWorskpaceSizeRecalculated();
-         }
-         return false;
-     }
-    
-    public boolean isCalculationBuildsEnabled(){
-        if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
-            return getConfiguration().getJobConfiguration().getBuildConfiguration().areBuildsRecalculated();
-        }
-        return false;
-    }
-    
-    public boolean isCalculationJobsEnabled(){
-
-        if(getConfiguration().isDiskUsageCalculatedPerJobs()){
-            return getConfiguration().getJobConfiguration().areJobsRecalculated();
-        }
-        return false;
-    }
-    
-    public boolean isCalculationNotUsedDataEnabled(){
-
-        if(getConfiguration().isDiskUsageCalculatedPerJobs()){
-            return getConfiguration().getCalculationIntervalForNonUsedData()!=null;
-        }
-        return false;
-    }
-    
-    public boolean warnAboutJobWorkspaceExceedSize(){
-
-        if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            return getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize()!=null;
-        }
-        return false;
-    }
-    
-    public boolean warnAboutAllJobsExceetedSize(){
-
-        if(getConfiguration().isDiskUsageCalculatedPerJobs()){
-            return getConfiguration().getJobConfiguration().getAllJobsSize()!=null;
-        }
-        return false;
-    }
-    
-    public boolean warnAboutBuildExceetedSize(){
-
-        if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
-            return getConfiguration().getJobConfiguration().getBuildSize()!=null;
-        }
-        return false;
-    }
-    
-    public boolean warnAboutJobExceetedSize(){
-        if(getConfiguration().isDiskUsageCalculatedPerJobs()){
-            return getConfiguration().getJobConfiguration().getJobSize()!=null;
-        }
-        return false;
-    }   
-
-    public String getEmailAddress(){
-        return getConfiguration().getEmail();
-    }
-    
-    public boolean warningAboutExceededSize(){
-        return getEmailAddress()!=null;
-    }
-    
-    public Long getAllJobsExceedSize(){
-        if(warnAboutAllJobsExceetedSize()) {
-            return DiskUsageUtil.getSizeInBytes(getConfiguration().getJobConfiguration().getAllJobsSize());
-        }
-        return null;
-    }
-    
-    public Long getBuildExceedSize(){
-        if(warnAboutBuildExceetedSize()) {
-            return DiskUsageUtil.getSizeInBytes(getConfiguration().getJobConfiguration().getBuildSize());
-        }
-        return null;
-    }
-    
-    public Long getJobExceedSize(){
-
-        if(warnAboutAllJobsExceetedSize()) {
-            return DiskUsageUtil.getSizeInBytes(getConfiguration().getJobConfiguration().getJobSize());
-        }
-        return null;
-    }
-    
-    public String getAllJobsExceedSizeInString(){
-        if(warnAboutAllJobsExceetedSize()) {
-            return getConfiguration().getJobConfiguration().getAllJobsSize();
-        }
-        return null;
-    }
-    
-    public String getBuildExceedSizeInString(){
-
-        if(warnAboutBuildExceetedSize()) {
-            return getConfiguration().getJobConfiguration().getBuildSize();
-        }
-        return null;
-    }
-    
-    public String getJobExceedSizeInString(){
-        if(warnAboutAllJobsExceetedSize()) {
-            return getConfiguration().getJobConfiguration().getJobSize();
-        }
-        return null;
-    }
-
-    public boolean addHistory(DiskUsageOvearallGraphGenerator.DiskUsageRecord e) {
-        boolean ok = history.add(e);
-        save();
-        return ok;
-    }
-    
-    public void enableBuildsDiskUsageCalculation(){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerBuilds()){
-            getConfiguration().getJobConfiguration().getBuildConfiguration().enableRecalculation();
-        }
-    }
-    
-    public void disableBuildsDiskUsageCalculation(){
-
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerBuilds()){
-            getConfiguration().getJobConfiguration().getBuildConfiguration().disableRecalculation();
-        }
-    }
-    
-    public void enableJobsDiskUsageCalculation(){
-
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
-            getConfiguration().getJobConfiguration().enableRecalculation();;
-        }
-    }
-    
-    public void disableJobsDiskUsageCalculation(){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
-            getConfiguration().getJobConfiguration().disableRecalculation();
-        }
-    }
-    
-    public void enableWorkspacesDiskUsageCalculation(){
-
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            getConfiguration().getWorkspaceConfiguration().enableRecalculation();
-        }
-    }
-    
-    public void disableWorkspacesDiskUsageCalculation(){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            getConfiguration().getWorkspaceConfiguration().disableRecalculation();
-        }
-    }
-    
-    public String getUnit(String unit){
-        if(unit==null)
+        public Long getJobWorkspaceExceedSize(){
+            if(getConfiguration().isDiskUsageCalculatedForWorkspace() && getConfiguration().getWorkspaceConfiguration().isExceededSizeSet()) {
+                return DiskUsageUtil.getSizeInBytes(getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize());
+            }
             return null;
-        return unit.split(" ")[1];
-    }
-    
-    public String getValue(String size){
-        if(size==null)
-            return null;
-        return size.split(" ")[0];
-    }
-
-
-    @Override
-    public String getDisplayName() {
-        return Messages.DisplayName();
-    }
-
-
-    @Override
-    public DiskUsageProjectActionFactory newInstance(StaplerRequest req, JSONObject formData) {
-        return new DiskUsageProjectActionFactory();
-    }
-
-    public void setType(GlobalConfiguration.ConfigurationType type, GlobalConfiguration configuration ){
-        this.type = type;
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM){
-            this.configuration = configuration;
         }
-    }
 
+        /**
+         *
+         * @return XXX
+         */
+        public String getJobWorkspaceExceedSizeInString(){
+            if(getConfiguration().isDiskUsageCalculatedForWorkspace() && getConfiguration().getWorkspaceConfiguration().isExceededSizeSet()) {
+                return getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize();
+            }
+            return null;
 
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject formData) {
-        Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
-        JSONObject form;
-        try {
-            form = req.getSubmittedForm();
-        } catch (ServletException ex) {
-            Logger.getLogger(DiskUsageProjectActionFactory.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean isShowGraph() {
+            if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
+                return getConfiguration().getJobConfiguration().showGraph();
+            }
             return false;
         }
-        String type = form.getJSONObject("type").getString("value");
-        if(type.equals("CUSTOM")) {
-            GlobalConfiguration config = GlobalConfiguration.configureJobsCalculation(form.getJSONObject("type"), getConfiguration());
-            configuration = config;
-            this.type = GlobalConfiguration.ConfigurationType.CUSTOM;
-        }
-        else{
-            this.type = GlobalConfiguration.ConfigurationType.valueOf(type);
-            configuration = null;
-        }
-        save();
-        return true;
-    }
-    
-    public void onRenameJob(String oldName, String newName){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
-            configuration.getJobConfiguration().renameExcludedJob(oldName, newName);
-        }
-    }
-    
-    public void onDeleteJob(AbstractProject project){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
-            configuration.getJobConfiguration().removeExcludedJob(project.getName());
-        }
-    }
-    
-    public boolean isExcluded(AbstractProject project){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
-            return configuration.getJobConfiguration().getExcludedJobs().contains(project.getName());
-        }
-        return false;
-    }
 
-    public GlobalConfiguration.ConfigurationType[] getConfigurationTypes(){
-        return GlobalConfiguration.ConfigurationType.values();
-     }
-    
-    public String getExcludedJobsInString(){
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
-            return getConfiguration().getJobConfiguration().getExcludedJobsInString();
+        /**
+         *
+         * @param showGraph XXX
+         */
+        public void setShowGraph(Boolean showGraph) {
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerBuilds()) {
+                getConfiguration().getJobConfiguration().setShowGraph(showGraph);
+            }
         }
-        return "";
-    }
 
-    public int getTimeoutWorkspace() {
-        if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            return getConfiguration().getWorkspaceConfiguration().getTimeout();
+        /**
+         *
+         * @return XXX
+         */
+        public int getHistoryLength() {
+            return getConfiguration().getHistoryLength();
         }
-        return 0;
-    }
-    
-    public boolean getShowFreeSpaceForJobDirectory(){
-        return getConfiguration().showFreeSpaceForJobDirectory();
-    }
 
-    public void setTimeoutWorkspace(Integer timeoutWorkspace) {
+        /**
+         *
+         * @param historyLength XXX
+         */
+        public void setHistoryLength(Integer historyLength) {
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM) {
+                getConfiguration().setHistoryLength(historyLength);
+            }
+        }
 
-        if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            getConfiguration().getWorkspaceConfiguration().setTimeOut(timeoutWorkspace);
+        /**
+         *
+         * @return XXX
+         */
+        public boolean isBuildCalculatedExactly(){
+            if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
+                return getConfiguration().getJobConfiguration().getBuildConfiguration().isInfoAboutBuildsExact();
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> getHistory(){
+            return history;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getCountIntervalForBuilds(){
+            if(isCalculationBuildsEnabled()){
+                return getConfiguration().getJobConfiguration().getBuildConfiguration().getCalculationInterval();
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getCountIntervalForJobs(){
+            if(isCalculationJobsEnabled()){
+                return getConfiguration().getJobConfiguration().calculationInterval();
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getCountIntervalForWorkspaces(){
+
+            if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
+                return getConfiguration().getWorkspaceConfiguration().getCalculationIntervalWorkspace();
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getCountIntervalForNotUsedData(){
+            return getConfiguration().getCalculationIntervalForNonUsedData();
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean getCheckWorkspaceOnSlave(){
+            if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
+                return getConfiguration().getWorkspaceConfiguration().isCheckWorkspaceOnSlave();
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @param check XXX
+         */
+        public void setCheckWorkspaceOnSlave(boolean check){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
+                getConfiguration().getWorkspaceConfiguration().setCheckWorkspaceOnSlave(check);
+            }
+        }
+
+        /**
+         *
+         * @param excludedJobs XXX
+         */
+        public void setExcludedJobs(List<String> excludedJobs){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
+                getConfiguration().getJobConfiguration().setExcludedJobs(excludedJobs);
+            }
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean isCalculationWorkspaceEnabled() {
+
+            if (getConfiguration().isDiskUsageCalculatedForWorkspace()) {
+               return getConfiguration().getWorkspaceConfiguration().isWorskpaceSizeRecalculated();
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean isCalculationBuildsEnabled(){
+            if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
+                return getConfiguration().getJobConfiguration().getBuildConfiguration().areBuildsRecalculated();
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean isCalculationJobsEnabled(){
+
+            if(getConfiguration().isDiskUsageCalculatedPerJobs()){
+                return getConfiguration().getJobConfiguration().areJobsRecalculated();
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean isCalculationNotUsedDataEnabled(){
+
+            if(getConfiguration().isDiskUsageCalculatedPerJobs()){
+                return getConfiguration().getCalculationIntervalForNonUsedData()!=null;
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean warnAboutJobWorkspaceExceedSize(){
+
+            if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
+                return getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize()!=null;
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean warnAboutAllJobsExceetedSize(){
+
+            if(getConfiguration().isDiskUsageCalculatedPerJobs()){
+                return getConfiguration().getJobConfiguration().getAllJobsSize()!=null;
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean warnAboutBuildExceetedSize(){
+
+            if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
+                return getConfiguration().getJobConfiguration().getBuildSize()!=null;
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean warnAboutJobExceetedSize(){
+            if(getConfiguration().isDiskUsageCalculatedPerJobs()){
+                return getConfiguration().getJobConfiguration().getJobSize()!=null;
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getEmailAddress(){
+            return getConfiguration().getEmail();
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean warningAboutExceededSize(){
+            return getEmailAddress()!=null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public Long getAllJobsExceedSize(){
+            if(warnAboutAllJobsExceetedSize()) {
+                return DiskUsageUtil.getSizeInBytes(getConfiguration().getJobConfiguration().getAllJobsSize());
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public Long getBuildExceedSize(){
+            if(warnAboutBuildExceetedSize()) {
+                return DiskUsageUtil.getSizeInBytes(getConfiguration().getJobConfiguration().getBuildSize());
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public Long getJobExceedSize(){
+
+            if(warnAboutAllJobsExceetedSize()) {
+                return DiskUsageUtil.getSizeInBytes(getConfiguration().getJobConfiguration().getJobSize());
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getAllJobsExceedSizeInString(){
+            if(warnAboutAllJobsExceetedSize()) {
+                return getConfiguration().getJobConfiguration().getAllJobsSize();
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getBuildExceedSizeInString(){
+
+            if(warnAboutBuildExceetedSize()) {
+                return getConfiguration().getJobConfiguration().getBuildSize();
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getJobExceedSizeInString(){
+            if(warnAboutAllJobsExceetedSize()) {
+                return getConfiguration().getJobConfiguration().getJobSize();
+            }
+            return null;
+        }
+
+        /**
+         *
+         * @param e XXX
+         * @return XXX
+         */
+        public boolean addHistory(DiskUsageOvearallGraphGenerator.DiskUsageRecord e) {
+            boolean ok = history.add(e);
+            save();
+            return ok;
+        }
+
+        public void enableBuildsDiskUsageCalculation(){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerBuilds()){
+                getConfiguration().getJobConfiguration().getBuildConfiguration().enableRecalculation();
+            }
+        }
+
+        public void disableBuildsDiskUsageCalculation(){
+
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerBuilds()){
+                getConfiguration().getJobConfiguration().getBuildConfiguration().disableRecalculation();
+            }
+        }
+
+        public void enableJobsDiskUsageCalculation(){
+
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
+                getConfiguration().getJobConfiguration().enableRecalculation();;
+            }
+        }
+
+        public void disableJobsDiskUsageCalculation(){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
+                getConfiguration().getJobConfiguration().disableRecalculation();
+            }
+        }
+
+        public void enableWorkspacesDiskUsageCalculation(){
+
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
+                getConfiguration().getWorkspaceConfiguration().enableRecalculation();
+            }
+        }
+
+        public void disableWorkspacesDiskUsageCalculation(){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
+                getConfiguration().getWorkspaceConfiguration().disableRecalculation();
+            }
+        }
+
+        /**
+         *
+         * @param unit XXX
+         * @return XXX
+         */
+        public String getUnit(String unit){
+            if(unit==null)
+                return null;
+            return unit.split(" ")[1];
+        }
+
+        /**
+         *
+         * @param size XXX
+         * @return XXX
+         */
+        public String getValue(String size){
+            if(size==null)
+                return null;
+            return size.split(" ")[0];
+        }
+
+
+        /**
+         *
+         * @return XXX
+         */
+        @Override
+        public String getDisplayName() {
+            return Messages.DisplayName();
+        }
+
+
+        /**
+         *
+         * @param req XXX
+         * @param formData XXX
+         * @return XXX
+         */
+        @Override
+        public DiskUsageProjectActionFactory newInstance(StaplerRequest req, JSONObject formData) {
+            return new DiskUsageProjectActionFactory();
+        }
+
+        /**
+         *
+         * @param type XXX
+         * @param configuration XXX
+         */
+        public void setType(GlobalConfiguration.ConfigurationType type, GlobalConfiguration configuration ){
+            this.type = type;
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM){
+                this.configuration = configuration;
+            }
+        }
+
+        /**
+         *
+         * @param req XXX
+         * @param formData XXX
+         * @return XXX
+         */
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject formData) {
+            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
+            JSONObject form;
+            try {
+                form = req.getSubmittedForm();
+            } catch (ServletException ex) {
+                Logger.getLogger(DiskUsageProjectActionFactory.class.getName()).log(Level.SEVERE, null, ex);
+                return false;
+            }
+            String type = form.getJSONObject("type").getString("value");
+            if(type.equals("CUSTOM")) {
+                GlobalConfiguration config = GlobalConfiguration.configureJobsCalculation(form.getJSONObject("type"), getConfiguration());
+                configuration = config;
+                this.type = GlobalConfiguration.ConfigurationType.CUSTOM;
+            }
+            else{
+                this.type = GlobalConfiguration.ConfigurationType.valueOf(type);
+                configuration = null;
+            }
+            save();
+            return true;
+        }
+
+        /**
+         *
+         * @param oldName XXX
+         * @param newName XXX
+         */
+        public void onRenameJob(String oldName, String newName){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
+                configuration.getJobConfiguration().renameExcludedJob(oldName, newName);
+            }
+        }
+
+        /**
+         *
+         * @param project XXX
+         */
+        public void onDeleteJob(AbstractProject project){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
+                configuration.getJobConfiguration().removeExcludedJob(project.getName());
+            }
+        }
+
+        /**
+         *
+         * @param project XXX
+         * @return XXX
+         */
+        public boolean isExcluded(AbstractProject project){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
+                return configuration.getJobConfiguration().getExcludedJobs().contains(project.getName());
+            }
+            return false;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public GlobalConfiguration.ConfigurationType[] getConfigurationTypes(){
+            return GlobalConfiguration.ConfigurationType.values();
+         }
+
+        /**
+         *
+         * @return XXX
+         */
+        public String getExcludedJobsInString(){
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
+                return getConfiguration().getJobConfiguration().getExcludedJobsInString();
+            }
+            return "";
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public int getTimeoutWorkspace() {
+            if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
+                return getConfiguration().getWorkspaceConfiguration().getTimeout();
+            }
+            return 0;
+        }
+
+        /**
+         *
+         * @return XXX
+         */
+        public boolean getShowFreeSpaceForJobDirectory(){
+            return getConfiguration().showFreeSpaceForJobDirectory();
+        }
+
+        /**
+         *
+         * @param timeoutWorkspace XXX
+         */
+        public void setTimeoutWorkspace(Integer timeoutWorkspace) {
+
+            if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
+                getConfiguration().getWorkspaceConfiguration().setTimeOut(timeoutWorkspace);
+            }
         }
     }
-}
 
 
 }

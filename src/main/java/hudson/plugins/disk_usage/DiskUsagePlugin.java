@@ -49,7 +49,12 @@ public class DiskUsagePlugin extends Plugin {
     public DiskUsagePlugin(){
 
     }
-    
+
+    /**
+     *
+     * @param group XXX
+     * @param diskUsage XXX
+     */
     public void addNewItemGroup(ItemGroup group, DiskUsageItemGroup diskUsage){
         DiskUsageItemGroup usage = diskUsageItemGroups.get(group);
         diskUsageItemGroups.put(group, diskUsage);
@@ -57,7 +62,7 @@ public class DiskUsagePlugin extends Plugin {
             usage.load();
         }
     }
-    
+
     protected void loadDiskUsageItemGroups(){
         diskUsageItemGroups.clear();
         List<Action> actions = Jenkins.getInstance().getActions();
@@ -71,7 +76,11 @@ public class DiskUsagePlugin extends Plugin {
         }
         loadAllDiskUsageItemGroups(Jenkins.getInstance());
     }
-    
+
+    /**
+     *
+     * @param group XXX
+     */
     public void loadAllDiskUsageForSubItemGroups(ItemGroup group){
         for(Item item : (Collection<Item>)group.getItems()){
             if(item instanceof ItemGroup){
@@ -79,7 +88,7 @@ public class DiskUsagePlugin extends Plugin {
             }
         }
     }
-    
+
     protected void loadAllDiskUsageItemGroups(ItemGroup group){
         DiskUsageItemGroup diskUsage = new DiskUsageItemGroup(group);
         diskUsage.load();
@@ -90,8 +99,11 @@ public class DiskUsagePlugin extends Plugin {
             }
         }
     }
-    
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Map<ItemGroup,DiskUsageItemGroup> getDiskUsageItemGroups(){
         return diskUsageItemGroups;
     }
@@ -108,7 +120,11 @@ public class DiskUsagePlugin extends Plugin {
         diskUsageItemGroups.put(group,diskUsage);
         return diskUsage;
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public DiskUsageItemGroup getDiskUsageItemGrouForJenkinsRootAction(){
         DiskUsageItemGroup usage = diskUsageItemGroups.get(Jenkins.getInstance());
         if(usage==null){
@@ -118,7 +134,12 @@ public class DiskUsagePlugin extends Plugin {
         }
         return usage;
     }
-    
+
+    /**
+     *
+     * @param group XXX
+     * @return XXX
+     */
     public DiskUsageItemGroup getDiskUsageItemGroup(ItemGroup group){
         DiskUsageItemGroup usage = diskUsageItemGroups.get(group);
         if(usage==null){
@@ -126,7 +147,12 @@ public class DiskUsagePlugin extends Plugin {
         }
         return usage;
     }
-    
+
+    /**
+     *
+     * @param group XXX
+     * @throws IOException XXX
+     */
     public void putDiskUsageItemGroup(ItemGroup group) throws IOException{
         if(!diskUsageItemGroups.containsKey(group)){
             DiskUsageItemGroup usage = new DiskUsageItemGroup(group);
@@ -134,7 +160,11 @@ public class DiskUsagePlugin extends Plugin {
             usage.save();
         }
     }
-    
+
+    /**
+     *
+     * @param group XXX
+     */
     public void removeDiskUsageItemGroup(ItemGroup group){
         diskUsageItemGroups.remove(group);
     }
@@ -142,109 +172,202 @@ public class DiskUsagePlugin extends Plugin {
 //    public void loadNotUsedDataDiskUsage(){
 //        diskUsageGroupItems.load();
 //    }
-    
+
+    /**
+     *
+     * @throws IOException XXX
+     */
     public void refreshGlobalInformation() throws IOException{
         DiskUsageJenkinsAction.getInstance().actualizeAllCachedDate();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Long getCachedGlobalBuildsDiskUsage(){
         return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("all");
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Long getCachedGlobalJobsDiskUsage(){
         return (getCachedGlobalBuildsDiskUsage() + getCachedGlobalJobsWithoutBuildsDiskUsage());
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Long getCachedGlobalJobsWithoutBuildsDiskUsage(){
         return getDiskUsageItemGrouForJenkinsRootAction().getCachedDiskUsageWithoutBuilds();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Long getCachedGlobalLockedBuildsDiskUsage(){
-     return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("locked");   
+     return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("locked");
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Long getCachedGlobalNotLoadedBuildsDiskUsage(){
      return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("notLoaded");
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Long getCachedGlobalWorkspacesDiskUsage(){
         return getDiskUsageItemGrouForJenkinsRootAction().getCachedDiskUsageWorkspaces();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Long getCachedNonSlaveDiskUsageWorkspace(){
         return getDiskUsageItemGrouForJenkinsRootAction().getCachedDiskUsageCustomWorkspaces();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Long getCachedSlaveDiskUsageWorkspace(){
         return getCachedGlobalWorkspacesDiskUsage() - getCachedNonSlaveDiskUsageWorkspace();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     * @throws IOException XXX
+     */
     public Long getGlobalBuildsDiskUsage() throws IOException{
         refreshGlobalInformation();
         return getCachedGlobalBuildsDiskUsage();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     * @throws IOException XXX
+     */
     public Long getGlobalJobsDiskUsage() throws IOException{
         refreshGlobalInformation();
         return getCachedGlobalJobsDiskUsage();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     * @throws IOException XXX
+     */
     public Long getGlobalJobsWithoutBuildsDiskUsage() throws IOException{
         refreshGlobalInformation();
         return getCachedGlobalJobsWithoutBuildsDiskUsage();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     * @throws IOException XXX
+     */
     public Long getGlobalWorkspacesDiskUsage() throws IOException{
         refreshGlobalInformation();
         return this.getCachedGlobalWorkspacesDiskUsage();
     }
-    
-    
+
+    /**
+     *
+     * @return XXX
+     * @throws IOException XXX
+     */
     public Long getGlobalNonSlaveDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
         return getCachedNonSlaveDiskUsageWorkspace();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     * @throws IOException XXX
+     */
     public Long getGlobalSlaveDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
         return getCachedSlaveDiskUsageWorkspace();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     * @throws IOException XXX
+     */
     public Long getGlobalNotLoadedBuildsDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
         return getCachedGlobalNotLoadedBuildsDiskUsage();
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public BuildDiskUsageCalculationThread getBuildsDiskUsageThread(){
         return AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public JobWithoutBuildsDiskUsageCalculation getJobsDiskUsageThread(){
         return AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public WorkspaceDiskUsageCalculationThread getWorkspaceDiskUsageThread(){
        return AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class); 
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public DiskUsageNotUsedDataCalculationThread getNotUsedDataDiskUsageThread(){
        return AperiodicWork.all().get(DiskUsageNotUsedDataCalculationThread.class); 
     }
     
     /**
+     * @param project foo
      * @return DiskUsage for given project (shortcut for the view). Never null.
      */
     public ProjectDiskUsageAction getDiskUsage(Job project) {
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         return action;
     }
-    
+
+    /**
+     *
+     * @param size XXX
+     * @return XXX
+     */
     public String getDiskUsageInString(Long size){
         return DiskUsageUtil.getSizeString(size);
     }
-    
+
     /**
      * @return Project list sorted by occupied disk space
+     * @throws IOException blah
      */
     public List getProjectList() throws IOException {
         refreshGlobalInformation();
@@ -267,7 +390,14 @@ public class DiskUsagePlugin extends Plugin {
 
         return projectList;
     }
-    
+
+    /**
+     *
+     * @param req XXX
+     * @param rsp XXX
+     * @throws ServletException XXX
+     * @throws IOException XXX
+     */
     public void doFilter(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
         Date older = DiskUsageUtil.getDate(req.getParameter("older"), req.getParameter("olderUnit"));
         Date younger = DiskUsageUtil.getDate(req.getParameter("younger"), req.getParameter("youngerUnit"));
@@ -327,69 +457,124 @@ public class DiskUsagePlugin extends Plugin {
         datasetW.addValue(((Long) getCachedSlaveDiskUsageWorkspace()) / baseWorkspace, "slave workspaces", "current");
         datasetW.addValue(((Long) getCachedNonSlaveDiskUsageWorkspace()) / baseWorkspace, "non slave workspaces", "current");
         return  new DiskUsageGraph(dataset, unit, datasetW, unitWorkspace);
-    }  
-    
+    }
+
+    /**
+     *
+     * @param req XXX
+     * @param res XXX
+     * @throws ServletException XXX
+     * @throws IOException XXX
+     * @throws Exception XXX
+     */
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationBuildsEnabled() && !getBuildsDiskUsageThread().isExecuting())
             getBuildsDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
-    
+
+    /**
+     *
+     * @param req XXX
+     * @param res XXX
+     * @throws ServletException XXX
+     * @throws IOException XXX
+     * @throws Exception XXX
+     */
     public void doRecordJobsDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationJobsEnabled() && !getJobsDiskUsageThread().isExecuting())
             getJobsDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
-    
+
+    /**
+     *
+     * @param req XXX
+     * @param res XXX
+     * @throws ServletException XXX
+     * @throws IOException XXX
+     * @throws Exception XXX
+     */
     public void doRecordWorkspaceDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationWorkspaceEnabled() && !getWorkspaceDiskUsageThread().isExecuting())
             getWorkspaceDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
-    
+
+    /**
+     *
+     * @param req XXX
+     * @param res XXX
+     * @throws ServletException XXX
+     * @throws IOException XXX
+     * @throws Exception XXX
+     */
     public void doRecordNotUsedDataDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationNotUsedDataEnabled() && !getNotUsedDataDiskUsageThread().isExecuting())
             getNotUsedDataDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
-       
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public String getCountIntervalForBuilds(){
         long nextExecution = getBuildsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();    
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public String getCountIntervalForJobs(){
         long nextExecution = getJobsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public String getCountIntervalForWorkspaces(){
         long nextExecution = getWorkspaceDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
             if(nextExecution<=0) //not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public boolean hasAdministrativePermission(){
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public String getCountIntervalForNotUsedData(){
         long nextExecution = getNotUsedDataDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
             if(nextExecution<=0) //not scheduled
             nextExecution = getNotUsedDataDiskUsageThread().getRecurrencePeriod();
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public String getTotalSizeOfNotLoadedBuilds(){
         Long size = 0L;
         for(Item item : Jenkins.getInstance().getItems()){
@@ -401,7 +586,11 @@ public class DiskUsagePlugin extends Plugin {
         }
         return DiskUsageUtil.getSizeString(size);
     }
-    
+
+    /**
+     *
+     * @return XXX
+     */
     public Map<AbstractProject,Long> getNotLoadedBuilds(){
         Map<AbstractProject,Long> notLoadedBuilds = new HashMap<AbstractProject,Long>();
         for(Item item : Jenkins.getInstance().getItems()){
@@ -416,7 +605,14 @@ public class DiskUsagePlugin extends Plugin {
         }
         return notLoadedBuilds;
     }
-    
+
+    /**
+     *
+     * @param req XXX
+     * @param res XXX
+     * @throws IOException XXX
+     * @throws ServletException XXX
+     */
     public void doUnused(StaplerRequest req, StaplerResponse res) throws IOException, ServletException{
         Map<AbstractProject,Map<String,Long>> notLoadedBuilds = new HashMap<AbstractProject,Map<String,Long>>();
         Map<String,Long> notLoadedJobs = new HashMap<String,Long>();

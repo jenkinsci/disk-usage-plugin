@@ -94,9 +94,11 @@ public class ProjectDiskUsage implements Saveable{
         }
         return size;
     }
-    
+
     /**
      * Size of all builds - loaded and not loaded. It should be equals to the size of directories in builds directory
+     *
+     * @return XXX
      */
     public int getCountOfAllBuilds(){
         return notLoadedBuilds.size() + buildDiskUsage.size();
