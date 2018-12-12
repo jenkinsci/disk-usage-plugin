@@ -119,7 +119,7 @@ public class DiskUsageBuildListenerTest {
 
     public static class UpdateNexBuildNumber extends Thread {
         public boolean isFinished = false;
-        public static String name = "Add new property";
+        final static String name = "Add new property";
         private Jenkins jenkins;
 
         public UpdateNexBuildNumber(Jenkins jenkins) {
@@ -155,7 +155,7 @@ public class DiskUsageBuildListenerTest {
     public static class AddNewProperty extends Thread {
 
         public boolean isFinished = false;
-        public static String name = "Update next build number";
+        final static String name = "Update next build number";
         private Jenkins jenkins;
 
         public AddNewProperty(Jenkins jenkins) {
