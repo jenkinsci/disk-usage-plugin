@@ -30,7 +30,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
             File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
             Long freeJobsDirSpace = jobsDir.getTotalSpace();
             
-            DiskUsageProjectActionFactory.DESCRIPTOR.addHistory(new DiskUsageOvearallGraphGenerator.DiskUsageRecord(plugin.getCashedGlobalBuildsDiskUsage(), plugin.getGlobalSlaveDiskUsageWorkspace(), plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), freeJobsDirSpace, plugin.getCashedNonSlaveDiskUsageWorkspace()));
+            DiskUsageProjectActionFactory.DESCRIPTOR.addHistory(new DiskUsageOvearallGraphGenerator.DiskUsageRecord(plugin.getCachedGlobalBuildsDiskUsage(), plugin.getGlobalSlaveDiskUsageWorkspace(), plugin.getCachedGlobalJobsWithoutBuildsDiskUsage(), freeJobsDirSpace, plugin.getCachedNonSlaveDiskUsageWorkspace()));
             DiskUsageProjectActionFactory.DESCRIPTOR.save();
 	}
         

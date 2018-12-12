@@ -89,7 +89,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
             } catch (Exception ex) {
                 logger.log(Level.WARNING, "Error when recording disk usage for builds", ex);
             }
-            DiskUsageJenkinsAction.getInstance().actualizeCashedBuildsData();
+            DiskUsageJenkinsAction.getInstance().actualizeCachedBuildsData();
         }
         else{
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);

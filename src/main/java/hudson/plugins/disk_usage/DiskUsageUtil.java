@@ -208,7 +208,7 @@ public class DiskUsageUtil {
     public static void controlAllJobsExceedSize() throws IOException{
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         plugin.refreshGlobalInformation();
-        Long allJobsSize = plugin.getCashedGlobalJobsDiskUsage();
+        Long allJobsSize = plugin.getCachedGlobalJobsDiskUsage();
         Long exceedJobsSize = plugin.getConfiguration().getAllJobsExceedSize();
         if(allJobsSize>exceedJobsSize){
             try {
@@ -776,7 +776,7 @@ public class DiskUsageUtil {
         return null;
     }
      
-     public static void actualizeCashedData(Item item){
+     public static void actualizeCachedData(Item item){
          DiskUsageItemAction action = getDiskUsageItemAction(item);
          
      }

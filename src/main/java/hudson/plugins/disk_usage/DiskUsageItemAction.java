@@ -14,26 +14,26 @@ import java.util.Map;
  */
 public interface DiskUsageItemAction {
     
-    public Map<String,Long> getBuildsDiskUsage(Date older, Date younger, boolean cashed);
+    public Map<String,Long> getBuildsDiskUsage(Date older, Date younger, boolean cached);
     
-    public Long getAllDiskUsageWorkspace(boolean cashed);
+    public Long getAllDiskUsageWorkspace(boolean cached);
     
-    public Long getAllCustomOrNonSlaveWorkspaces(boolean cashed);
+    public Long getAllCustomOrNonSlaveWorkspaces(boolean cached);
     
-    public Long getAllDiskUsage(boolean cashed);
+    public Long getAllDiskUsage(boolean cached);
     
-    public void actualizeCashedData();
+    public void actualizeCachedData();
     
-    public void actualizeCashedBuildsData();
+    public void actualizeCachedBuildsData();
     
-    public void actualizeCashedJobWithoutBuildsData();
+    public void actualizeCachedJobWithoutBuildsData();
     
-    public void actualizeCashedWorkspaceData();
+    public void actualizeCachedWorkspaceData();
     
-    public void actualizeCashedNotCustomWorkspaceData();
+    public void actualizeCachedNotCustomWorkspaceData();
     
-    public void actualizeAllCashedDate();
+    public void actualizeAllCachedDate();
     
-    public Long getAllDiskUsageWithoutBuilds(boolean cashed);
+    public Long getAllDiskUsageWithoutBuilds(boolean cached);
 
 }

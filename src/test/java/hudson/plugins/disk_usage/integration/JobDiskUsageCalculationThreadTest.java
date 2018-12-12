@@ -119,8 +119,8 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
             DiskUsageTestUtil.cancelCalculation(calculation);
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        project.getAction(DiskUsageItemGroupAction.class).actualizeCashedData();
-        project2.getAction(ProjectDiskUsageAction.class).actualizeCashedData();
+        project.getAction(DiskUsageItemGroupAction.class).actualizeCachedData();
+        project2.getAction(ProjectDiskUsageAction.class).actualizeCachedData();
         project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds(false);
         assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds(), 0);
         assertEquals("Project project2 has wrong job size.", project2Size, project2.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds(), 0);

@@ -72,8 +72,8 @@ public class DiskUsageBuildListenerTest {
         DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
         project.getBuildByNumber(2).delete();
         assertNull("Build 2 was not removed from caches informations.", property.getDiskUsageBuildInformation(2));
-        assertNotNull("Disk usage property whoud contains cashed information about build 1.", property.getDiskUsageOfBuild(1));
-        assertNotNull("Disk usage property whoud contains cashed information about build 3.", property.getDiskUsageOfBuild(3));
+        assertNotNull("Disk usage property whoud contains cached information about build 1.", property.getDiskUsageOfBuild(1));
+        assertNotNull("Disk usage property whoud contains cached information about build 3.", property.getDiskUsageOfBuild(3));
     }
 
     @Test

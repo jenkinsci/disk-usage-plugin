@@ -93,8 +93,8 @@ public class DiskUsagePropertyTest {
             matrixProjectTotalSize += count*size1;
             count++;
         }
-        matrixProject.getAction(ProjectDiskUsageAction.class).actualizeCashedJobWithoutBuildsData();
-        project.getAction(ProjectDiskUsageAction.class).actualizeCashedJobWithoutBuildsData();
+        matrixProject.getAction(ProjectDiskUsageAction.class).actualizeCachedJobWithoutBuildsData();
+        project.getAction(ProjectDiskUsageAction.class).actualizeCachedJobWithoutBuildsData();
         assertEquals("DiskUsageProperty for FreeStyleProject " + project.getDisplayName() + " returns wrong value its size without builds and including sub-projects.", sizeOfProject, DiskUsageUtil.getDiskUsageProperty(project).getAllDiskUsageWithoutBuilds());
         assertEquals("DiskUsageProperty for MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size without builds and including sub-projects.", matrixProjectTotalSize, DiskUsageUtil.getDiskUsageProperty(matrixProject).getAllDiskUsageWithoutBuilds());
     }

@@ -73,10 +73,10 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
         return DiskUsageUtil.getSizeString(getDiskUsageOfUnloadedJobs());
     }
     
-    public Long getAllDiskUsage(Item item, boolean cashed){
+    public Long getAllDiskUsage(Item item, boolean cached){
         DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
         if(action != null){
-            return action.getAllDiskUsage(cashed);
+            return action.getAllDiskUsage(cached);
         }
         return 0L;
     }
@@ -84,14 +84,14 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
     
     
     @Override
-    public Long getAllDiskUsage(boolean cashed) {
-        Long size = getAllDiskUsageNotLoadedJobs(cashed) + this.getAllDiskUsageWithoutBuilds(cashed) + this.getBuildsDiskUsage(null, null, cashed).get("all");
+    public Long getAllDiskUsage(boolean cached) {
+        Long size = getAllDiskUsageNotLoadedJobs(cached) + this.getAllDiskUsageWithoutBuilds(cached) + this.getBuildsDiskUsage(null, null, cached).get("all");
         //loaded
         for(Item item : getItems()){
             DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
             if(action!=null){
 
-               size += action.getAllDiskUsage(cashed);
+               size += action.getAllDiskUsage(cached);
             }
         }
         return size;
@@ -117,8 +117,8 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
         return DiskUsageUtil.getSizeString(size);
     }
 
-    public String getAllDiskUsageInString(boolean cashed) {
-        return DiskUsageUtil.getSizeString(getAllDiskUsage(cashed));
+    public String getAllDiskUsageInString(boolean cached) {
+        return DiskUsageUtil.getSizeString(getAllDiskUsage(cached));
     }
 
 
@@ -201,24 +201,24 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
 
     
     @Override
-    public Map<String,Long> getBuildsDiskUsage(Date older, Date younger, boolean cashed) {
-        if(cashed && older == null && younger ==null){
-            //it is necessary to grab all information in case of filter, cashed data are without filter
+    public Map<String,Long> getBuildsDiskUsage(Date older, Date younger, boolean cached) {
+        if(cached && older == null && younger ==null){
+            //it is necessary to grab all information in case of filter, cached data are without filter
             return diskUsage.getCaschedDiskUsageBuilds();
         }
          Map<String,Long> usage = new HashMap<String,Long>();
-         addAllBuildsDiskUsage(usage, older, younger, cashed);
+         addAllBuildsDiskUsage(usage, older, younger, cached);
          diskUsage.setCaschedDiskUsageBuilds(usage);
          return usage;
     }
 
 
     
-    public void addAllBuildsDiskUsage(Map<String,Long> usage, Date older, Date younger, boolean cashed) {
+    public void addAllBuildsDiskUsage(Map<String,Long> usage, Date older, Date younger, boolean cached) {
         for(Item item : getItems() ){
             DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
             if(action!=null){
-                Map<String,Long> projectUsage = action.getBuildsDiskUsage(older, younger, cashed);
+                Map<String,Long> projectUsage = action.getBuildsDiskUsage(older, younger, cached);
                 for(String type: projectUsage.keySet()){
                     Long size = projectUsage.get(type);
                     Long sizeCounted = usage.get(type);
@@ -234,52 +234,52 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
     }
     
     
-    public Map<String, Long> getBuildsDiskUsage(Item item, Date older, Date younger, boolean cashed) throws IOException {
+    public Map<String, Long> getBuildsDiskUsage(Item item, Date older, Date younger, boolean cached) throws IOException {
         DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
         if(action!=null){
-            return DiskUsageUtil.getDiskUsageItemAction(item).getBuildsDiskUsage(older, younger, cashed);
+            return DiskUsageUtil.getDiskUsageItemAction(item).getBuildsDiskUsage(older, younger, cached);
         }
         return Collections.EMPTY_MAP;
     }
     
     @Override
-    public Long getAllDiskUsageWorkspace(boolean cashed){
-        if(cashed){
-            return diskUsage.getCashedDiskUsageWorkspaces();
+    public Long getAllDiskUsageWorkspace(boolean cached){
+        if(cached){
+            return diskUsage.getCachedDiskUsageWorkspaces();
         }
         Long size = 0L;
         for(Item item : getItems()){
             DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
             if(action!=null){
                 
-               size += action.getAllDiskUsageWorkspace(cashed);
+               size += action.getAllDiskUsageWorkspace(cached);
             }
         }
-        diskUsage.setCashedDiskUsageWorkspaces(size);
+        diskUsage.setCachedDiskUsageWorkspaces(size);
         return size;
         
     }
     
-    public Long getDiskUsageWithoutBuilds(Item item, boolean cashed){
+    public Long getDiskUsageWithoutBuilds(Item item, boolean cached){
         DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
         if(action!=null){
-            return action.getAllDiskUsageWithoutBuilds(cashed);
+            return action.getAllDiskUsageWithoutBuilds(cached);
         }
         return 0L;
     }
     
-    public Long getAllDiskUsageWorkspace(Item item, boolean cashed){
+    public Long getAllDiskUsageWorkspace(Item item, boolean cached){
         DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
         if(action!=null){
-            return action.getAllDiskUsageWorkspace(cashed);
+            return action.getAllDiskUsageWorkspace(cached);
         }
         return 0L;
     }
     
-    public Long getAllCustomOrNonSlaveWorkspaces(Item item, boolean cashed){
+    public Long getAllCustomOrNonSlaveWorkspaces(Item item, boolean cached){
         DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
         if(action!=null){
-            return action.getAllCustomOrNonSlaveWorkspaces(cashed);
+            return action.getAllCustomOrNonSlaveWorkspaces(cached);
         }
         return 0L;
     }
@@ -295,61 +295,61 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
     }
     
     @Override
-    public Long getAllCustomOrNonSlaveWorkspaces(boolean cashed){
-        if(cashed){
-            return diskUsage.getCashedDiskUsageCustomWorkspaces();
+    public Long getAllCustomOrNonSlaveWorkspaces(boolean cached){
+        if(cached){
+            return diskUsage.getCachedDiskUsageCustomWorkspaces();
         }
         Long size = 0L;
         for(Item item : getItems()){
             DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
             if(action!=null){
-                size += action.getAllCustomOrNonSlaveWorkspaces(cashed);
+                size += action.getAllCustomOrNonSlaveWorkspaces(cached);
             }
         }
-        diskUsage.setCashedDiskUsageCustomWorkspaces(size);
+        diskUsage.setCachedDiskUsageCustomWorkspaces(size);
         return size;
     }
     
-    public Long getAllDiskUsageNotLoadedJobs(boolean cashed){
-        if(cashed){
-            return diskUsage.getCashedDiskUsageNotLoadedJobs();
+    public Long getAllDiskUsageNotLoadedJobs(boolean cached){
+        if(cached){
+            return diskUsage.getCachedDiskUsageNotLoadedJobs();
         }
-        Long size = diskUsage.getDiskUsageOfNotLoadedJobs(cashed);
+        Long size = diskUsage.getDiskUsageOfNotLoadedJobs(cached);
         for(Item item : getItems()){
             if(item instanceof ItemGroup){
                 DiskUsageItemGroupAction action = DiskUsageUtil.getItemGroupAction((ItemGroup)item);
-                size += action.getAllDiskUsageNotLoadedJobs(cashed);
+                size += action.getAllDiskUsageNotLoadedJobs(cached);
             }
         }
-        diskUsage.setCashedDiskUsageNotLoadedJobs(size);
+        diskUsage.setCachedDiskUsageNotLoadedJobs(size);
         return size;
     }
     
     
     @Override
-    public void actualizeCashedData() {
-        actualizeCashedData(true);
+    public void actualizeCachedData() {
+        actualizeCachedData(true);
     }
 
 
-    private void actualizeCashedData(boolean parent) {
+    private void actualizeCachedData(boolean parent) {
         diskUsage.setCaschedDiskUsageBuilds(getBuildsDiskUsage(null, null, false));
-        diskUsage.setCashedDiskUsageCustomWorkspaces(getAllCustomOrNonSlaveWorkspaces(false));
-        diskUsage.setCashedDiskUsageNotLoadedJobs(getAllDiskUsageNotLoadedJobs(false));
-        diskUsage.setCashedDiskUsageWithoutBuilds(getAllDiskUsageWithoutBuilds(false));
-        diskUsage.setCashedDiskUsageWorkspaces(getAllDiskUsageWorkspace(false));
+        diskUsage.setCachedDiskUsageCustomWorkspaces(getAllCustomOrNonSlaveWorkspaces(false));
+        diskUsage.setCachedDiskUsageNotLoadedJobs(getAllDiskUsageNotLoadedJobs(false));
+        diskUsage.setCachedDiskUsageWithoutBuilds(getAllDiskUsageWithoutBuilds(false));
+        diskUsage.setCachedDiskUsageWorkspaces(getAllDiskUsageWorkspace(false));
         if(group instanceof Item){
             Item item = (Item) group;
             if(item.getParent() != null  && parent){
-                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCashedData();
+                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCachedData();
             }
         }
     }
 
     @Override
-    public Long getAllDiskUsageWithoutBuilds(boolean cashed) {
-        if(cashed){
-            return diskUsage.getCashedDiskUsageWithoutBuilds();
+    public Long getAllDiskUsageWithoutBuilds(boolean cached) {
+        if(cached){
+            return diskUsage.getCachedDiskUsageWithoutBuilds();
         }
         Long size = 0L;
         if(group instanceof AbstractProject){
@@ -358,9 +358,9 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
         }
         for(Item item : getItems()){
                 DiskUsageItemAction action = DiskUsageUtil.getDiskUsageItemAction(item);
-                size += action.getAllDiskUsageWithoutBuilds(cashed);
+                size += action.getAllDiskUsageWithoutBuilds(cached);
         }
-        diskUsage.setCashedDiskUsageWithoutBuilds(size);
+        diskUsage.setCachedDiskUsageWithoutBuilds(size);
         return size;
     }
     
@@ -369,67 +369,67 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
     }
 
     @Override
-    public void actualizeCashedBuildsData() {
+    public void actualizeCachedBuildsData() {
         diskUsage.setCaschedDiskUsageBuilds(getBuildsDiskUsage(null, null, false));
         if(group instanceof Item){
             Item item = (Item) group;
             if(item.getParent() != null){
-                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCashedBuildsData();
+                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCachedBuildsData();
             }
         }
     } 
 
     @Override
-    public void actualizeCashedWorkspaceData() {
-        diskUsage.setCashedDiskUsageWorkspaces(getAllDiskUsageWorkspace(false));
+    public void actualizeCachedWorkspaceData() {
+        diskUsage.setCachedDiskUsageWorkspaces(getAllDiskUsageWorkspace(false));
         if(group instanceof Item){
             Item item = (Item) group;
             if(item.getParent() != null){
-                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCashedWorkspaceData();
+                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCachedWorkspaceData();
             }
         }
     }
 
     @Override
-    public void actualizeCashedNotCustomWorkspaceData() {
-        diskUsage.setCashedDiskUsageCustomWorkspaces(getAllCustomOrNonSlaveWorkspaces(false));
+    public void actualizeCachedNotCustomWorkspaceData() {
+        diskUsage.setCachedDiskUsageCustomWorkspaces(getAllCustomOrNonSlaveWorkspaces(false));
         if(group instanceof Item){
             Item item = (Item) group;
             if(item.getParent() != null){
-                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCashedNotCustomWorkspaceData();
+                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCachedNotCustomWorkspaceData();
             }
         }
     }
 
     @Override
-    public void actualizeCashedJobWithoutBuildsData() {
-        diskUsage.setCashedDiskUsageWithoutBuilds(getAllDiskUsageWithoutBuilds(false));
+    public void actualizeCachedJobWithoutBuildsData() {
+        diskUsage.setCachedDiskUsageWithoutBuilds(getAllDiskUsageWithoutBuilds(false));
         if(group instanceof Item){
             Item item = (Item) group;
             if(item.getParent() != null){
-                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCashedJobWithoutBuildsData();
+                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCachedJobWithoutBuildsData();
             }
         }
     }
 
 
-    public void actualizeCashedNotLoadedJobsData() {
-        diskUsage.setCashedDiskUsageNotLoadedJobs(getAllDiskUsageNotLoadedJobs(false));
+    public void actualizeCachedNotLoadedJobsData() {
+        diskUsage.setCachedDiskUsageNotLoadedJobs(getAllDiskUsageNotLoadedJobs(false));
         if(group instanceof Item){
             Item item = (Item) group;
             if(item.getParent() != null){
-                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCashedNotLoadedJobsData();
+                DiskUsageUtil.getItemGroupAction(item.getParent()).actualizeCachedNotLoadedJobsData();
             }
         }
     }
 
     @Override
-    public void actualizeAllCashedDate() {
-        actualizeCashedNotLoadedJobsData();
-        actualizeCashedJobWithoutBuildsData();
-        actualizeCashedNotCustomWorkspaceData();
-        actualizeCashedWorkspaceData();
-        actualizeCashedBuildsData();
+    public void actualizeAllCachedDate() {
+        actualizeCachedNotLoadedJobsData();
+        actualizeCachedJobWithoutBuildsData();
+        actualizeCachedNotCustomWorkspaceData();
+        actualizeCachedWorkspaceData();
+        actualizeCachedBuildsData();
     }
     
     

@@ -44,10 +44,10 @@ public class ProjectDiskUsage implements Saveable{
     private Map<String,Long> notLoadedBuilds = new ConcurrentHashMap<String, Long>();
     private boolean allBuildsLoaded;
    
-    private Map<String,Long> cashedBuildDiskUsage = new HashMap<String,Long>();
-    private Long cashedDiskUsageWithoutBuilds = 0L;
-    private Long cashedDiskUsageWorkspace = 0L;
-    private Long cashedDiskUsageNonSlaveWorkspace = 0L;
+    private Map<String,Long> cachedBuildDiskUsage = new HashMap<String,Long>();
+    private Long cachedDiskUsageWithoutBuilds = 0L;
+    private Long cachedDiskUsageWorkspace = 0L;
+    private Long cachedDiskUsageNonSlaveWorkspace = 0L;
     
     public ProjectDiskUsage(){
         
@@ -452,59 +452,59 @@ public class ProjectDiskUsage implements Saveable{
     }
 
     /**
-     * @return the cashedBuildDiskUsage
+     * @return the cachedBuildDiskUsage
      */
-    public Map<String,Long> getCashedBuildDiskUsage() {
-        return cashedBuildDiskUsage;
+    public Map<String,Long> getCachedBuildDiskUsage() {
+        return cachedBuildDiskUsage;
     }
 
     /**
-     * @param cashedBuildDiskUsage the cashedBuildDiskUsage to set
+     * @param cachedBuildDiskUsage the cachedBuildDiskUsage to set
      */
-    public void setCashedBuildDiskUsage(Map<String,Long> cashedBuildDiskUsage) {
-        this.cashedBuildDiskUsage = cashedBuildDiskUsage;
+    public void setCachedBuildDiskUsage(Map<String,Long> cachedBuildDiskUsage) {
+        this.cachedBuildDiskUsage = cachedBuildDiskUsage;
     }
 
     /**
-     * @return the cashedDiskUsageWithoutBuilds
+     * @return the cachedDiskUsageWithoutBuilds
      */
-    public Long getCashedDiskUsageWithoutBuilds() {
-        return cashedDiskUsageWithoutBuilds;
+    public Long getCachedDiskUsageWithoutBuilds() {
+        return cachedDiskUsageWithoutBuilds;
     }
 
     /**
-     * @param cashedDiskUsageWithoutBuilds the cashedDiskUsageWithoutBuilds to set
+     * @param cachedDiskUsageWithoutBuilds the cachedDiskUsageWithoutBuilds to set
      */
-    public void setCashedDiskUsageWithoutBuilds(Long cashedDiskUsageWithoutBuilds) {
-        this.cashedDiskUsageWithoutBuilds = cashedDiskUsageWithoutBuilds;
+    public void setCachedDiskUsageWithoutBuilds(Long cachedDiskUsageWithoutBuilds) {
+        this.cachedDiskUsageWithoutBuilds = cachedDiskUsageWithoutBuilds;
     }
 
     /**
-     * @return the cashedDiskUsageWorkspace
+     * @return the cachedDiskUsageWorkspace
      */
-    public Long getCashedDiskUsageWorkspace() {
-        return cashedDiskUsageWorkspace;
+    public Long getCachedDiskUsageWorkspace() {
+        return cachedDiskUsageWorkspace;
     }
 
     /**
-     * @param cashedDiskUsageWorkspace the cashedDiskUsageWorkspace to set
+     * @param cachedDiskUsageWorkspace the cachedDiskUsageWorkspace to set
      */
-    public void setCashedDiskUsageWorkspace(Long cashedDiskUsageWorkspace) {
-        this.cashedDiskUsageWorkspace = cashedDiskUsageWorkspace;
+    public void setCachedDiskUsageWorkspace(Long cachedDiskUsageWorkspace) {
+        this.cachedDiskUsageWorkspace = cachedDiskUsageWorkspace;
     }
 
     /**
-     * @return the cashedDiskUsageNonSlaveWorkspace
+     * @return the cachedDiskUsageNonSlaveWorkspace
      */
-    public Long getCashedDiskUsageNonSlaveWorkspace() {
-        return cashedDiskUsageNonSlaveWorkspace;
+    public Long getCachedDiskUsageNonSlaveWorkspace() {
+        return cachedDiskUsageNonSlaveWorkspace;
     }
 
     /**
-     * @param cashedDiskUsageNonSlaveWorkspace the cashedDiskUsageNonSlaveWorkspace to set
+     * @param cachedDiskUsageNonSlaveWorkspace the cachedDiskUsageNonSlaveWorkspace to set
      */
-    public void setCashedDiskUsageNonSlaveWorkspace(Long cashedDiskUsageNonSlaveWorkspace) {
-        this.cashedDiskUsageNonSlaveWorkspace = cashedDiskUsageNonSlaveWorkspace;
+    public void setCachedDiskUsageNonSlaveWorkspace(Long cachedDiskUsageNonSlaveWorkspace) {
+        this.cachedDiskUsageNonSlaveWorkspace = cachedDiskUsageNonSlaveWorkspace;
     }
     
 }

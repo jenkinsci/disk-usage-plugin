@@ -62,7 +62,7 @@ public class DiskUsageNotUsedDataCalculationThread extends DiskUsageCalculation 
             }
         }
         DiskUsageUtil.calculateDiskUsageNotLoadedJobs(Jenkins.getInstance());
-        DiskUsageJenkinsAction.getInstance().actualizeCashedNotLoadedJobsData();
+        DiskUsageJenkinsAction.getInstance().actualizeCachedNotLoadedJobsData();
 //        plugin.getNotUsedDataDiskUsage().save();
     }
     

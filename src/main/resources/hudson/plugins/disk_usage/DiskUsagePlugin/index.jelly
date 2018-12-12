@@ -26,11 +26,11 @@
 
      <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>  
      
-     <p> <b>${%Jobs}:</b> ${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())},
-         <b>${%Builds}:</b> ${it.getDiskUsageInString(it.getCashedGlobalBuildsDiskUsage())},
-         <b>${%Locked builds}:</b> ${it.getDiskUsageInString(it.getCashedGlobalLockedBuildsDiskUsage())},
-         <b>${%All workspace}:</b> ${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())},
-         <b>${%Not current workspace}:</b> ${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}<br/></p>
+     <p> <b>${%Jobs}:</b> ${it.getDiskUsageInString(it.getCachedGlobalJobsDiskUsage())},
+         <b>${%Builds}:</b> ${it.getDiskUsageInString(it.getCachedGlobalBuildsDiskUsage())},
+         <b>${%Locked builds}:</b> ${it.getDiskUsageInString(it.getCachedGlobalLockedBuildsDiskUsage())},
+         <b>${%All workspace}:</b> ${it.getDiskUsageInString(it.getCachedGlobalWorkspacesDiskUsage())},
+         <b>${%Not current workspace}:</b> ${it.getDiskUsageInString(it.getCachedNonSlaveDiskUsageWorkspace())}<br/></p>
      
      <!-- project table -->
      <j:new var="calendar" className="java.util.GregorianCalendar" /> 
@@ -80,12 +80,12 @@
       <!-- sum of values -->
       <tr class="sortbottom">
         <td data="~~~"><b>${%Total}</b> </td>
-        <td data="${it.getCashedGlobalJobsDiskUsage()}"><b>${it.getDiskUsageInString(it.getCashedGlobalJobsWithoutBuildsDiskUsage() + buildsAll)}</b></td>
+        <td data="${it.getCachedGlobalJobsDiskUsage()}"><b>${it.getDiskUsageInString(it.getCachedGlobalJobsWithoutBuildsDiskUsage() + buildsAll)}</b></td>
         <td data="${buildsAll}"><b>${it.getDiskUsageInString(buildsAll)}</b></td>
         <td data="${buildsLocked}"><b>${it.getDiskUsageInString(buildsLocked)}</b></td>
-        <td data="${it.getCashedGlobalNotLoadedBuildsDiskUsage()}"><b>${it.getDiskUsageInString(it.getCashedGlobalNotLoadedBuildsDiskUsage())}</b></td>
-        <td data="${it.getCashedGlobalWorkspacesDiskUsage()}"><b>${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())}</b></td>
-        <td data="${it.getCashedNonSlaveDiskUsageWorkspace()}"><b>${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}</b></td>
+        <td data="${it.getCachedGlobalNotLoadedBuildsDiskUsage()}"><b>${it.getDiskUsageInString(it.getCachedGlobalNotLoadedBuildsDiskUsage())}</b></td>
+        <td data="${it.getCachedGlobalWorkspacesDiskUsage()}"><b>${it.getDiskUsageInString(it.getCachedGlobalWorkspacesDiskUsage())}</b></td>
+        <td data="${it.getCachedNonSlaveDiskUsageWorkspace()}"><b>${it.getDiskUsageInString(it.getCachedNonSlaveDiskUsageWorkspace())}</b></td>
       </tr>
     </table>
     

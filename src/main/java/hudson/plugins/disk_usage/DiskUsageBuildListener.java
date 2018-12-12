@@ -31,9 +31,9 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
             else{
                 listener.getLogger().println("Skipping calculation of disk usage, it was already done in post build step.");
             }
-            DiskUsageJenkinsAction.getInstance().actualizeCashedBuildsData();
-            DiskUsageJenkinsAction.getInstance().actualizeCashedWorkspaceData();
-            DiskUsageJenkinsAction.getInstance().actualizeCashedNotCustomWorkspaceData();
+            DiskUsageJenkinsAction.getInstance().actualizeCachedBuildsData();
+            DiskUsageJenkinsAction.getInstance().actualizeCachedWorkspaceData();
+            DiskUsageJenkinsAction.getInstance().actualizeCachedNotCustomWorkspaceData();
         }
     
     @Override
@@ -48,7 +48,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
             property.getDiskUsage().removeBuild(information);
             property.getDiskUsage().save();
         }
-        DiskUsageJenkinsAction.getInstance().actualizeCashedBuildsData();
+        DiskUsageJenkinsAction.getInstance().actualizeCachedBuildsData();
 
     }
     

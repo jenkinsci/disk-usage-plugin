@@ -77,7 +77,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         property.saveDiskUsage(); 
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         if(action!=null){
-            action.actualizeCashedBuildsData();
+            action.actualizeCachedBuildsData();
         }
     }
     

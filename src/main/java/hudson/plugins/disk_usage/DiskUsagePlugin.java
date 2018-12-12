@@ -144,75 +144,75 @@ public class DiskUsagePlugin extends Plugin {
 //    }
     
     public void refreshGlobalInformation() throws IOException{
-        DiskUsageJenkinsAction.getInstance().actualizeAllCashedDate();
+        DiskUsageJenkinsAction.getInstance().actualizeAllCachedDate();
     }
     
-    public Long getCashedGlobalBuildsDiskUsage(){
+    public Long getCachedGlobalBuildsDiskUsage(){
         return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("all");
     }
     
-    public Long getCashedGlobalJobsDiskUsage(){
-        return (getCashedGlobalBuildsDiskUsage() + getCashedGlobalJobsWithoutBuildsDiskUsage());
+    public Long getCachedGlobalJobsDiskUsage(){
+        return (getCachedGlobalBuildsDiskUsage() + getCachedGlobalJobsWithoutBuildsDiskUsage());
     }
     
-    public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){
-        return getDiskUsageItemGrouForJenkinsRootAction().getCashedDiskUsageWithoutBuilds();
+    public Long getCachedGlobalJobsWithoutBuildsDiskUsage(){
+        return getDiskUsageItemGrouForJenkinsRootAction().getCachedDiskUsageWithoutBuilds();
     }
     
-    public Long getCashedGlobalLockedBuildsDiskUsage(){
+    public Long getCachedGlobalLockedBuildsDiskUsage(){
      return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("locked");   
     }
     
-    public Long getCashedGlobalNotLoadedBuildsDiskUsage(){
+    public Long getCachedGlobalNotLoadedBuildsDiskUsage(){
      return getDiskUsageItemGrouForJenkinsRootAction().getCaschedDiskUsageBuilds().get("notLoaded");
     }
     
-    public Long getCashedGlobalWorkspacesDiskUsage(){
-        return getDiskUsageItemGrouForJenkinsRootAction().getCashedDiskUsageWorkspaces();
+    public Long getCachedGlobalWorkspacesDiskUsage(){
+        return getDiskUsageItemGrouForJenkinsRootAction().getCachedDiskUsageWorkspaces();
     }
     
-    public Long getCashedNonSlaveDiskUsageWorkspace(){
-        return getDiskUsageItemGrouForJenkinsRootAction().getCashedDiskUsageCustomWorkspaces();
+    public Long getCachedNonSlaveDiskUsageWorkspace(){
+        return getDiskUsageItemGrouForJenkinsRootAction().getCachedDiskUsageCustomWorkspaces();
     }
     
-    public Long getCashedSlaveDiskUsageWorkspace(){
-        return getCashedGlobalWorkspacesDiskUsage() - getCashedNonSlaveDiskUsageWorkspace();
+    public Long getCachedSlaveDiskUsageWorkspace(){
+        return getCachedGlobalWorkspacesDiskUsage() - getCachedNonSlaveDiskUsageWorkspace();
     }
     
     public Long getGlobalBuildsDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return getCashedGlobalBuildsDiskUsage();
+        return getCachedGlobalBuildsDiskUsage();
     }
     
     public Long getGlobalJobsDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return getCashedGlobalJobsDiskUsage();
+        return getCachedGlobalJobsDiskUsage();
     }
     
     public Long getGlobalJobsWithoutBuildsDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return getCashedGlobalJobsWithoutBuildsDiskUsage();
+        return getCachedGlobalJobsWithoutBuildsDiskUsage();
     }
     
     public Long getGlobalWorkspacesDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return this.getCashedGlobalWorkspacesDiskUsage();
+        return this.getCachedGlobalWorkspacesDiskUsage();
     }
     
     
     public Long getGlobalNonSlaveDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
-        return getCashedNonSlaveDiskUsageWorkspace();
+        return getCachedNonSlaveDiskUsageWorkspace();
     }
     
     public Long getGlobalSlaveDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
-        return getCashedSlaveDiskUsageWorkspace();
+        return getCachedSlaveDiskUsageWorkspace();
     }
     
     public Long getGlobalNotLoadedBuildsDiskUsageWorkspace() throws IOException{
         refreshGlobalInformation();
-        return getCashedGlobalNotLoadedBuildsDiskUsage();
+        return getCachedGlobalNotLoadedBuildsDiskUsage();
     }
     
     public BuildDiskUsageCalculationThread getBuildsDiskUsageThread(){
@@ -284,11 +284,11 @@ public class DiskUsagePlugin extends Plugin {
     
     public Graph getOverallGraph(){
         File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
-        long maxValue = getCashedGlobalJobsDiskUsage();
+        long maxValue = getCachedGlobalJobsDiskUsage();
         if(getConfiguration().getShowFreeSpaceForJobDirectory()){
             maxValue = jobsDir.getTotalSpace();
         }
-        long maxValueWorkspace = Math.max(getCashedNonSlaveDiskUsageWorkspace(), getCashedSlaveDiskUsageWorkspace());
+        long maxValueWorkspace = Math.max(getCachedNonSlaveDiskUsageWorkspace(), getCachedSlaveDiskUsageWorkspace());
         List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> record = DiskUsageProjectActionFactory.DESCRIPTOR.getHistory();
         //First iteration just to get scale of the y-axis
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record){
@@ -322,10 +322,10 @@ public class DiskUsagePlugin extends Plugin {
         if(getConfiguration().getShowFreeSpaceForJobDirectory()){
                 dataset.addValue(((Long) jobsDir.getTotalSpace()) / base, "space for jobs directory", "current");
         }
-        dataset.addValue(((Long) getCashedGlobalJobsDiskUsage()) / base, "all jobs", "current");
-        dataset.addValue(((Long) getCashedGlobalBuildsDiskUsage()) / base, "all builds", "current");
-        datasetW.addValue(((Long) getCashedSlaveDiskUsageWorkspace()) / baseWorkspace, "slave workspaces", "current");
-        datasetW.addValue(((Long) getCashedNonSlaveDiskUsageWorkspace()) / baseWorkspace, "non slave workspaces", "current");
+        dataset.addValue(((Long) getCachedGlobalJobsDiskUsage()) / base, "all jobs", "current");
+        dataset.addValue(((Long) getCachedGlobalBuildsDiskUsage()) / base, "all builds", "current");
+        datasetW.addValue(((Long) getCachedSlaveDiskUsageWorkspace()) / baseWorkspace, "slave workspaces", "current");
+        datasetW.addValue(((Long) getCachedNonSlaveDiskUsageWorkspace()) / baseWorkspace, "non slave workspaces", "current");
         return  new DiskUsageGraph(dataset, unit, datasetW, unitWorkspace);
     }  
     

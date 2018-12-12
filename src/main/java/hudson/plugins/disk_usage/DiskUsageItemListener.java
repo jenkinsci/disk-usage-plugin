@@ -73,7 +73,7 @@ public class DiskUsageItemListener extends ItemListener{
     public void onLoaded(){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         plugin.loadDiskUsageItemGroups();
-        DiskUsageUtil.getItemGroupAction(Jenkins.getInstance()).actualizeCashedData();
+        DiskUsageUtil.getItemGroupAction(Jenkins.getInstance()).actualizeCachedData();
 
     }
 }

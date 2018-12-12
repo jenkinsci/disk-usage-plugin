@@ -31,7 +31,7 @@ public class DiskUsagePostBuildCalculation extends Recorder{
       public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener){
         listener.getLogger().println("append disk usage");
           DiskUsageUtil.calculationDiskUsageOfBuild(build, listener);
-          DiskUsageJenkinsAction.getInstance().actualizeCashedBuildsData();
+          DiskUsageJenkinsAction.getInstance().actualizeCachedBuildsData();
           return true;
       }
     

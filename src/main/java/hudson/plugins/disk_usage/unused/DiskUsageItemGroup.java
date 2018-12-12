@@ -37,60 +37,60 @@ public class DiskUsageItemGroup implements Saveable {
     
     private Long diskUsageWithoutJobs = 0L;
     
-    private transient Long cashedDiskUsageWithoutBuilds = 0L;
+    private transient Long cachedDiskUsageWithoutBuilds = 0L;
     
     private transient Map<String,Long> caschedDiskUsageBuilds = new HashMap<String,Long>();
     
-    private transient Long cashedDiskUsageWorkspaces = 0L;
+    private transient Long cachedDiskUsageWorkspaces = 0L;
     
-    private transient Long cashedDiskUsageCustomWorkspaces = 0L;
+    private transient Long cachedDiskUsageCustomWorkspaces = 0L;
     
-    private transient Long cashedDiskUsageNotLoadedJobs = 0L; 
+    private transient Long cachedDiskUsageNotLoadedJobs = 0L; 
     
-    private transient Long cashedDiskUsageWithoutJobs = 0L;
+    private transient Long cachedDiskUsageWithoutJobs = 0L;
     
     public ItemGroup getItemGroup(){
         return itemGroup;
     }
     
-    public Long getCashedDiskUsageWithoutJobs(){
-        return cashedDiskUsageWithoutJobs;
+    public Long getCachedDiskUsageWithoutJobs(){
+        return cachedDiskUsageWithoutJobs;
     }
     
-    public void setcashedDiskUsageWithoutJobs(Long size){
-        this.cashedDiskUsageWithoutJobs = size;
+    public void setcachedDiskUsageWithoutJobs(Long size){
+        this.cachedDiskUsageWithoutJobs = size;
     }
     
-    public Long getCashedDiskUsageNotLoadedJobs(){
-        return cashedDiskUsageNotLoadedJobs;
+    public Long getCachedDiskUsageNotLoadedJobs(){
+        return cachedDiskUsageNotLoadedJobs;
     }
     
-    public void setCashedDiskUsageNotLoadedJobs(Long size){
-        this.cashedDiskUsageNotLoadedJobs = size;
+    public void setCachedDiskUsageNotLoadedJobs(Long size){
+        this.cachedDiskUsageNotLoadedJobs = size;
     }
     
-    public Long getCashedDiskUsageCustomWorkspaces(){
-        return cashedDiskUsageCustomWorkspaces;
+    public Long getCachedDiskUsageCustomWorkspaces(){
+        return cachedDiskUsageCustomWorkspaces;
     }
     
-    public void setCashedDiskUsageCustomWorkspaces(Long size ){
-        this.cashedDiskUsageCustomWorkspaces = size;
+    public void setCachedDiskUsageCustomWorkspaces(Long size ){
+        this.cachedDiskUsageCustomWorkspaces = size;
     }
     
-    public Long getCashedDiskUsageWorkspaces(){
-        return cashedDiskUsageWorkspaces;
+    public Long getCachedDiskUsageWorkspaces(){
+        return cachedDiskUsageWorkspaces;
     }
     
-    public void setCashedDiskUsageWorkspaces(Long size){
-        this.cashedDiskUsageWorkspaces = size;
+    public void setCachedDiskUsageWorkspaces(Long size){
+        this.cachedDiskUsageWorkspaces = size;
     }
     
-    public Long getCashedDiskUsageWithoutBuilds(){
-        return cashedDiskUsageWithoutBuilds;
+    public Long getCachedDiskUsageWithoutBuilds(){
+        return cachedDiskUsageWithoutBuilds;
     }
     
-    public void setCashedDiskUsageWithoutBuilds(Long size){
-        this.cashedDiskUsageWithoutBuilds = size;
+    public void setCachedDiskUsageWithoutBuilds(Long size){
+        this.cachedDiskUsageWithoutBuilds = size;
     }
     
     public Map<String,Long> getCaschedDiskUsageBuilds(){
@@ -212,9 +212,9 @@ public class DiskUsageItemGroup implements Saveable {
         notLoadedJobs.remove(directory);
     }
     
-    public Long getDiskUsageOfNotLoadedJobs(boolean cashed){
-        if(cashed){
-            return cashedDiskUsageNotLoadedJobs;
+    public Long getDiskUsageOfNotLoadedJobs(boolean cached){
+        if(cached){
+            return cachedDiskUsageNotLoadedJobs;
         }
         Long size = 0L;
         for(Long s : notLoadedJobs.values()){

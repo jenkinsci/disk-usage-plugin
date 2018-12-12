@@ -185,23 +185,23 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
         // Timeout for a single Project's workspace analyze (in mn)
         
-    public Long getCashedGlobalBuildsDiskUsage(){
+    public Long getCachedGlobalBuildsDiskUsage(){
         return diskUsageBuilds;
     }
     
-    public Long getCashedGlobalJobsDiskUsage(){
+    public Long getCachedGlobalJobsDiskUsage(){
         return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
     }
     
-    public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){
+    public Long getCachedGlobalJobsWithoutBuildsDiskUsage(){
         return diskUsageJobsWithoutBuilds;
     }
     
-    public Long getCashedGlobalLockedBuildsDiskUsage(){
+    public Long getCachedGlobalLockedBuildsDiskUsage(){
      return diskUsageLockedBuilds;   
     }
     
-    public Long getCashedGlobalWorkspacesDiskUsage(){
+    public Long getCachedGlobalWorkspacesDiskUsage(){
         return diskUsageWorkspaces;
     }
 
