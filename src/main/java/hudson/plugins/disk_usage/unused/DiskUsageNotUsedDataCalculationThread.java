@@ -40,7 +40,9 @@ public class DiskUsageNotUsedDataCalculationThread extends DiskUsageCalculation 
 
     @Override
     public DiskUsageCalculation getLastTask() {
-        return currentTask;
+        synchronized (DiskUsageNotUsedDataCalculationThread.class) {
+            return currentTask;
+        }
     }
 
     public CronTab getCronTab() throws ANTLRException{
@@ -69,15 +71,16 @@ public class DiskUsageNotUsedDataCalculationThread extends DiskUsageCalculation 
     
 
     @Override
-    public AperiodicWork getNewInstance() {   
-        if(currentTask!=null){
-            currentTask.cancel();
+    public AperiodicWork getNewInstance() {
+        synchronized (DiskUsageNotUsedDataCalculationThread.class) {
+            if (currentTask != null) {
+                currentTask.cancel();
+            } else {
+                cancel();
+            }
+            currentTask = new DiskUsageNotUsedDataCalculationThread();
+            return currentTask;
         }
-        else{
-            cancel();
-        }
-        currentTask = new DiskUsageNotUsedDataCalculationThread();
-        return currentTask;
     }
     
     private boolean startExecution(){

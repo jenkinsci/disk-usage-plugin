@@ -68,27 +68,30 @@ public class TestDiskUsageCalculation extends BuildDiskUsageCalculationThread{
 
     @Override
     public AperiodicWork getNewInstance() {
-        TestDiskUsageCalculation c = new TestDiskUsageCalculation(cron, sleep);
-        if(instancesHistory!=null){
-            if(maxInstances<=instancesHistory.size()){
-                instancesHistory.get(0).cancel();
-                instancesHistory.remove(0);
+        synchronized (TestDiskUsageCalculation.class) {
+            TestDiskUsageCalculation c = new TestDiskUsageCalculation(cron, sleep);
+            if (instancesHistory != null) {
+                if (maxInstances <= instancesHistory.size()) {
+                    instancesHistory.get(0).cancel();
+                    instancesHistory.remove(0);
+                }
+                instancesHistory.add(c);
             }
-            instancesHistory.add(c);
+            if (currentInstance != null) {
+                currentInstance.cancel();
+            } else {
+                cancel();
+            }
+            currentInstance = c;
+            return currentInstance;
         }
-        if(currentInstance!=null){
-            currentInstance.cancel();
-        }
-        else{
-            cancel();
-        }
-        currentInstance = c;
-        return currentInstance;
     }
     
     @Override
     public DiskUsageCalculation getLastTask() {
-        return currentInstance;
+        synchronized (TestDiskUsageCalculation.class) {
+            return currentInstance;
+        }
     }
 
 }

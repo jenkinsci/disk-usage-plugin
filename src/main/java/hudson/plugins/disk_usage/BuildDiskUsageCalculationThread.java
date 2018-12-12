@@ -112,20 +112,23 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     }   
 
     @Override
-    public AperiodicWork getNewInstance() {   
-        if(currentTask!=null){
-            currentTask.cancel();
+    public AperiodicWork getNewInstance() {
+        synchronized (BuildDiskUsageCalculationThread.class) {
+            if (currentTask != null) {
+                currentTask.cancel();
+            } else {
+                cancel();
+            }
+            currentTask = new BuildDiskUsageCalculationThread();
+            return currentTask;
         }
-        else{
-            cancel();
-        }
-        currentTask = new BuildDiskUsageCalculationThread();
-        return currentTask;
     }
 
     @Override
     public DiskUsageCalculation getLastTask() {
-        return currentTask;
+        synchronized (BuildDiskUsageCalculationThread.class) {
+            return currentTask;
+        }
     }
     
     private boolean startExecution(){
@@ -135,5 +138,4 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
         }
         return !isExecutingMoreThenOneTimes();
     }
-    
 }
