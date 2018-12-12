@@ -104,7 +104,9 @@ public class BuildDiskUsageActionTest {
         }
         count ++;
         String size = (kiloBytes*count/1024) + " KB";
-        assertEquals("String representation of build disk usage which has "  + size + " is wrong.", size, action.getBuildUsageString());
+        assertTrue("Should have found an action", action != null);
+        if (action!=null)
+            assertEquals("String representation of build disk usage which has "  + size + " is wrong.", size, action.getBuildUsageString());
         }
     
     @Test
