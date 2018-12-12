@@ -155,7 +155,7 @@ public class ProjectDiskUsage implements Saveable{
        DiskUsageBuildInformation information =  new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size, build.isKeepLog());
        notLoadedBuilds.remove(build.getId());
        //id can be both (number or time creation) in case old builds
-       notLoadedBuilds.remove(build.getNumber());
+       notLoadedBuilds.remove(Integer.toString(build.getNumber()));
        addBuildInformation(information, build, size);
        save();
     }
