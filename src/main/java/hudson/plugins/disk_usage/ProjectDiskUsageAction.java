@@ -137,7 +137,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
          Long size = 0l;
         for(String nodeName: diskUsage.getSlaveWorkspacesUsage().keySet()){
             Node slave = Jenkins.getInstance().getNode(nodeName);
-            if(slave==null && !nodeName.isEmpty() && !(slave instanceof Jenkins)) {//slave does not exist
+            if(slave==null || (!nodeName.isEmpty() && !(slave instanceof Jenkins))) {//slave does not exist
                 continue;
             }
             Map<String,Long> paths = diskUsage.getSlaveWorkspacesUsage().get(nodeName);
