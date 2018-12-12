@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Objects;
+
 import jenkins.model.Jenkins;
 
 /**
@@ -123,7 +125,12 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
         }
         return false;
     }
-    
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
     public int compareTo(Object o){
         if(o instanceof DiskUsageBuildInformation){
             return id.compareTo(((DiskUsageBuildInformation)o).getId());
