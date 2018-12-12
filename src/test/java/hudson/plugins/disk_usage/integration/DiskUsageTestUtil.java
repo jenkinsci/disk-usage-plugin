@@ -79,7 +79,7 @@ public class DiskUsageTestUtil {
     }
     
     protected static void createFileWithContent(File file) throws FileNotFoundException{
-        file.getParentFile().mkdirs();
+        assert file.getParentFile().mkdirs() : "Failed to make directories?";
         PrintStream stream = new PrintStream(file);
         stream.println("hello");
         stream.close();

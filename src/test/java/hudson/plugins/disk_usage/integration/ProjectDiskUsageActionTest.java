@@ -228,7 +228,7 @@ public class ProjectDiskUsageActionTest {
         @Override
         public void save(){
             //do not save fake project
-            getRootDir().mkdirs();
+            assert getRootDir().mkdirs() : "eh?";
         }
 
      }
