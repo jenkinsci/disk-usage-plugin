@@ -198,9 +198,6 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             //Transient actions can be created even during deletion of job
             Boolean isLocked = DiskUsageUtil.isKeepLog(build);
             if(information==null && build.getRootDir().exists()){
-                if(isLocked==null){
-                    isLocked=false;
-                }
                 property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size, isLocked), build);
             }
             else{
@@ -208,7 +205,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                     //check if lock is still valide
                     //not for ItemGroup, because MatrixProject causes recursion
                     
-                    if(isLocked!=null && information.isLocked()!= isLocked){
+                    if(information.isLocked()!= isLocked){
                        information.setLockState(isLocked);
                        property.getDiskUsage().save();
                     }

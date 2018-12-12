@@ -762,7 +762,7 @@ public class DiskUsageUtil {
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
          }
-         return null;
+         return Boolean.FALSE;
      }
      
      public static DiskUsageItemAction getDiskUsageItemAction(Item item){
