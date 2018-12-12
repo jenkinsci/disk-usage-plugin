@@ -720,9 +720,9 @@ public class DiskUsagePropertyTest {
     @TestExtension
     public static class SaveableListenerImpl extends SaveableListener {
 
-        protected static boolean saved = false;
+        private static boolean saved = false;
 
-        protected static StackTraceElement[] stackTrace = null;
+        private static StackTraceElement[] stackTrace = null;
 
         @Override
         public void onChange(final Saveable o, final XmlFile file) {
