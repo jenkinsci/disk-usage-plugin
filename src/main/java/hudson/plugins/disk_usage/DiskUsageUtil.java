@@ -14,7 +14,9 @@ import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -434,7 +436,7 @@ public class DiskUsageUtil {
             return true;
         }
         try {
-            DiskUsageBuildInformation.LEGACY_ID_FORMATTER.parse(file.getName());
+            new SimpleDateFormat(DiskUsageBuildInformation.LEGACY_ID_FORMAT).parse(file.getName());
         }
         catch(ParseException e){
             return false;
