@@ -293,7 +293,11 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                             }
                         }
                         catch(Exception e){
-                            LOGGER.warning("Can not check if file " + path.getRemote() + " exists on node " + node.getNodeName());
+                            if (path == null) {
+                                LOGGER.warning("Could not get path for workspace");
+                            } else {
+                                LOGGER.warning("Can not check if file " + path.getRemote() + " exists on node " + node.getNodeName());
+                            }
                         }
                     }
                 }
