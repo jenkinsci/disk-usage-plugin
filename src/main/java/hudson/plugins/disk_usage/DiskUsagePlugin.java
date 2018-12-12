@@ -614,7 +614,9 @@ public class DiskUsagePlugin extends Plugin {
      * @throws ServletException XXX
      */
     public void doUnused(StaplerRequest req, StaplerResponse res) throws IOException, ServletException{
+        @SuppressWarnings("unused")
         Map<AbstractProject,Map<String,Long>> notLoadedBuilds = new HashMap<AbstractProject,Map<String,Long>>();
+        @SuppressWarnings("unused")
         Map<String,Long> notLoadedJobs = new HashMap<String,Long>();
         req.getView(this, "unused.jelly").forward(req, res);
     }
