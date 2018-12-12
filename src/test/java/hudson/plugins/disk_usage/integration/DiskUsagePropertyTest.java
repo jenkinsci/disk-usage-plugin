@@ -682,7 +682,7 @@ public class DiskUsagePropertyTest {
         String value() default "";
         
         class CurrentWorkspacePath extends JenkinsRecipe.Runner<ReplaceHudsonHomeWithCurrentPath>{
-            private String paths;
+            private String paths = "";
             public void decorateHome(JenkinsRule rule, File home){
                 if(paths.isEmpty())
                     return;
