@@ -42,7 +42,8 @@ public class ProjectDiskUsage implements Saveable{
     protected Map<String,Map<String,Long>> slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
     private Set<DiskUsageBuildInformation> buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
     private Map<String,Long> notLoadedBuilds = new ConcurrentHashMap<String, Long>();
-    private boolean allBuildsLoaded;
+    @SuppressWarnings("unused")
+    private boolean allBuildsLoaded = false;
    
     private Map<String,Long> cachedBuildDiskUsage = new HashMap<String,Long>();
     private Long cachedDiskUsageWithoutBuilds = 0L;
