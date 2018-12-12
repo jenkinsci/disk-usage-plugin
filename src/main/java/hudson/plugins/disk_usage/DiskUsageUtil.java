@@ -280,11 +280,11 @@ public class DiskUsageUtil {
         int index = 0;
         if(unit.equals("KB"))
             index = 1;
-        if(unit.equals("MB"))
+        else if(unit.equals("MB"))
             index = 2;
-        if(unit.equals("GB"))
-            index = 3;        
-        if(unit.equals("TB"))
+        else if(unit.equals("GB"))
+            index = 3;
+        else if(unit.equals("TB"))
             index = 4;
         return index;
     }
