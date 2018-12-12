@@ -41,10 +41,14 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         List<File> files = new ArrayList<File>();
         String path = file.getParentFile().getAbsolutePath();
         BufferedReader content = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-        String line = content.readLine();
-        while(line!=null){
-            files.add(new File(path + "/" + line));
-            line = content.readLine();
+        try {
+            String line = content.readLine();
+            while (line != null) {
+                files.add(new File(path + "/" + line));
+                line = content.readLine();
+            }
+        } finally {
+            content.close();
         }
         return files;
     }

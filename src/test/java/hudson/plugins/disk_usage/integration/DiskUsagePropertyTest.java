@@ -380,16 +380,20 @@ public class DiskUsagePropertyTest {
        XmlFile f = new XmlFile(new XStream2(), file);
        String newBuildXml = f.asString().replace("${JENKINS_HOME}",j.jenkins.getRootDir().getAbsolutePath());
        PrintStream st = new PrintStream(file);
-       st.print(newBuildXml);
-       AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
-       AbstractProject project2 = (AbstractProject) j.jenkins.getItem("project2");
-       DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
-       DiskUsageProperty property2 = DiskUsageUtil.getDiskUsageProperty(project2);
-       property2.getDiskUsage().loadAllBuilds(true);
-       assertTrue("Project should contains workspace with path {JENKINS_HOME}/jobs/project1/workspace", property.getSlaveWorkspaceUsage().get("").containsKey("${JENKINS_HOME}/jobs/project1/workspace"));
-       assertTrue("Project should contains workspace with path {JENKINS_HOME}/workspace", property2.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));      
-   
-       assertEquals("Builds should be loaded.", 2, project2._getRuns().getLoadedBuilds().size(), 0);
+       try {
+           st.print(newBuildXml);
+           AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+           AbstractProject project2 = (AbstractProject) j.jenkins.getItem("project2");
+           DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
+           DiskUsageProperty property2 = DiskUsageUtil.getDiskUsageProperty(project2);
+           property2.getDiskUsage().loadAllBuilds(true);
+           assertTrue("Project should contains workspace with path {JENKINS_HOME}/jobs/project1/workspace", property.getSlaveWorkspaceUsage().get("").containsKey("${JENKINS_HOME}/jobs/project1/workspace"));
+           assertTrue("Project should contains workspace with path {JENKINS_HOME}/workspace", property2.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
+
+           assertEquals("Builds should be loaded.", 2, project2._getRuns().getLoadedBuilds().size(), 0);
+       } finally {
+           st.close();
+       }
     }
     
     @Test
