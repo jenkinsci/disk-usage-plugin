@@ -136,7 +136,7 @@ public class DiskUsageItemGroup implements Saveable {
     
     private void findJobDirectory(){
         if(jobDirectoryName == null && itemGroup.getItems().size() > 0){
-            for(String dirName : JOB_DIRECTORY){
+            for(String dirName : getStaticJobDirectory()){
                 File file = new File(itemGroup.getRootDir(), dirName);
                 if(file.exists() && file.isDirectory()){
                     jobDirectoryName = dirName;
@@ -250,6 +250,9 @@ public class DiskUsageItemGroup implements Saveable {
         }
     }
     
-    public static List<String> JOB_DIRECTORY = Arrays.asList("jobs", "configurations");
-    
+    private static List<String> JOB_DIRECTORY = Arrays.asList("jobs", "configurations");
+
+    public static List<String> getStaticJobDirectory() {
+        return JOB_DIRECTORY;
+    }
 }

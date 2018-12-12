@@ -692,7 +692,7 @@ public class DiskUsageUtil {
          File config = new File(file,"config.xml");
          if(config.exists())
              return true;
-         for(String jobsDirectoryName : DiskUsageItemGroup.JOB_DIRECTORY){
+         for(String jobsDirectoryName : DiskUsageItemGroup.getStaticJobDirectory()){
              File jobDir = new File(file,jobsDirectoryName);
              if(jobDir.exists() && jobDir.isDirectory())
                  return true;
