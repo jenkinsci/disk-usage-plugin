@@ -702,7 +702,7 @@ public class DiskUsageUtil {
      
      public static void checkNotLoadedJobs(File file, List<File> notLoadedFiles, List<File> excludedFiles) throws IOException{
          for(File child : file.listFiles()){
-             if((Util.isSymlink(child) && !child.exists()) || !child.isDirectory() | excludedFiles.contains(child)){
+             if((Util.isSymlink(child) && !child.exists()) || !child.isDirectory() || excludedFiles.contains(child)){
                  continue;
              }
              if(looksLikeJobDirectory(child) || looksLikeItemGroupDirectory(child)){
