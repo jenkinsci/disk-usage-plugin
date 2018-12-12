@@ -52,7 +52,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         //wait until thread ends
         for(Thread t : Thread.getAllStackTraces().keySet()){
             if(calculation.name.equals(t.getName())){
-                while(thread.isAlive())
+                while(t.isAlive())
                     Thread.sleep(100);
                 break;
             }
