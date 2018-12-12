@@ -58,7 +58,7 @@ public class DiskUsagePlugin extends Plugin {
     public void addNewItemGroup(ItemGroup group, DiskUsageItemGroup diskUsage){
         DiskUsageItemGroup usage = diskUsageItemGroups.get(group);
         diskUsageItemGroups.put(group, diskUsage);
-        if(usage==null){
+        if(usage!=null){
             usage.load();
         }
     }

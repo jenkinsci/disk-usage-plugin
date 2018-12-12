@@ -531,7 +531,7 @@ public class DiskUsageUtil {
                         else{
                             //should not happen
                             AbstractBuild newLoadedBuild = (AbstractBuild) project._getRuns().getById(buildId);
-                            information = new DiskUsageBuildInformation(buildId, newLoadedBuild.getTimeInMillis(), newLoadedBuild.getNumber(), buildSize, build.isKeepLog());
+                            information = new DiskUsageBuildInformation(buildId, newLoadedBuild.getTimeInMillis(), newLoadedBuild.getNumber(), buildSize, false);
                             property.getDiskUsage().addBuildInformation(information, newLoadedBuild);
                         }
                     }
