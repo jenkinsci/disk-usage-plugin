@@ -291,8 +291,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                             if(path!=null && path.exists() && (diskUsage.slaveWorkspacesUsage.get(node.getNodeName())==null || !diskUsage.slaveWorkspacesUsage.get(node.getNodeName()).containsKey(path.getRemote()))){
                                 putSlaveWorkspace(node, path.getRemote());
                             }
-                        }
-                        catch(Exception e){
+                        } catch (RuntimeException e){
+                            throw e;
+                        } catch(Exception e){
                             if (path == null) {
                                 LOGGER.warning("Could not get path for workspace");
                             } else {
