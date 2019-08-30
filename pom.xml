@@ -18,12 +18,7 @@
     </properties>
 
 
-  <developers>
-    <developer>
-      <id>lvotypko</id>
-      <name>Lucie Votypkova</name>
-    </developer>
-  </developers>
+  <developers/>
 
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/disk-usage-plugin.git</connection>
