@@ -214,7 +214,7 @@ public class DiskUsageUtil {
             try {
                 sendEmail("Jobs exeed size", "Jobs exceed size " + getSizeString(exceedJobsSize) + ". Their size is now " + getSizeString(allJobsSize));
             } catch (MessagingException ex) {
-                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeding build size.", ex);
             }
         }          
     }
@@ -239,7 +239,7 @@ public class DiskUsageUtil {
             try {
                 sendEmail("Workspaces of Job " + project.getDisplayName() + " exceed size", builder.toString());
             } catch (MessagingException ex) {
-                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeding build size.", ex);
             }
         }
     }
@@ -478,7 +478,7 @@ public class DiskUsageUtil {
             try {
                 sendEmail("Job " + project.getDisplayName() + " exceeds size", "Job " + project.getDisplayName() + " has size " + getSizeString(buildSize) + ".");
             } catch (MessagingException ex) {
-                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting job size.", ex);
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeding job size.", ex);
             }
                 }
         if (update) {
@@ -540,7 +540,7 @@ public class DiskUsageUtil {
             try {
                 sendEmail("Build with id " + information.getNumber() + " of project " + project.getDisplayName() + " exceeds size", "Build with id " + information.getNumber() + " of project " + project.getDisplayName() + " has size " + getSizeString(buildSize) + ".");
             } catch (MessagingException ex) {
-                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeding build size.", ex);
             }
         }
     }
