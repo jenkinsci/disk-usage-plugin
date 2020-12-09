@@ -212,7 +212,7 @@ public class DiskUsageUtil {
         Long exceedJobsSize = plugin.getConfiguration().getAllJobsExceedSize();
         if(allJobsSize>exceedJobsSize){
             try {
-                sendEmail("Jobs exeed size", "Jobs exceed size " + getSizeString(exceedJobsSize) + ". Their size is now " + getSizeString(allJobsSize));
+                sendEmail("Jobs exceed size", "Jobs exceed size " + getSizeString(exceedJobsSize) + ". Their size is now " + getSizeString(allJobsSize));
             } catch (MessagingException ex) {
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeding build size.", ex);
             }
