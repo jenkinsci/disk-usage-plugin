@@ -36,7 +36,7 @@ public class DiskUsageProjectActionFactoryTest {
         assertTrue(descriptor.isCalculationWorkspaceEnabled());
         assertTrue(descriptor.getConfiguration().getJobConfiguration().areBuilsCalculatedSeparately());
         assertTrue(descriptor.getConfiguration().getJobConfiguration().getBuildConfiguration().areBuildsRecalculated());
-        assertTrue(descriptor.getCheckWorkspaceOnSlave());
+        assertTrue(descriptor.getCheckWorkspaceOnAgent());
         assertTrue(descriptor.warnAboutAllJobsExceetedSize());
         assertTrue(descriptor.warnAboutBuildExceetedSize());
         assertTrue(descriptor.warnAboutJobExceetedSize());

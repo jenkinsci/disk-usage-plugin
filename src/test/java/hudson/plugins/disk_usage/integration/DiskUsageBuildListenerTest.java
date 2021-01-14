@@ -16,7 +16,7 @@ import hudson.model.Items;
 import hudson.model.listeners.RunListener;
 import hudson.plugins.disk_usage.*;
 import hudson.plugins.disk_usage.configuration.GlobalConfiguration;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.agents.EnvironmentVariablesNodeProperty;
 import hudson.tasks.Shell;
 import java.io.File;
 import java.io.IOException;

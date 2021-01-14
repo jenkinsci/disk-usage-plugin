@@ -28,13 +28,13 @@
                     </tr>
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
-                        <td>${%Slave workspaces}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getAllSlaveWorkspaces(false))}</td>
+                        <td>${%Agent workspaces}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getAllAgentWorkspaces(false))}</td>
                     </tr>
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>
-                        <td>${%Non-slave workspaces}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces(false))}</td>
+                        <td>${%Non-agent workspaces}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getAllCustomOrNonAgentWorkspaces(false))}</td>
                     </tr>
                     <tr>
                         <td><img src="${resURL}/plugin/disk-usage/icons/directory16.png" height="16" width="16" alt="Directory icon" /></td>

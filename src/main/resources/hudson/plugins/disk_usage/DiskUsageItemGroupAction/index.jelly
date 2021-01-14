@@ -1,8 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 <l:layout title="${%Disk Usage}" secured="true">
-       
-   <!-- 
+
+   <!--
      Sorted table of project disk usages
    -->
    <l:side-panel>
@@ -13,7 +13,7 @@
   </l:side-panel>
 
     <l:main-panel>
-         <j:set var="items" value="${it.getItems()}" />   
+         <j:set var="items" value="${it.getItems()}" />
 
 	 <div style="width:auto; float:right; margin:12px;">
 		<div class="test-trend-caption">
@@ -24,40 +24,40 @@
 		</div>
 	</div>
 
-     <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>  
-     
-     <p> <b>${%Jobs}: </b>${it.getSizeInString(it.getAllDiskUsage(true))}, 
+     <h1><img src="${resURL}/plugin/disk-usage/icons/diskusage48.png" /> ${%Disk usage} </h1>
+
+     <p> <b>${%Jobs}: </b>${it.getSizeInString(it.getAllDiskUsage(true))},
          <b>${%Builds}: </b>${it.getSizeInString(it.getBuildsDiskUsage(null, null, true).get("all"))},
-         <b>${%Locked builds}: </b>${it.getSizeInString(it.getBuildsDiskUsage(null, null, true).get("locked"))}, 
+         <b>${%Locked builds}: </b>${it.getSizeInString(it.getBuildsDiskUsage(null, null, true).get("locked"))},
          <b> ${%All workspace}: </b>${it.getSizeInString(it.getAllDiskUsageWorkspace(true))},
-         <b> ${%Not current workspace}: </b>${it.getSizeInString(it.getAllCustomOrNonSlaveWorkspaces(true))}<br/></p>
-     
+         <b> ${%Not current workspace}: </b>${it.getSizeInString(it.getAllCustomOrNonAgentWorkspaces(true))}<br/></p>
+
      <!-- project table -->
-     <j:new var="calendar" className="java.util.GregorianCalendar" /> 
-     <j:new var="string" className="java.lang.String" /> 
+     <j:new var="calendar" className="java.util.GregorianCalendar" />
+     <j:new var="string" className="java.lang.String" />
      <f:form action="filter" method="post">
-         
+
          ${%Builds older than }<input type="text" name="older" value="${request.getParameter('older')}"/>
           <j:set var="olderUnit" value="${request.getParameter('olderUnit')}" />
          <select name="olderUnit">
            <f:option value="${calendar.DAY_OF_YEAR}" selected="${olderUnit==null || string.valueOf(calendar.DAY_OF_YEAR).equals(olderUnit)}">day ago</f:option>
-           <f:option value="${calendar.WEEK_OF_YEAR}" selected="${olderUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week ago</f:option>  
-           <f:option value="${calendar.MONTH}" selected="${olderUnit.equals(string.valueOf(calendar.MONTH))}">month ago</f:option> 
+           <f:option value="${calendar.WEEK_OF_YEAR}" selected="${olderUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week ago</f:option>
+           <f:option value="${calendar.MONTH}" selected="${olderUnit.equals(string.valueOf(calendar.MONTH))}">month ago</f:option>
          </select>
           ${%Builds younger than }<input type="text" name="younger" value="${request.getParameter('younger')}"/>
-         <j:set var="youngerUnit" value="${request.getParameter('youngerUnit')}" /> 
+         <j:set var="youngerUnit" value="${request.getParameter('youngerUnit')}" />
          <select name="youngerUnit">
            <f:option value="${calendar.DAY_OF_YEAR}" selected="${youngerUnit==null || youngerUnit.equals(string.valueOf(calendar.DAY_OF_YEAR))}">day ago</f:option>
-           <f:option value="${calendar.WEEK_OF_YEAR}" selected="${youngerUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week ago</f:option>  
-           <f:option value="${calendar.MONTH}" selected="${youngerUnit.equals(string.valueOf(calendar.MONTH))}">month ago</f:option> 
+           <f:option value="${calendar.WEEK_OF_YEAR}" selected="${youngerUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week ago</f:option>
+           <f:option value="${calendar.MONTH}" selected="${youngerUnit.equals(string.valueOf(calendar.MONTH))}">month ago</f:option>
          </select>
          <input name="submit" type="submit" value="Filter"/>
-      
-     </f:form> 
+
+     </f:form>
      <table id="projectstatus" class="sortable pane bigtable">
       <tr>
-        <th>${%Project name}</th> <th>${%Jobs}</th> <th>${%Builds all}</th> <th>${%Builds locked}</th><th>${%Not loaded builds}</th> <th>${%All workspace}</th> <th>${%Not current slave workspace}</th>
-      </tr>      
+        <th>${%Project name}</th> <th>${%Jobs}</th> <th>${%Builds all}</th> <th>${%Builds locked}</th><th>${%Not loaded builds}</th> <th>${%All workspace}</th> <th>${%Not current agent workspace}</th>
+      </tr>
       <j:set var="jobs" value="0"/>
       <j:set var="buildsAll" value="0"/>
       <j:set var="buildsLocked" value="0"/>
@@ -73,16 +73,16 @@
           <j:set var="buildsLocked" value="${buildsLocked + builds.get('locked')}"/>
           <j:set var="buildsNotLoaded" value="${buildsNotLoaded + builds.get('notLoaded')}"/>
           <j:set var="workspace" value="${workspace + it.getAllDiskUsageWorkspace(item, true)}"/>
-          <j:set var="notWorkspace" value="${notWorkspace + it.getAllCustomOrNonSlaveWorkspaces(item, true)}"/>
+          <j:set var="notWorkspace" value="${notWorkspace + it.getAllCustomOrNonAgentWorkspaces(item, true)}"/>
           <td data="${it.getAllDiskUsage(item,true)}">${it.getSizeInString(it.getAllDiskUsage(item,true))}</td>
           <td data="${builds.get('all')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('all'))}</td>
           <td data="${builds.get('locked')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('locked'))}</td>
-          <td data="${builds.get('notLoaded')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('notLoaded'))}</td>          
+          <td data="${builds.get('notLoaded')}">${it.getSizeInString(it.getBuildsDiskUsage(item,null,null,true).get('notLoaded'))}</td>
           <td data="${it.getAllDiskUsageWorkspace(item, true)}">${it.getSizeInString(it.getAllDiskUsageWorkspace(item, true))}</td>
-          <td data="${it.getAllCustomOrNonSlaveWorkspaces(item, true)}"><b>${it.getSizeInString(it.getAllCustomOrNonSlaveWorkspaces(item, true))}</b></td>
+          <td data="${it.getAllCustomOrNonAgentWorkspaces(item, true)}"><b>${it.getSizeInString(it.getAllCustomOrNonAgentWorkspaces(item, true))}</b></td>
         </tr>
       </j:forEach>
-      
+
       <!-- sum of values -->
       <tr class="sortbottom">
         <td data="~~~"><b>${%Total}</b> </td>
@@ -94,7 +94,7 @@
         <td data="${notWorkspace}"><b>${it.getSizeInString(notWorkspace)}</b></td>
       </tr>
     </table>
-    
+
     <p/>
     <j:if test="${it.hasAdministrativePermission()}">
       <st:include page="calculation.jelly"/>

@@ -33,60 +33,60 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Disk usage of a project
- * 
+ *
  * @author dvrzalik
  */
 @ExportedBean(defaultVisibility = 1)
 public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsageItemAction {
 
     AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project;
-    
 
-    
+
+
     public ProjectDiskUsageAction(AbstractProject<? extends AbstractProject, ? extends AbstractBuild> project) {
         this.project = project;
     }
-    
+
         public String getIconFileName() {
         return null;
     }
-                
-    public String getDisplayName() {      
+
+    public String getDisplayName() {
         return Messages.DisplayName();
     }
 
     public String getUrlName() {
         return Messages.UrlName();
     }
-    
-    
-    public Long getAllSlaveWorkspaces(){
-        return getAllSlaveWorkspaces(true);
+
+
+    public Long getAllAgentWorkspaces(){
+        return getAllAgentWorkspaces(true);
     }
-    
-    
-    public Long getAllSlaveWorkspaces(boolean cashed){
-        return getAllDiskUsageWorkspace(cashed) - getAllCustomOrNonSlaveWorkspaces(cashed);
+
+
+    public Long getAllAgentWorkspaces(boolean cashed){
+        return getAllDiskUsageWorkspace(cashed) - getAllCustomOrNonAgentWorkspaces(cashed);
     }
-    
+
     @Override
-    public Long getAllCustomOrNonSlaveWorkspaces(boolean cashed){
+    public Long getAllCustomOrNonAgentWorkspaces(boolean cashed){
         ProjectDiskUsage diskUsage = getDiskUsage();
         if(cashed){
-            return diskUsage.getCashedDiskUsageNonSlaveWorkspace();
+            return diskUsage.getCashedDiskUsageNonAgentWorkspace();
         }
         Long size = 0l;
-        for(String nodeName: diskUsage.getSlaveWorkspacesUsage().keySet()){
-            Node node = null;  
+        for(String nodeName: diskUsage.getAgentWorkspacesUsage().keySet()){
+            Node node = null;
             if(nodeName.isEmpty()){
                 node = Jenkins.getInstance();
             }
             else{
                 node = Jenkins.getInstance().getNode(nodeName);
-            }            
-            if(node==null) //slave does not exist
+            }
+            if(node==null) //agent does not exist
                 continue;
-            Map<String,Long> paths = diskUsage.getSlaveWorkspacesUsage().get(nodeName);
+            Map<String,Long> paths = diskUsage.getAgentWorkspacesUsage().get(nodeName);
             for(String path: paths.keySet()){
                 Item item = null;
                 if(project instanceof TopLevelItem){
@@ -98,7 +98,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                     }
                 }
                 try{
-                    if(!DiskUsageUtil.isContainedInWorkspace(item, node, path)){ 
+                    if(!DiskUsageUtil.isContainedInWorkspace(item, node, path)){
                         size += paths.get(path);
                     }
                 }
@@ -114,18 +114,18 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                     AbstractProject p = (AbstractProject) i;
                     ProjectDiskUsageAction action = p.getAction(ProjectDiskUsageAction.class);
                     if(action!=null){
-                        size += action.getAllCustomOrNonSlaveWorkspaces(cashed);
-                    } 
+                        size += action.getAllCustomOrNonAgentWorkspaces(cashed);
+                    }
                 }
             }
         }
-        diskUsage.setCashedDiskUsageNonSlaveWorkspace(size);
+        diskUsage.setCashedDiskUsageNonAgentWorkspace(size);
         return size;
     }
-    
+
     /**
      * Returns all workspace disku usage including workspace usage its sub-projects
-     * 
+     *
      * @return disk usage project and its sub-projects
      */
     @Override
@@ -135,12 +135,12 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
             return diskUsage.getCashedDiskUsageWorkspace();
         }
          Long size = 0l;
-        for(String nodeName: diskUsage.getSlaveWorkspacesUsage().keySet()){
-            Node slave = Jenkins.getInstance().getNode(nodeName);
-            if(slave==null && !nodeName.isEmpty() && !(slave instanceof Jenkins)) {//slave does not exist
+        for(String nodeName: diskUsage.getAgentWorkspacesUsage().keySet()){
+            Node agent = Jenkins.getInstance().getNode(nodeName);
+            if(agent==null && !nodeName.isEmpty() && !(agent instanceof Jenkins)) {//agent does not exist
                 continue;
             }
-            Map<String,Long> paths = diskUsage.getSlaveWorkspacesUsage().get(nodeName);
+            Map<String,Long> paths = diskUsage.getAgentWorkspacesUsage().get(nodeName);
             for(String path: paths.keySet()){
                     size += paths.get(path);
             }
@@ -153,26 +153,26 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                     ProjectDiskUsageAction action = (ProjectDiskUsageAction) p.getAction(ProjectDiskUsageAction.class);
                     if(action!=null){
                         size += action.getAllDiskUsageWorkspace(cashed);
-                    } 
+                    }
                 }
             }
         }
         diskUsage.setCashedDiskUsageWorkspace(size);
         return size;
     }
-    
+
     public String getSizeInString(Long size){
        return DiskUsageUtil.getSizeString(size);
     }
-    
+
     public Long getDiskUsageWithoutBuilds(){
         return getAllDiskUsageWithoutBuilds(true);
     }
-    
+
     public Long getAllDiskUsageWithoutBuilds(){
         return getAllDiskUsageWithoutBuilds(true);
     }
-    
+
     @Override
     public Long getAllDiskUsageWithoutBuilds(boolean cashed){
         ProjectDiskUsage diskUsage = getDiskUsage();
@@ -181,7 +181,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         }
         Long size = 0l;
         if(project instanceof ItemGroup){
-            size += DiskUsageUtil.getItemGroupAction((ItemGroup)project).getAllDiskUsageWithoutBuilds(cashed);               
+            size += DiskUsageUtil.getItemGroupAction((ItemGroup)project).getAllDiskUsageWithoutBuilds(cashed);
         }
         else{
             size += diskUsage.getDiskUsageWithoutBuilds();
@@ -189,26 +189,26 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         diskUsage.setCashedDiskUsageWithoutBuilds(size);
         return size;
     }
-    
-    
+
+
     public Long getJobRootDirDiskUsage(boolean cashed) {
         return getBuildsDiskUsage(cashed).get("all") + getDiskUsageWithoutBuilds();
     }
-    
+
     public DiskUsageProperty getDiskUsageProperty(){
         DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
         return property;
     }
-    
+
     public ProjectDiskUsage getDiskUsage(){
         return DiskUsageUtil.getDiskUsageProperty(project).getDiskUsage();
     }
-    
+
     public Long getAllDiskUsageNotLoadedBuilds(boolean cashed) {
-       return getBuildsDiskUsage(cashed).get("notLoaded");     
+       return getBuildsDiskUsage(cashed).get("notLoaded");
     }
-    
-    
+
+
     //todo better to do check somewhere else,it is used for view level too
     private Map<String,Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger) {
         ProjectDiskUsage diskUsage = getDiskUsage();
@@ -251,7 +251,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                                 locked += size;
                             }
                         }
-                        
+
                     }
                     for(File file : diskUsage.getFilesOfNotLoadedBuilds()){
                       GregorianCalendar calendar = new GregorianCalendar();
@@ -267,42 +267,42 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                   }
                 }
             }
-            
+
         }
         usage.put("all", buildsDiskUsage);
         usage.put("locked", locked);
         usage.put("notLoaded", notLoaded);
         return usage;
     }
-    
+
     public Map<String, Long> getBuildsDiskUsage() throws IOException {
         return getBuildsDiskUsage(null, null, true);
     }
-    
+
     public Map<String, Long> getBuildsDiskUsage(boolean cashed) {
         return getBuildsDiskUsage(null, null, cashed);
     }
-    
+
     public Long getAllBuildsDiskUsage(boolean cashed) {
         return getBuildsDiskUsage(null, null,cashed).get("all");
     }
-    
+
     public Long getAllBuildsDiskUsage() {
         return getBuildsDiskUsage(null, null,true).get("all");
     }
- 
+
     public Map<String, Long> getBuildsDiskUsage(Date older, Date yonger) {
         return getBuildsDiskUsage(older, yonger, true);
     }
-    
+
     public Long getDiskUsageWorkspace(){
         return getAllDiskUsageWorkspace();
     }
-    
+
     public Long getAllDiskUsageWorkspace(){
         return getAllDiskUsageWorkspace(true);
     }
-    
+
     /**
      * @return Disk usage for all builds
      */
@@ -348,7 +348,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
                 if(information.isLocked()){
                     locked += size;
                 }
-                
+
             }
           }
           for(File file : diskUsage.getFilesOfNotLoadedBuilds()){
@@ -370,7 +370,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         diskUsage.setCashedBuildDiskUsage(usage);
         return usage;
     }
-    
+
     public BuildDiskUsageAction getLastBuildAction() {
         Run run = project.getLastBuild();
         if (run != null) {
@@ -379,21 +379,21 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
         return null;
     }
-    
+
     public Set<DiskUsageBuildInformation> getBuildsInformation() throws IOException{
         return getDiskUsage().getBuildDiskUsage(false);
     }
 
     /**
      * Generates a graph with disk usage trend
-     * 
+     *
      */
     public Graph getGraph() throws IOException {
         //TODO if(nothing_changed) return;
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
         long maxValueWorkspace = 0;
-        maxValueWorkspace = Math.max(getAllCustomOrNonSlaveWorkspaces(true), getAllSlaveWorkspaces(true));
+        maxValueWorkspace = Math.max(getAllCustomOrNonAgentWorkspaces(true), getAllAgentWorkspaces(true));
         Long jobRootDirDiskUsage = getJobRootDirDiskUsage(true);
         maxValue = jobRootDirDiskUsage;
         ProjectDiskUsage diskUsage = getDiskUsage();
@@ -407,7 +407,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
             if(usage==null || !(usage>0)){
                 usage = diskUsage.getDiskUsageBuildInformation(build.getNumber()).getSize();
             }
-                usages.add(new Object[]{build.getNumber(), getJobRootDirDiskUsage(true), usage, getAllSlaveWorkspaces(true), getAllCustomOrNonSlaveWorkspaces(true)});
+                usages.add(new Object[]{build.getNumber(), getJobRootDirDiskUsage(true), usage, getAllAgentWorkspaces(true), getAllCustomOrNonAgentWorkspaces(true)});
                 maxValue = Math.max(maxValue, usage);
         }
 
@@ -426,13 +426,13 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
             dataset.addValue(((Long) usage[2]) / base,
                     Messages.DiskUsage_Graph_BuildDirectory(), label);
             dataset2.addValue(((Long) usage[3]) / workspaceBase,
-                    Messages.DiskUsage_Graph_SlaveWorkspaces(), label);
+                    Messages.DiskUsage_Graph_AgentWorkspaces(), label);
             dataset2.addValue(((Long) usage[4]) / workspaceBase,
-                    Messages.DiskUsage_Graph_NonSlaveWorkspaces(), label);
+                    Messages.DiskUsage_Graph_NonAgentWorkspaces(), label);
         }
         return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);
     }
-    
+
     public void doDelete(StaplerRequest req, StaplerResponse res) throws IOException, ServletException{
         String buildId = req.getParameter("buildId");
         File file = new File(project.getBuildDir(), buildId);
@@ -440,7 +440,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         getDiskUsage().removeDeletedNotLoadedBuild(buildId);
         req.getView(this, "index.jelly").forward(req, res);
     }
-    
+
     public void doReload(StaplerRequest req, StaplerResponse res) throws IOException, ServletException{
         String buildId = req.getParameter("buildId");
         AbstractBuild build = project.getBuild(buildId);
@@ -452,7 +452,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         }
         req.getView(this, "index.jelly").forward(req, res);
     }
-    
+
     @Override
     public Long getAllDiskUsage(boolean cashed) {
         Long size = getAllBuildsDiskUsage(cashed) + getAllDiskUsageWithoutBuilds(cashed) + getAllDiskUsageNotLoadedBuilds(cashed);
@@ -472,7 +472,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
     private void actualizeCashedData(boolean parent) {
         ProjectDiskUsage diskUsage = getDiskUsage();
         diskUsage.setCashedBuildDiskUsage(getBuildsDiskUsage(false));
-        diskUsage.setCashedDiskUsageNonSlaveWorkspace(getAllCustomOrNonSlaveWorkspaces(false));
+        diskUsage.setCashedDiskUsageNonAgentWorkspace(getAllCustomOrNonAgentWorkspaces(false));
         diskUsage.setCashedDiskUsageWithoutBuilds(getAllDiskUsageWithoutBuilds(false));
         diskUsage.setCashedDiskUsageWorkspace(getAllDiskUsageWorkspace(false));
         ItemGroup group = project.getParent();
@@ -492,7 +492,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
         if(project.getParent() != null){
             DiskUsageUtil.getItemGroupAction(project.getParent()).actualizeCashedBuildsData();
         }
-    } 
+    }
 
     @Override
     public void actualizeCashedWorkspaceData() {
@@ -504,7 +504,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
 
     @Override
     public void actualizeCashedNotCustomWorkspaceData() {
-        getDiskUsage().setCashedDiskUsageNonSlaveWorkspace(getAllCustomOrNonSlaveWorkspaces(false));
+        getDiskUsage().setCashedDiskUsageNonAgentWorkspace(getAllCustomOrNonAgentWorkspaces(false));
         if(project.getParent() != null){
             DiskUsageUtil.getItemGroupAction(project.getParent()).actualizeCashedNotCustomWorkspaceData();
         }
@@ -517,7 +517,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction, DiskUsage
             DiskUsageUtil.getItemGroupAction(project.getParent()).actualizeCashedJobWithoutBuildsData();
         }
     }
-    
+
      @Override
     public void actualizeAllCashedDate() {
         actualizeCashedJobWithoutBuildsData();

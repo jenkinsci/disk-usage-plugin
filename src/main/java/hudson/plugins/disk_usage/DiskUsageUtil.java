@@ -87,7 +87,7 @@ public class DiskUsageUtil {
 
         return p;
     }
-    
+
     public static DiskUsageProperty addProperty(Item item) throws Exception {
         DiskUsageProperty property = null;
             if(item instanceof Job){
@@ -106,7 +106,7 @@ public class DiskUsageUtil {
                 loadData(property, false);
             }
             if(item instanceof ItemGroup){
-                
+
                 for(AbstractProject project : DiskUsageUtil.getAllProjects((ItemGroup<?>)item)){
                     DiskUsageProperty p = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                     if(p==null){
@@ -121,9 +121,9 @@ public class DiskUsageUtil {
                     loadData(p, false);
                 }
             }
-            return property; 
+            return property;
     }
-    
+
     protected static void loadData(DiskUsageProperty property, boolean loadAllBuilds){
         if(property==null){
             return;
@@ -139,7 +139,7 @@ public class DiskUsageUtil {
             property.loadDiskUsage();
         }
     }
-    
+
     public static Date getDate(String timeCount, String timeUnit){
         if(timeUnit==null || !timeUnit.matches("\\d+") || !timeCount.matches("\\d+"))
            return null;
@@ -147,13 +147,13 @@ public class DiskUsageUtil {
         int count = Integer.decode(timeCount);
         return getDate(unit,count);
     }
-    
+
     public static Date getDate(int unit, int count){
         Calendar calendar = new GregorianCalendar();
         calendar.set(unit, calendar.get(unit)-count);
         return calendar.getTime();
     }
-    
+
     public static String formatTimeInMilisec(long time){
         if(time/1000<1){
             return "0 seconds";
@@ -177,9 +177,9 @@ public class DiskUsageUtil {
         }
         return formatedTime;
     }
-    
+
     public static void sendEmail(String subject, String message) throws MessagingException{
-       
+
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         String address = plugin.getConfiguration().getEmailAddress();
         if(address==null || address.isEmpty()){
@@ -192,19 +192,19 @@ public class DiskUsageUtil {
         msg.setFrom(new InternetAddress(Mailer.descriptor().getAdminAddress()));
         msg.setSentDate(new Date());
         msg.setRecipient(RecipientType.TO, new InternetAddress(address));
-        Transport.send(msg);     
+        Transport.send(msg);
     }
-    
+
     public static Long getSizeInBytes(String stringSize){
         if(stringSize==null || stringSize.equals("-"))
             return 0l;
         String []values = stringSize.split(" ");
         int index = getIndex(values[1]);
         Long value = Long.decode(values[0]);
-        Double size = value * (Math.pow(1024, index));       
-        return Math.round(size);        
+        Double size = value * (Math.pow(1024, index));
+        return Math.round(size);
     }
-    
+
     public static void controlAllJobsExceedSize() throws IOException{
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         plugin.refreshGlobalInformation();
@@ -216,9 +216,9 @@ public class DiskUsageUtil {
             } catch (MessagingException ex) {
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
             }
-        }          
+        }
     }
-    
+
     public static void controlWorkspaceExceedSize(AbstractProject project){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         DiskUsageProperty property = getDiskUsageProperty(project);
@@ -228,13 +228,13 @@ public class DiskUsageUtil {
             builder.append("Workspaces of Job " + project.getDisplayName() + " have size " + size + ".");
             builder.append("\n");
             builder.append("List of workspaces:");
-            for(String slaveName : property.getSlaveWorkspaceUsage().keySet()){
+            for(String agentName : property.getAgentWorkspaceUsage().keySet()){
                 Long s = 0l;
-                for(Long l :property.getSlaveWorkspaceUsage().get(slaveName).values()){
+                for(Long l :property.getAgentWorkspaceUsage().get(agentName).values()){
                     s += l;
                 }
                 builder.append("\n");
-                builder.append("Slave " + slaveName + " has workspace of job " + project.getDisplayName() + " with size " + getSizeString(s));
+                builder.append("Agent " + agentName + " has workspace of job " + project.getDisplayName() + " with size " + getSizeString(s));
             }
             try {
                 sendEmail("Workspaces of Job " + project.getDisplayName() + " exceed size", builder.toString());
@@ -243,7 +243,7 @@ public class DiskUsageUtil {
             }
         }
     }
-    
+
     public static List<String> parseExcludedJobsFromString(String jobs){
         List<String> list = new ArrayList<String>();
         String jobNames[] = jobs.split(",");
@@ -255,7 +255,7 @@ public class DiskUsageUtil {
         }
         return list;
     }
-    
+
     public static String getSizeString(Long size) {
         if (size == null || size <= 0) {
             return "-";
@@ -273,7 +273,7 @@ public class DiskUsageUtil {
             return 0;
         return Math.floor(Math.log(number) / Math.log(1024));
     }
-        
+
     public static int getIndex(String unit){
         int index = 0;
         if(unit.equals("KB"))
@@ -281,7 +281,7 @@ public class DiskUsageUtil {
         if(unit.equals("MB"))
             index = 2;
         if(unit.equals("GB"))
-            index = 3;        
+            index = 3;
         if(unit.equals("TB"))
             index = 4;
         return index;
@@ -309,11 +309,11 @@ public class DiskUsageUtil {
 
         return unit;
     }
-    
+
     /**
      * Calculate disk usage of build after its execution (or as post-build step)
      * @param build
-     * @param listener 
+     * @param listener
      */
     public static void calculationDiskUsageOfBuild(AbstractBuild build, TaskListener listener){
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(build.getProject())){
@@ -338,7 +338,7 @@ public class DiskUsageUtil {
                         for(AbstractProject p: projects){
                             DiskUsageProperty prop = getDiskUsageProperty(p);
                             prop.checkWorkspaces();
-                            Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
+                            Map<String,Long> paths = prop.getAgentWorkspaceUsage().get(node.getNodeName());
                             if(paths!=null && !paths.isEmpty()){
                                 for(String path: paths.keySet()){
                                     exceededFiles.add(new FilePath(node.getChannel(),path));
@@ -351,7 +351,7 @@ public class DiskUsageUtil {
                     Long startTimeOfWorkspaceCalculation = System.currentTimeMillis();
                     Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(),exceededFiles);
                     listener.getLogger().println("Finished Calculation of disk usage of workspace in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfWorkspaceCalculation));
-                    property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
+                    property.putAgentWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
                     property.saveDiskUsage();
                     DiskUsageUtil.controlWorkspaceExceedSize(project);
                     property.saveDiskUsage();
@@ -362,11 +362,11 @@ public class DiskUsageUtil {
                     Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin fails during build calculation disk space of job " + build.getParent().getDisplayName(), ex);
             }
     }
-    
+
     public static boolean isSymlink(File f) throws IOException{
         return Util.isSymlink(f);
     }
-    
+
     public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
             long size = 0;
             if(!f.exists())
@@ -440,12 +440,12 @@ public class DiskUsageUtil {
         }
         return true;
    }
- 
+
     public static void calculateDiskUsageForProject(AbstractProject project) throws Exception{
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
             return;
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        List<File> exceededFiles = new ArrayList<File>();       
+        List<File> exceededFiles = new ArrayList<File>();
         DiskUsageProperty property = getDiskUsageProperty(project);
         exceededFiles.add(project.getBuildDir());
         //load all - force loading all builds to check state
@@ -484,15 +484,15 @@ public class DiskUsageUtil {
         if (update) {
         	property.saveDiskUsage();
         }
-    }   
-      
-    
+    }
+
+
         public static void calculateDiskUsageForBuild(String buildId, AbstractProject project)
             throws Exception {
             if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
                 return;
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        //Build disk usage has to be always recalculated to be kept up-to-date 
+        //Build disk usage has to be always recalculated to be kept up-to-date
         //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
         long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.getInstance().getBuildDirFor(project), buildId), new ArrayList<File>());
         //        if (build instanceof MavenModuleSetBuild) {
@@ -544,12 +544,12 @@ public class DiskUsageUtil {
             }
         }
     }
-        
+
     public static Long calculateWorkspaceDiskUsageForPath(FilePath workspace, ArrayList<FilePath> exceeded) throws IOException, InterruptedException{
         Long diskUsage = 0l;
         if(workspace.exists()){
             try{
-                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getTimeoutWorkspace(), TimeUnit.MINUTES);             
+                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getTimeoutWorkspace(), TimeUnit.MINUTES);
             }
             catch(Exception e){
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for file path " + workspace.getRemote() + " through channel " + workspace.getChannel(),e);
@@ -557,14 +557,14 @@ public class DiskUsageUtil {
         }
         return diskUsage;
     }
-    
+
     public static void calculateWorkspaceDiskUsage(AbstractProject project) throws Exception {
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
             return;
         DiskUsageProperty property =  getDiskUsageProperty(project);
-        
+
         property.checkWorkspaces();
-        for(String nodeName: property.getSlaveWorkspaceUsage().keySet()){
+        for(String nodeName: property.getAgentWorkspaceUsage().keySet()){
             Node node = null;
             if(nodeName.isEmpty()){
                 node = Jenkins.getInstance();
@@ -576,21 +576,21 @@ public class DiskUsageUtil {
                 //probably does not exists yet
                 continue;
             }
-            
+
             if(node.toComputer()!=null && node.toComputer().getChannel()!=null){
-                Iterator<String> iterator = property.getSlaveWorkspaceUsage().get(nodeName).keySet().iterator();
+                Iterator<String> iterator = property.getAgentWorkspaceUsage().get(nodeName).keySet().iterator();
                 while(iterator.hasNext()){
                     String projectWorkspace = iterator.next();
                     FilePath workspace = new FilePath(node.toComputer().getChannel(), projectWorkspace);
                     if(workspace.exists()){
-                        Long diskUsage = property.getSlaveWorkspaceUsage().get(node.getNodeName()).get(workspace.getRemote());
+                        Long diskUsage = property.getAgentWorkspaceUsage().get(node.getNodeName()).get(workspace.getRemote());
                         ArrayList<FilePath> exceededFiles = new ArrayList<FilePath>();
                         if(project instanceof ItemGroup){
                             List<AbstractProject> projects = getAllProjects((ItemGroup) project);
                             for(AbstractProject p: projects){
                                 DiskUsageProperty prop = getDiskUsageProperty(p);
                                 prop.checkWorkspaces();
-                                Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
+                                Map<String,Long> paths = prop.getAgentWorkspaceUsage().get(node.getNodeName());
                                 if(paths!=null && !paths.isEmpty()){
                                     for(String path: paths.keySet()){
                                         exceededFiles.add(new FilePath(node.getChannel(),path));
@@ -600,7 +600,7 @@ public class DiskUsageUtil {
                         }
                         diskUsage = calculateWorkspaceDiskUsageForPath(workspace, exceededFiles);
                         if(diskUsage!=null && diskUsage>0){
-                            property.putSlaveWorkspaceSize(node, workspace.getRemote(), diskUsage);
+                            property.putAgentWorkspaceSize(node, workspace.getRemote(), diskUsage);
                         }
                         controlWorkspaceExceedSize(project);
                     }
@@ -612,7 +612,7 @@ public class DiskUsageUtil {
         }
         property.saveDiskUsage();
     }
-    
+
     public static List<AbstractProject> getAllProjects(ItemGroup<? extends Item> itemGroup) {
         List<AbstractProject> items = new ArrayList<AbstractProject>();
         for (Item item : itemGroup.getItems()) {
@@ -625,11 +625,11 @@ public class DiskUsageUtil {
         }
         return items;
     }
-    
+
 //    public static void calculateNotUsedData() throws IOException{
-//        checkUnloadedDataForItemGroup(Jenkins.getInstance(),null); 
+//        checkUnloadedDataForItemGroup(Jenkins.getInstance(),null);
 //    }
-    
+
      public static boolean isJobLoaded(ItemGroup itemGroup, String directoryName){
         for(Item item : (Collection<Item>)itemGroup.getItems()){
            if(itemGroup.getRootDirFor(item).getName().equals(directoryName)){
@@ -638,7 +638,7 @@ public class DiskUsageUtil {
         }
         return false;
     }
-     
+
      public static void calculateDiskUsageNotLoadedJobs(ItemGroup group){
          DiskUsageItemGroup diskUsage = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getDiskUsageItemGroup(group);
          File jobsDirectory = diskUsage.getJobDirectory();
@@ -670,7 +670,7 @@ public class DiskUsageUtil {
         }
         diskUsage.save();
      }
-     
+
      public static boolean looksLikeJobDirectory(File file){
          File config = new File(file,"config.xml");
          if(config.exists())
@@ -684,7 +684,7 @@ public class DiskUsageUtil {
          }
          return true;
      }
-     
+
      public static boolean looksLikeItemGroupDirectory(File file){
          File config = new File(file,"config.xml");
          if(config.exists())
@@ -696,7 +696,7 @@ public class DiskUsageUtil {
          }
          return false;
      }
-     
+
      public static void checkNotLoadedJobs(File file, List<File> notLoadedFiles, List<File> excludedFiles) throws IOException{
          for(File child : file.listFiles()){
              if((Util.isSymlink(child) && !child.exists()) || !child.isDirectory() | excludedFiles.contains(child)){
@@ -710,7 +710,7 @@ public class DiskUsageUtil {
              }
          }
      }
-     
+
      public static DiskUsageItemGroupAction getItemGroupAction(ItemGroup group){
          if(group instanceof AbstractItem){
                     AbstractItem aItem = (AbstractItem) group;
@@ -725,11 +725,11 @@ public class DiskUsageUtil {
          DiskUsageItemGroup usage = plugin.getDiskUsageItemGroup(group);
          return new DiskUsageItemGroupAction(usage);
      }
-     
+
      public static boolean isContainedInWorkspace(Item item, Node node, String path){
-        if(node instanceof Slave){
-            Slave slave = (Slave) node;
-            return path.contains(slave.getRemoteFS());
+        if(node instanceof Agent){
+            Agent agent = (Agent) node;
+            return path.contains(agent.getRemoteFS());
         }
         else {
             if (item instanceof TopLevelItem) {
@@ -748,8 +748,8 @@ public class DiskUsageUtil {
             return false;
         }
     }
-     
-     
+
+
      //serve only for obtaining information about keep log during loading build - matrix plugin in method whyKeepLog scen builds and causes cycle of method onLoad
      protected static Boolean isKeepLog(AbstractBuild build) {
          File file = new File(build.getRootDir(),"config.xml");
@@ -763,7 +763,7 @@ public class DiskUsageUtil {
          }
          return null;
      }
-     
+
      public static DiskUsageItemAction getDiskUsageItemAction(Item item){
         if(item instanceof AbstractProject) {
             AbstractProject project = (AbstractProject) item;
@@ -775,12 +775,12 @@ public class DiskUsageUtil {
         //there is not supported something else
         return null;
     }
-     
+
      public static void actualizeCashedData(Item item){
          DiskUsageItemAction action = getDiskUsageItemAction(item);
-         
+
      }
-    
+
 
     /**
      * A {@link Callable} which computes disk usage of remote file object
@@ -809,10 +809,10 @@ public class DiskUsageUtil {
 
         @Override
         public void checkRoles(RoleChecker rc) throws SecurityException {
-           
+
         }
-       
+
     }
-    
+
     public static final Logger LOGGER = Logger.getLogger(DiskUsageUtil.class.getName());
 }

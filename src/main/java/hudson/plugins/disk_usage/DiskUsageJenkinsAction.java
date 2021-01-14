@@ -26,11 +26,11 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 @Extension
 public class DiskUsageJenkinsAction extends DiskUsageItemGroupAction implements RootAction {
-    
+
     public DiskUsageJenkinsAction(){
         super(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getDiskUsageItemGrouForJenkinsRootAction());
     }
-    
+
     public static DiskUsageJenkinsAction getInstance(){
         List<Action> actions = Jenkins.getInstance().getActions();
         for(Action a : actions){
@@ -44,7 +44,7 @@ public class DiskUsageJenkinsAction extends DiskUsageItemGroupAction implements 
         Jenkins.getInstance().getActions().add(action);
         return action;
     }
-    
+
     @Override
     public String getIconFileName() {
             return "/plugin/disk-usage/icons/diskusage48.png";
@@ -59,18 +59,18 @@ public class DiskUsageJenkinsAction extends DiskUsageItemGroupAction implements 
     public String getUrlName() {
         return "disk-usage";
     }
-    
+
     public boolean isGraphAvailable(){
         return true;
     }
-    
+
     public Graph getOverallGraph(){
         File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
         long maxValue = getAllDiskUsage(true);
         if(getConfiguration().getShowFreeSpaceForJobDirectory()){
             maxValue = jobsDir.getTotalSpace();
         }
-        long maxValueWorkspace = Math.max(getAllCustomOrNonSlaveWorkspaces(true), getAllDiskUsageWorkspace(true));
+        long maxValueWorkspace = Math.max(getAllCustomOrNonAgentWorkspaces(true), getAllDiskUsageWorkspace(true));
         List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> record = DiskUsageProjectActionFactory.DESCRIPTOR.getHistory();
         //First iteration just to get scale of the y-axis
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record){
@@ -78,8 +78,8 @@ public class DiskUsageJenkinsAction extends DiskUsageItemGroupAction implements 
                 maxValue = Math.max(maxValue,usage.getAllSpace());
             }
             maxValue = Math.max(maxValue, usage.getJobsDiskUsage());
-            maxValueWorkspace = Math.max(maxValueWorkspace, usage.getSlaveWorkspacesUsage());
-            maxValueWorkspace = Math.max(maxValueWorkspace, usage.getNonSlaveWorkspacesUsage());           
+            maxValueWorkspace = Math.max(maxValueWorkspace, usage.getAgentWorkspacesUsage());
+            maxValueWorkspace = Math.max(maxValueWorkspace, usage.getNonAgentWorkspacesUsage());
         }
         int floor = (int) DiskUsageUtil.getScale(maxValue);
         int floorWorkspace = (int) DiskUsageUtil.getScale(maxValueWorkspace);
@@ -96,90 +96,90 @@ public class DiskUsageJenkinsAction extends DiskUsageItemGroupAction implements 
             }
             dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
             dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
-            datasetW.addValue(((Long) usage.getSlaveWorkspacesUsage()) / baseWorkspace, "slave workspaces", label); 
-            datasetW.addValue(((Long) usage.getNonSlaveWorkspacesUsage()) / baseWorkspace, "non slave workspaces", label); 
+            datasetW.addValue(((Long) usage.getAgentWorkspacesUsage()) / baseWorkspace, "agent workspaces", label);
+            datasetW.addValue(((Long) usage.getNonAgentWorkspacesUsage()) / baseWorkspace, "non agent workspaces", label);
         }
-        
+
         //add current state
         if(getConfiguration().getShowFreeSpaceForJobDirectory()){
                 dataset.addValue(((Long) jobsDir.getTotalSpace()) / base, "space for jobs directory", "current");
         }
         dataset.addValue(((Long) getAllDiskUsage(true)) / base, "all jobs", "current");
         dataset.addValue(((Long) getBuildsDiskUsage(null, null, true).get("all")) / base, "all builds", "current");
-        datasetW.addValue(((Long) getAllDiskUsageWorkspace(true)) / baseWorkspace, "slave workspaces", "current");
-        datasetW.addValue(((Long) getAllCustomOrNonSlaveWorkspaces(true)) / baseWorkspace, "non slave workspaces", "current");
+        datasetW.addValue(((Long) getAllDiskUsageWorkspace(true)) / baseWorkspace, "agent workspaces", "current");
+        datasetW.addValue(((Long) getAllCustomOrNonAgentWorkspaces(true)) / baseWorkspace, "non agent workspaces", "current");
         return  new DiskUsageGraph(dataset, unit, datasetW, unitWorkspace);
-    }  
+    }
 
     public DiskUsageProjectActionFactory.DescriptorImpl getConfiguration(){
         return DiskUsageProjectActionFactory.DESCRIPTOR;
     }
-    
+
     public BuildDiskUsageCalculationThread getBuildsDiskUsageThread(){
         return AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
     }
-    
+
     public JobWithoutBuildsDiskUsageCalculation getJobsDiskUsageThread(){
         return AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
     }
-    
+
     public WorkspaceDiskUsageCalculationThread getWorkspaceDiskUsageThread(){
-       return AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class); 
+       return AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
     }
-    
+
     public DiskUsageNotUsedDataCalculationThread getNotUsedDataDiskUsageThread(){
-       return AperiodicWork.all().get(DiskUsageNotUsedDataCalculationThread.class); 
+       return AperiodicWork.all().get(DiskUsageNotUsedDataCalculationThread.class);
     }
-    
+
     public String getCountIntervalForBuilds(){
         long nextExecution = getBuildsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
-            nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();    
+            nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
+
     public String getCountIntervalForJobs(){
         long nextExecution = getJobsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution<=0) //not scheduled
             nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
+
     public String getCountIntervalForWorkspaces(){
         long nextExecution = getWorkspaceDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
             if(nextExecution<=0) //not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
+
     public String getCountIntervalForNotUsedData(){
         long nextExecution = getNotUsedDataDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
             if(nextExecution<=0) //not scheduled
             nextExecution = getNotUsedDataDiskUsageThread().getRecurrencePeriod();
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
+
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationBuildsEnabled() && !getBuildsDiskUsageThread().isExecuting())
             getBuildsDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
-    
+
     public void doRecordJobsDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationJobsEnabled() && !getJobsDiskUsageThread().isExecuting())
             getJobsDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
-    
+
     public void doRecordWorkspaceDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationWorkspaceEnabled() && !getWorkspaceDiskUsageThread().isExecuting())
             getWorkspaceDiskUsageThread().doAperiodicRun();
         res.forwardToPreviousPage(req);
     }
-    
+
     public void doRecordNotUsedDataDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationNotUsedDataEnabled() && !getNotUsedDataDiskUsageThread().isExecuting())

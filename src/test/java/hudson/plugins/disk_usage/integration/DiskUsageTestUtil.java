@@ -9,10 +9,10 @@ import hudson.model.Node.Mode;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
 import hudson.plugins.disk_usage.DiskUsageCalculation;
 import hudson.plugins.disk_usage.DiskUsageProperty;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.RetentionStrategy;
+import hudson.agents.ComputerLauncher;
+import hudson.agents.DumbAgent;
+import hudson.agents.NodeProperty;
+import hudson.agents.RetentionStrategy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +41,7 @@ public class DiskUsageTestUtil {
         }
         return files;
     }
-    
+
     protected static Long getSize(List<File> files){
         Long lenght = 0l;
         for(File file: files){
@@ -49,18 +49,18 @@ public class DiskUsageTestUtil {
         }
         return lenght;
     }
-    
-    protected static Slave createSlave(String name, String remoteFS, Jenkins jenkins, ComputerLauncher launcher) throws Exception{
-        DumbSlave slave = new DumbSlave(name, "dummy",
+
+    protected static Agent createAgent(String name, String remoteFS, Jenkins jenkins, ComputerLauncher launcher) throws Exception{
+        DumbAgent agent = new DumbAgent(name, "dummy",
             remoteFS, "2", Mode.NORMAL, "", launcher,
             RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
-    	jenkins.addNode(slave);
-        while(slave.toComputer()==null || !slave.toComputer().isOnline()){
+    	jenkins.addNode(agent);
+        while(agent.toComputer()==null || !agent.toComputer().isOnline()){
             Thread.sleep(100);
         }
-        return slave;
+        return agent;
     }
-    
+
     protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild build){
         for(Action a : build.getAllActions()){
             if(a instanceof BuildDiskUsageAction)
@@ -68,16 +68,16 @@ public class DiskUsageTestUtil {
         }
         return null;
     }
-    
+
     protected static void cancelCalculation(DiskUsageCalculation calculation){
        for(Thread t : Thread.getAllStackTraces().keySet()){
            if(t.getName().equals(calculation.getThreadName())){
                t.interrupt();
                return;
            }
-       } 
+       }
     }
-    
+
     protected static void createFileWithContent(File file) throws FileNotFoundException{
         file.getParentFile().mkdirs();
         PrintStream stream = new PrintStream(file);

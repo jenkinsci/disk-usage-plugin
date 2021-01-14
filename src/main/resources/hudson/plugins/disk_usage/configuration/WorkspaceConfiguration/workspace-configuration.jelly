@@ -13,11 +13,11 @@
                 </select>
               </f:entry>
              </f:optionalBlock>
-             <f:entry title="${%Time out for calculation of slave workspace in minutes}">
+             <f:entry title="${%Time out for calculation of agent workspace in minutes}">
                  <input name="timeoutWorkspace" value="${it.getTimeout()}" />
              </f:entry>
-             <f:entry title="${%Control workspace from slave side too}">
-                <f:checkbox name="checkWorkspaceOnSlave" checked="${it.isCheckWorkspaceOnSlave()}" />
+             <f:entry title="${%Control workspace from agent side too}">
+                <f:checkbox name="checkWorkspaceOnAgent" checked="${it.isCheckWorkspaceOnAgent()}" />
              </f:entry>
              <f:optionalBlock name="recalculationWorkspace" title="${%Enable recalculation of workspace}" checked="${it.isWorskpaceSizeRecalculated()}">
                <f:entry title="${%Time interval for calculation}">

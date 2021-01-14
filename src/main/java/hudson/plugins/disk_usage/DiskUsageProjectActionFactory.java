@@ -88,7 +88,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         private Boolean calculationWorkspace = true;
 
         @Deprecated
-        private Boolean checkWorkspaceOnSlave = false;
+        private Boolean checkWorkspaceOnAgent = false;
 
         @Deprecated
         private String countNotUsedData;
@@ -144,9 +144,9 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                     jobConfiguration = new JobConfiguration(excludedJobs,buildSize, jobSize, allJobsSize, null, buildConfiguration, showGraph);
                 }
                 if (calculationWorkspace) {
-                    workspaceConfiguration = new WorkspaceConfiguration(jobWorkspaceExceedSize, checkWorkspaceOnSlave, countIntervalWorkspace, timeoutWorkspace);
+                    workspaceConfiguration = new WorkspaceConfiguration(jobWorkspaceExceedSize, checkWorkspaceOnAgent, countIntervalWorkspace, timeoutWorkspace);
                 } else {
-                    workspaceConfiguration = new WorkspaceConfiguration(jobWorkspaceExceedSize, checkWorkspaceOnSlave, null, timeoutWorkspace);
+                    workspaceConfiguration = new WorkspaceConfiguration(jobWorkspaceExceedSize, checkWorkspaceOnAgent, null, timeoutWorkspace);
                 }
                 if (calculationNotUsedData){
                     configuration = new GlobalConfiguration(email, showFreeSpaceForJobDirectory, historyLength, jobConfiguration, workspaceConfiguration, countNotUsedData);
@@ -165,7 +165,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                 showGraph = null;
                 calculationWorkspace = null;
                 jobWorkspaceExceedSize = null;
-                checkWorkspaceOnSlave = null;
+                checkWorkspaceOnAgent = null;
                 countIntervalWorkspace = null;
                 timeoutWorkspace = null;
                 calculationNotUsedData = null;
@@ -184,23 +184,23 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
 
         // Timeout for a single Project's workspace analyze (in mn)
-        
+
     public Long getCashedGlobalBuildsDiskUsage(){
         return diskUsageBuilds;
     }
-    
+
     public Long getCashedGlobalJobsDiskUsage(){
         return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
     }
-    
+
     public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){
         return diskUsageJobsWithoutBuilds;
     }
-    
+
     public Long getCashedGlobalLockedBuildsDiskUsage(){
-     return diskUsageLockedBuilds;   
+     return diskUsageLockedBuilds;
     }
-    
+
     public Long getCashedGlobalWorkspacesDiskUsage(){
         return diskUsageWorkspaces;
     }
@@ -231,7 +231,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return null;
     }
-    
+
     public String getJobWorkspaceExceedSizeInString(){
         if(getConfiguration().isDiskUsageCalculatedForWorkspace() && getConfiguration().getWorkspaceConfiguration().isExceededSizeSet()) {
             return getConfiguration().getWorkspaceConfiguration().getWorskpaceExceedSize();
@@ -239,7 +239,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         return null;
 
     }
-    
+
     public boolean isShowGraph() {
         if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
             return getConfiguration().getJobConfiguration().showGraph();
@@ -280,14 +280,14 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return null;
     }
-    
+
     public String getCountIntervalForJobs(){
         if(isCalculationJobsEnabled()){
             return getConfiguration().getJobConfiguration().calculationInterval();
         }
         return null;
     }
-    
+
     public String getCountIntervalForWorkspaces(){
 
         if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
@@ -295,30 +295,30 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return null;
     }
-    
+
     public String getCountIntervalForNotUsedData(){
         return getConfiguration().getCalculationIntervalForNonUsedData();
     }
-    
-    public boolean getCheckWorkspaceOnSlave(){
+
+    public boolean getCheckWorkspaceOnAgent(){
         if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            return getConfiguration().getWorkspaceConfiguration().isCheckWorkspaceOnSlave();
+            return getConfiguration().getWorkspaceConfiguration().isCheckWorkspaceOnAgent();
         }
         return false;
     }
-    
-    public void setCheckWorkspaceOnSlave(boolean check){
+
+    public void setCheckWorkspaceOnAgent(boolean check){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
-            getConfiguration().getWorkspaceConfiguration().setCheckWorkspaceOnSlave(check);
+            getConfiguration().getWorkspaceConfiguration().setCheckWorkspaceOnAgent(check);
         }
     }
-    
+
     public void setExcludedJobs(List<String> excludedJobs){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
             getConfiguration().getJobConfiguration().setExcludedJobs(excludedJobs);
         }
     }
-    
+
      public boolean isCalculationWorkspaceEnabled() {
 
          if (getConfiguration().isDiskUsageCalculatedForWorkspace()) {
@@ -326,14 +326,14 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
          }
          return false;
      }
-    
+
     public boolean isCalculationBuildsEnabled(){
         if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
             return getConfiguration().getJobConfiguration().getBuildConfiguration().areBuildsRecalculated();
         }
         return false;
     }
-    
+
     public boolean isCalculationJobsEnabled(){
 
         if(getConfiguration().isDiskUsageCalculatedPerJobs()){
@@ -341,7 +341,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return false;
     }
-    
+
     public boolean isCalculationNotUsedDataEnabled(){
 
         if(getConfiguration().isDiskUsageCalculatedPerJobs()){
@@ -349,7 +349,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return false;
     }
-    
+
     public boolean warnAboutJobWorkspaceExceedSize(){
 
         if(getConfiguration().isDiskUsageCalculatedForWorkspace()){
@@ -357,7 +357,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return false;
     }
-    
+
     public boolean warnAboutAllJobsExceetedSize(){
 
         if(getConfiguration().isDiskUsageCalculatedPerJobs()){
@@ -365,7 +365,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return false;
     }
-    
+
     public boolean warnAboutBuildExceetedSize(){
 
         if(getConfiguration().isDiskUsageCalculatedPerBuilds()){
@@ -373,36 +373,36 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return false;
     }
-    
+
     public boolean warnAboutJobExceetedSize(){
         if(getConfiguration().isDiskUsageCalculatedPerJobs()){
             return getConfiguration().getJobConfiguration().getJobSize()!=null;
         }
         return false;
-    }   
+    }
 
     public String getEmailAddress(){
         return getConfiguration().getEmail();
     }
-    
+
     public boolean warningAboutExceededSize(){
         return getEmailAddress()!=null;
     }
-    
+
     public Long getAllJobsExceedSize(){
         if(warnAboutAllJobsExceetedSize()) {
             return DiskUsageUtil.getSizeInBytes(getConfiguration().getJobConfiguration().getAllJobsSize());
         }
         return null;
     }
-    
+
     public Long getBuildExceedSize(){
         if(warnAboutBuildExceetedSize()) {
             return DiskUsageUtil.getSizeInBytes(getConfiguration().getJobConfiguration().getBuildSize());
         }
         return null;
     }
-    
+
     public Long getJobExceedSize(){
 
         if(warnAboutAllJobsExceetedSize()) {
@@ -410,14 +410,14 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return null;
     }
-    
+
     public String getAllJobsExceedSizeInString(){
         if(warnAboutAllJobsExceetedSize()) {
             return getConfiguration().getJobConfiguration().getAllJobsSize();
         }
         return null;
     }
-    
+
     public String getBuildExceedSizeInString(){
 
         if(warnAboutBuildExceetedSize()) {
@@ -425,7 +425,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return null;
     }
-    
+
     public String getJobExceedSizeInString(){
         if(warnAboutAllJobsExceetedSize()) {
             return getConfiguration().getJobConfiguration().getJobSize();
@@ -438,52 +438,52 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         save();
         return ok;
     }
-    
+
     public void enableBuildsDiskUsageCalculation(){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerBuilds()){
             getConfiguration().getJobConfiguration().getBuildConfiguration().enableRecalculation();
         }
     }
-    
+
     public void disableBuildsDiskUsageCalculation(){
 
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerBuilds()){
             getConfiguration().getJobConfiguration().getBuildConfiguration().disableRecalculation();
         }
     }
-    
+
     public void enableJobsDiskUsageCalculation(){
 
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
             getConfiguration().getJobConfiguration().enableRecalculation();;
         }
     }
-    
+
     public void disableJobsDiskUsageCalculation(){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
             getConfiguration().getJobConfiguration().disableRecalculation();
         }
     }
-    
+
     public void enableWorkspacesDiskUsageCalculation(){
 
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
             getConfiguration().getWorkspaceConfiguration().enableRecalculation();
         }
     }
-    
+
     public void disableWorkspacesDiskUsageCalculation(){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedForWorkspace()){
             getConfiguration().getWorkspaceConfiguration().disableRecalculation();
         }
     }
-    
+
     public String getUnit(String unit){
         if(unit==null)
             return null;
         return unit.split(" ")[1];
     }
-    
+
     public String getValue(String size){
         if(size==null)
             return null;
@@ -533,19 +533,19 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         save();
         return true;
     }
-    
+
     public void onRenameJob(String oldName, String newName){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
             configuration.getJobConfiguration().renameExcludedJob(oldName, newName);
         }
     }
-    
+
     public void onDeleteJob(AbstractProject project){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
             configuration.getJobConfiguration().removeExcludedJob(project.getName());
         }
     }
-    
+
     public boolean isExcluded(AbstractProject project){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
             return configuration.getJobConfiguration().getExcludedJobs().contains(project.getName());
@@ -556,7 +556,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     public GlobalConfiguration.ConfigurationType[] getConfigurationTypes(){
         return GlobalConfiguration.ConfigurationType.values();
      }
-    
+
     public String getExcludedJobsInString(){
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && configuration.isDiskUsageCalculatedPerJobs()) {
             return getConfiguration().getJobConfiguration().getExcludedJobsInString();
@@ -570,7 +570,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
         return 0;
     }
-    
+
     public boolean getShowFreeSpaceForJobDirectory(){
         return getConfiguration().showFreeSpaceForJobDirectory();
     }

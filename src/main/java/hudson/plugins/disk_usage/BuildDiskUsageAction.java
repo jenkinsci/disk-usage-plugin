@@ -34,9 +34,9 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     AbstractBuild build;
     @Deprecated
     DiskUsage diskUsage;
-    
+
     public BuildDiskUsageAction(AbstractBuild build) {
-        this.build = build;       
+        this.build = build;
       //  DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
       //  if(property==null){
        //     try {
@@ -47,8 +47,8 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
       //      }
       //  }
         //DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
-    }  
-    
+    }
+
         public String getIconFileName() {
         return null;
     }
@@ -60,7 +60,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     public String getUrlName() {
         return Messages.UrlName();
     }
-    
+
     public void setDiskUsage(Long size) throws Exception{
         AbstractProject project = build.getProject();
         DiskUsageProperty property = DiskUsageUtil.getDiskUsageProperty(project);
@@ -71,16 +71,16 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         if(information!=null){
             information.setSize(size);
         }
-        else{    
+        else{
             property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size, build.isKeepLog()), build);
         }
-        property.saveDiskUsage(); 
+        property.saveDiskUsage();
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         if(action!=null){
             action.actualizeCashedBuildsData();
         }
     }
-    
+
     /**
      * @return Disk usage of the build (included child builds)
      */
@@ -96,16 +96,16 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         }
         return size;
     }
-    
+
     public Long getAllDiskUsage(){
         Long buildsDiskUsage = getDiskUsage();
         AbstractProject project = build.getProject();
         if(project instanceof ItemGroup){
            buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup)project);
-        }       
+        }
         return buildsDiskUsage;
     }
-    
+
     public String getBuildUsageString(){
         return DiskUsageUtil.getSizeString(getAllDiskUsage());
     }
@@ -125,13 +125,13 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                         if(information.getNumber() == build.getNumber()){
                             buildsDiskUsage += information.getSize();
                         }
-                    }                
+                    }
                 }
             }
         }
         return buildsDiskUsage;
     }
-    
+
     public Object readResolve() {
         //for keeping backward compatibility
         if(diskUsage!=null){
@@ -145,7 +145,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                     if(workspace==null){
                         workspace = node.getWorkspaceFor((TopLevelItem)project);
                     }
-                    Map<String,Long> paths = property.getSlaveWorkspaceUsage().get(node.getDisplayName());
+                    Map<String,Long> paths = property.getAgentWorkspaceUsage().get(node.getDisplayName());
                     Long size = null;
                     if(paths!=null){
                         size = paths.get(workspace.getRemote());
@@ -153,7 +153,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                     try {
                         //previous data about workspace was quite tricky, so check if there is such workspace and size were not recounted
                         if(workspace.exists() && size!=null && size>0){
-                            property.putSlaveWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem)project).getRemote(), diskUsage.wsUsage);
+                            property.putAgentWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem)project).getRemote(), diskUsage.wsUsage);
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.WARNING, null, ex);
@@ -185,13 +185,13 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         //backward compatibility
             BuildDiskUsageAction action = null;
             for(Action a : build.getActions()){
-                
+
                 if(a instanceof BuildDiskUsageAction){
                     action = (BuildDiskUsageAction) a;
                     if(action.buildDiskUsage != null){
-                        
+
                         size=action.buildDiskUsage;
-                    }            
+                    }
                 }
             }
             DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getNumber());
@@ -207,15 +207,15 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                 if(information!=null && !(build.getProject() instanceof ItemGroup)){
                     //check if lock is still valide
                     //not for ItemGroup, because MatrixProject causes recursion
-                    
+
                     if(isLocked!=null && information.isLocked()!= isLocked){
                        information.setLockState(isLocked);
                        property.getDiskUsage().save();
                     }
                 }
-                
+
             }
-            
+
             if(action!=null || buildDiskUsage!=null){
                 property.getDiskUsageBuildInformation(build.getNumber()).setSize(buildDiskUsage);
                 buildDiskUsage=null;
@@ -228,5 +228,5 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                 }
             }
     }
-       
+
 }

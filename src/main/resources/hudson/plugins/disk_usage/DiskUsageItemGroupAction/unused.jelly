@@ -1,8 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 <l:layout title="${%Disk Usage}" secured="true">
-       
-   <!-- 
+
+   <!--
      Sorted table of project disk usages
    -->
    <l:side-panel>
@@ -13,16 +13,16 @@
   </l:side-panel>
 
     <l:main-panel>
-         
-     
-     <p> <b>${%Jobs}: </b>${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())}, 
+
+
+     <p> <b>${%Jobs}: </b>${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())},
          <b>${%Builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalBuildsDiskUsage())},
-         <b>${%Locked builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalLockedBuildsDiskUsage())}, 
+         <b>${%Locked builds}: </b>${it.getDiskUsageInString(it.getCashedGlobalLockedBuildsDiskUsage())},
          <b> ${%All workspace}: </b>${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())},
-         <b> ${%Not current workspace}: </b>${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}<br/></p>
-     
+         <b> ${%Not current workspace}: </b>${it.getDiskUsageInString(it.getCashedNonAgentDiskUsageWorkspace())}<br/></p>
+
      <!-- project table -->
-      
+
      <table id="projectstatus" class="sortable pane bigtable">
       <tr>
         <th>${%Project Name}</th> <th>${%Not loaded builds}</th>
@@ -32,18 +32,18 @@
         <tr>
           <td><b><a href="${rootURL}/${p.url}">${p.fullDisplayName}</a></b> </td>
           <j:set var="diskUsage" value="${it.getDiskUsage(p)}" />
-          
+
            <td data="${diskUsage.getSizeOfAllNotLoadedBuilds()}">${diskUsage.getDiskUsageNotLoadedBuilds()}</td>
          </tr>
       </j:forEach>
-      
+
       <!-- sum of values -->
       <tr class="sortbottom">
         <td data="~~~"><b>${%Total}</b> </td>
         <td data="${it.getTotalSizeOfNotLoadedBuilds()}"><b>${it.getTotalSizeOfNotLoadedBuilds()}</b></td>
         </tr>
     </table>
-    
+
     <p/>
     </l:main-panel>
 </l:layout>

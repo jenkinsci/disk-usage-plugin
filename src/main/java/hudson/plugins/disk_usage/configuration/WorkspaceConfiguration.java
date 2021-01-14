@@ -15,21 +15,21 @@ public class WorkspaceConfiguration {
 
     private String countIntervalWorkspace ="0 1 * * 7";
 
-    private boolean checkWorkspaceOnSlave = false;
+    private boolean checkWorkspaceOnAgent = false;
 
     private String jobWorkspaceExceedSize;
 
     private int timeoutWorkspace = 5;
 
-    public WorkspaceConfiguration(String jobWorkspaceExceedSize, boolean checkWorkspaceOnSlave, String countIntervalWorkspace, int timeoutWorkspace){
+    public WorkspaceConfiguration(String jobWorkspaceExceedSize, boolean checkWorkspaceOnAgent, String countIntervalWorkspace, int timeoutWorkspace){
         this.countIntervalWorkspace = countIntervalWorkspace;
-        this.checkWorkspaceOnSlave = checkWorkspaceOnSlave;
+        this.checkWorkspaceOnAgent = checkWorkspaceOnAgent;
         this.jobWorkspaceExceedSize = jobWorkspaceExceedSize;
         this.timeoutWorkspace = timeoutWorkspace;
     }
 
     public WorkspaceConfiguration(String jobWorkspaceExceedSize, String countIntervalWorkspace, int timeoutWorkspace){
-        this.checkWorkspaceOnSlave = false;
+        this.checkWorkspaceOnAgent = false;
         this.jobWorkspaceExceedSize = jobWorkspaceExceedSize;
         this.countIntervalWorkspace = countIntervalWorkspace;
         this.timeoutWorkspace = timeoutWorkspace;
@@ -37,20 +37,20 @@ public class WorkspaceConfiguration {
 
     public WorkspaceConfiguration(String countIntervalWorkspace, int timeoutWorkspace){
         this.countIntervalWorkspace = countIntervalWorkspace;
-        this.checkWorkspaceOnSlave = false;
+        this.checkWorkspaceOnAgent = false;
         this.jobWorkspaceExceedSize = null;
         this.timeoutWorkspace = timeoutWorkspace;
     }
 
     public WorkspaceConfiguration(){
         countIntervalWorkspace = null;
-        checkWorkspaceOnSlave = false;
+        checkWorkspaceOnAgent = false;
         jobWorkspaceExceedSize = null;
         timeoutWorkspace = 5;
     }
 
-    public void setCheckWorkspaceOnSlave(boolean checkWorkspaceOnSlave){
-        this.checkWorkspaceOnSlave = checkWorkspaceOnSlave;
+    public void setCheckWorkspaceOnAgent(boolean checkWorkspaceOnAgent){
+        this.checkWorkspaceOnAgent = checkWorkspaceOnAgent;
     }
 
     public boolean isWarningSent(){
@@ -70,8 +70,8 @@ public class WorkspaceConfiguration {
         return jobWorkspaceExceedSize;
     }
 
-    public boolean isCheckWorkspaceOnSlave(){
-        return checkWorkspaceOnSlave;
+    public boolean isCheckWorkspaceOnAgent(){
+        return checkWorkspaceOnAgent;
     }
 
     public int getTimeout(){
@@ -111,7 +111,7 @@ public class WorkspaceConfiguration {
             return null;
         }
         System.out.println("calculation workspaces " + form);
-        boolean check = form.getBoolean("checkWorkspaceOnSlave");
+        boolean check = form.getBoolean("checkWorkspaceOnAgent");
         int timeout = form.getInt("timeoutWorkspace");
         String warning = form.containsKey("workspaceWarning")? (form.getJSONObject("workspaceWarning").getInt("jobWorkspaceExceedSize") + " " + form.getJSONObject("workspaceWarning").getString("jobWorkspaceExceedSizeUnit")) : null;
         String recalculation = null;

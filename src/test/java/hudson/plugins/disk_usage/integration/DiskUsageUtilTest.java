@@ -14,7 +14,7 @@ import hudson.model.AbstractBuild;
 import java.io.File;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import hudson.model.Slave;
+import hudson.model.Agent;
 import hudson.model.TopLevelItem;
 import hudson.model.listeners.RunListener;
 import java.util.List;
@@ -28,10 +28,10 @@ import static org.junit.Assert.*;
  * @author Lucie Votypkova
  */
 public class DiskUsageUtilTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     @LocalData
     public void testCalculateDiskUsageForBuild() throws Exception{
@@ -43,7 +43,7 @@ public class DiskUsageUtilTest {
         DiskUsageUtil.calculateDiskUsageForBuild(String.valueOf(build.getNumber()), project);
         Assert.assertEquals("Calculation of build disk usage does not return right size of build directory.", size, DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage());
     }
-    
+
     @Test
     @LocalData
     public void testCalculateDiskUsageForMatrixBuild() throws Exception{
@@ -65,7 +65,7 @@ public class DiskUsageUtilTest {
         }
         Assert.assertEquals("Matrix project project1 has wrong size for its build.", sizeAll, DiskUsageTestUtil.getBuildDiskUsageAction(build).getAllDiskUsage());
     }
-    
+
     @Test
     @LocalData
     public void testCalculateDiskUsageForJob() throws Exception{
@@ -79,9 +79,9 @@ public class DiskUsageUtilTest {
         DiskUsageUtil.calculateDiskUsageForProject(project);
         project.getAction(ProjectDiskUsageAction.class).actualizeCashedData();
         Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds());
-        
+
     }
-    
+
     @Test
     @LocalData
     public void testCalculateDiskUsageForMatrixJob() throws Exception{
@@ -100,7 +100,7 @@ public class DiskUsageUtilTest {
             sizeAll += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(f)) + config.getRootDir().length();
             sizeAll += DiskUsageUtil.getDiskUsageProperty(config).getProjectDiskUsage().getConfigFile().getFile().length();
         }
-        
+
         DiskUsageUtil.calculateDiskUsageForProject(project);
         project.getAction(ProjectDiskUsageAction.class).actualizeCashedJobWithoutBuildsData();
         Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsage().getDiskUsageWithoutBuilds());
@@ -109,9 +109,9 @@ public class DiskUsageUtilTest {
             p.getAction(ProjectDiskUsageAction.class).actualizeCashedJobWithoutBuildsData();
         }
         Assert.assertEquals("Calculation of job disk usage does not return right size of job and its sub-jobs without builds.", sizeAll, project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds());
-    
+
     }
-    
+
     @Test
     @LocalData
     public void testCalculateDiskUsageWorkspaceForProject() throws Exception{
@@ -119,27 +119,27 @@ public class DiskUsageUtilTest {
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
-        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Agent agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Agent agent2 = DiskUsageTestUtil.createAgent("agent2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
         FreeStyleProject project1 = j.createFreeStyleProject("project1");
         FreeStyleProject project2 = j.createFreeStyleProject("project2");
-        project1.setAssignedNode(slave1);
-        project2.setAssignedNode(slave1);
+        project1.setAssignedNode(agent1);
+        project2.setAssignedNode(agent1);
         j.buildAndAssertSuccess(project1);
         j.buildAndAssertSuccess(project2);
-        project1.setAssignedNode(slave2);
-        project2.setAssignedNode(slave2);
+        project1.setAssignedNode(agent2);
+        project2.setAssignedNode(agent2);
         j.buildAndAssertSuccess(project1);
         j.buildAndAssertSuccess(project2);
-        File file = new File(slave1.getWorkspaceFor(project1).getRemote(), "fileList");
-        File file2 = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
-        Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave1.getWorkspaceFor(project1).length();
-        size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file2)) + slave2.getWorkspaceFor(project1).length();
+        File file = new File(agent1.getWorkspaceFor(project1).getRemote(), "fileList");
+        File file2 = new File(agent2.getWorkspaceFor(project1).getRemote(), "fileList");
+        Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent1.getWorkspaceFor(project1).length();
+        size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file2)) + agent2.getWorkspaceFor(project1).length();
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
-        size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave1.getWorkspaceFor(project2).length() + slave2.getWorkspaceFor(project2).length();
+        file = new File(agent1.getWorkspaceFor(project2).getRemote(), "fileList");
+        size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent1.getWorkspaceFor(project2).length() + agent2.getWorkspaceFor(project2).length();
         DiskUsageUtil.calculateWorkspaceDiskUsage(project2);
         project2.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
@@ -153,30 +153,30 @@ public class DiskUsageUtilTest {
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         j.jenkins.setNumExecutors(0);
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Agent agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
         AxisList axes = new AxisList();
         TextAxis axis1 = new TextAxis("axis","axis1 axis2 axis3");
         axes.add(axis1);
         MatrixProject project1 = j.createProject(MatrixProject.class, "project1");
         project1.setAxes(axes);
-        project1.setAssignedNode(slave1);
+        project1.setAssignedNode(agent1);
         j.buildAndAssertSuccess(project1);
-        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
-        slave2.toComputer().setTemporarilyOffline(true,null);
-        ArrayList<String> slaves = new ArrayList<String>();
-        slaves.add("slave2");
-        LabelAxis axis2 = new LabelAxis("label",slaves);
+        Agent agent2 = DiskUsageTestUtil.createAgent("agent2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        agent2.toComputer().setTemporarilyOffline(true,null);
+        ArrayList<String> agents = new ArrayList<String>();
+        agents.add("agent2");
+        LabelAxis axis2 = new LabelAxis("label",agents);
         axes.add(axis2);
         project1.setAxes(axes);
-        File file = new File(slave1.getWorkspaceFor(project1).getRemote(), "fileList");
-        File fileAxis1 = new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis1", "fileList");
-        File fileAxis2 = new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis2", "fileList");
-        File fileAxis3 = new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis3", "fileList");
-        Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave1.getWorkspaceFor(project1).length();
-        Long sizeAxis1 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis1)) + new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis1").length();
-        Long sizeAxis2 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis2)) + new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis2").length();
-        Long sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(slave1.getWorkspaceFor(project1).getRemote()+"/axis/axis3").length();
-        size = size + sizeAxis1 + sizeAxis2 +sizeAxis3;       
+        File file = new File(agent1.getWorkspaceFor(project1).getRemote(), "fileList");
+        File fileAxis1 = new File(agent1.getWorkspaceFor(project1).getRemote()+"/axis/axis1", "fileList");
+        File fileAxis2 = new File(agent1.getWorkspaceFor(project1).getRemote()+"/axis/axis2", "fileList");
+        File fileAxis3 = new File(agent1.getWorkspaceFor(project1).getRemote()+"/axis/axis3", "fileList");
+        Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent1.getWorkspaceFor(project1).length();
+        Long sizeAxis1 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis1)) + new File(agent1.getWorkspaceFor(project1).getRemote()+"/axis/axis1").length();
+        Long sizeAxis2 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis2)) + new File(agent1.getWorkspaceFor(project1).getRemote()+"/axis/axis2").length();
+        Long sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(agent1.getWorkspaceFor(project1).getRemote()+"/axis/axis3").length();
+        size = size + sizeAxis1 + sizeAxis2 +sizeAxis3;
         for(MatrixConfiguration c: project1.getItems()){
             DiskUsageUtil.calculateWorkspaceDiskUsage(c);
             c.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
@@ -184,49 +184,49 @@ public class DiskUsageUtilTest {
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        
+
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        slave2.toComputer().setTemporarilyOffline(false, null);
-        
-        //next build - configuration are builded on next slave
+        agent2.toComputer().setTemporarilyOffline(false, null);
+
+        //next build - configuration are builded on next agent
         //test if not active configuration are find and right counted
         // test if works with more complex configurations
         j.buildAndAssertSuccess(project1);
-        
+
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        fileAxis1 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/slave2", "fileList");
-        fileAxis2 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/slave2", "fileList");
-        fileAxis3 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/slave2", "fileList");      
-        sizeAxis1 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis1)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/slave2").length();
-        sizeAxis2 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis2)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/slave2").length();
-        sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/slave2").length();
+        fileAxis1 = new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/agent2", "fileList");
+        fileAxis2 = new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/agent2", "fileList");
+        fileAxis3 = new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/agent2", "fileList");
+        sizeAxis1 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis1)) + new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/agent2").length();
+        sizeAxis2 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis2)) + new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/agent2").length();
+        sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/agent2").length();
         for(MatrixConfiguration c: project1.getItems()){
             DiskUsageUtil.calculateWorkspaceDiskUsage(c);
             c.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         }
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1,label=slave2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2,label=slave2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3,label=slave2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        
-        
-        //matrix project is builded on the next slave
-        //test if new folder on slave2 is counted too
-        project1.setAssignedNode(slave2);
+        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+
+
+        //matrix project is builded on the next agent
+        //test if new folder on agent2 is counted too
+        project1.setAssignedNode(agent2);
         j.buildAndAssertSuccess(project1);
-        file = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
-        size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave2.getWorkspaceFor(project1).length();
+        file = new File(agent2.getWorkspaceFor(project1).getRemote(), "fileList");
+        size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent2.getWorkspaceFor(project1).length();
         size = size + sizeAxis1 + sizeAxis2 + sizeAxis3;
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
         Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
     }
-    
+
     @Test
     @LocalData
     public void testCalculateDiskUsageWorkspaceWhenReferenceFromJobDoesNotExists() throws Exception{
@@ -235,56 +235,56 @@ public class DiskUsageUtilTest {
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         DiskUsagePlugin plugin = j.jenkins.getPlugin(DiskUsagePlugin.class);
-        plugin.getConfiguration().setCheckWorkspaceOnSlave(true); 
+        plugin.getConfiguration().setCheckWorkspaceOnAgent(true);
         j.jenkins.setNumExecutors(0);
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Agent agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
         AxisList axes = new AxisList();
         TextAxis axis1 = new TextAxis("axis","axis1 axis2 axis3");
         axes.add(axis1);
         MatrixProject project1 = j.createProject(MatrixProject.class,"project1");
         project1.setAxes(axes);
-        project1.setAssignedNode(slave1);
+        project1.setAssignedNode(agent1);
         j.buildAndAssertSuccess(project1);
-        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
-        File file = new File(slave1.getWorkspaceFor(project1).getRemote(), "fileList");
-        Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave1.getWorkspaceFor(project1).length();
-        File fileAxis1 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/slave2", "fileList");
-        File fileAxis2 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/slave2", "fileList");
-        File fileAxis3 = new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/slave2", "fileList");      
-        Long sizeAxis1 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis1)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/slave2").length();
-        Long sizeAxis2 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis2)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/slave2").length();
-        Long sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/slave2").length();
-        file = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
-        size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + slave2.getWorkspaceFor(project1).length() + sizeAxis1 + sizeAxis2 + sizeAxis3;
+        Agent agent2 = DiskUsageTestUtil.createAgent("agent2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        File file = new File(agent1.getWorkspaceFor(project1).getRemote(), "fileList");
+        Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent1.getWorkspaceFor(project1).length();
+        File fileAxis1 = new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/agent2", "fileList");
+        File fileAxis2 = new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/agent2", "fileList");
+        File fileAxis3 = new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/agent2", "fileList");
+        Long sizeAxis1 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis1)) + new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis1/label/agent2").length();
+        Long sizeAxis2 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis2)) + new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis2/label/agent2").length();
+        Long sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(agent2.getWorkspaceFor(project1).getRemote()+"/axis/axis3/label/agent2").length();
+        file = new File(agent2.getWorkspaceFor(project1).getRemote(), "fileList");
+        size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent2.getWorkspaceFor(project1).length() + sizeAxis1 + sizeAxis2 + sizeAxis3;
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
         project1.getAction(ProjectDiskUsageAction.class).actualizeCashedWorkspaceData();
-        Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());      
-        plugin.getConfiguration().setCheckWorkspaceOnSlave(false);
+        Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        plugin.getConfiguration().setCheckWorkspaceOnAgent(false);
     }
-    
-    
+
+
     @Test
     public void testCalculateDiskUsageWorkspaceUpdateIformationIfSavedWorkspaceDoesNotExists() throws Exception{
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
-        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Agent agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Agent agent2 = DiskUsageTestUtil.createAgent("agent2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
         FreeStyleProject project1 = j.createFreeStyleProject("project1");
-        project1.setAssignedNode(slave1);
+        project1.setAssignedNode(agent1);
         j.buildAndAssertSuccess(project1);
-        
+
         DiskUsageProperty prop = DiskUsageUtil.getDiskUsageProperty(project1);
         if(prop == null){
             prop = new DiskUsageProperty();
             project1.addProperty(prop);
         }
-        prop.putSlaveWorkspaceSize(slave2, slave2.getWorkspaceFor((TopLevelItem)project1).getRemote(), 54356l);
+        prop.putAgentWorkspaceSize(agent2, agent2.getWorkspaceFor((TopLevelItem)project1).getRemote(), 54356l);
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
-        assertFalse("Slave slave2 should be removed from disk usage, because a workspace for project1 does not exist on this slave.",prop.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
-        assertTrue("Disk usage should contains slave1, there is a workspace for project1.", prop.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
+        assertFalse("Agent agent2 should be removed from disk usage, because a workspace for project1 does not exist on this agent.",prop.getAgentWorkspaceUsage().containsKey(agent2.getNodeName()));
+        assertTrue("Disk usage should contains agent1, there is a workspace for project1.", prop.getAgentWorkspaceUsage().containsKey(agent1.getNodeName()));
     }
-    
+
     @Test
     public void testParseExcludedJobsFromString() throws Exception{
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setType(GlobalConfiguration.ConfigurationType.CUSTOM, GlobalConfiguration.getHighPerformanceConfiguration());
@@ -307,5 +307,5 @@ public class DiskUsageUtilTest {
         excluded = "Project with space, ";
         assertTrue("Excluded jobs should be parsed correctly even if there additional separator", excludedJobs.contains(projectWithSpace.getName()) && excludedJobs.size()==1);
     }
-   
+
 }
