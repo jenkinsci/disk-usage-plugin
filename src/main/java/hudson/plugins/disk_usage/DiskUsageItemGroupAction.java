@@ -100,7 +100,7 @@ public class DiskUsageItemGroupAction implements Action, DiskUsageItemAction{
 
     @Override
     public String getIconFileName() {
-        return "/plugin/disk-usage/icons/diskusage48.png";
+        return "/plugin/disk-usage/icons/disk-usage.svg";
     }
 
     @Override

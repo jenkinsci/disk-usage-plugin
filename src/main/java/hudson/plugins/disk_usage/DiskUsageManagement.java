@@ -23,7 +23,7 @@ public class DiskUsageManagement extends ManagementLink {
    public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace", "JobDirectory (without builds)"};
 
         public String getIconFileName() {
-            return "/plugin/disk-usage/icons/diskusage48.png";
+            return "/plugin/disk-usage/icons/disk-usage.svg";
         }
 
         public String getDisplayName() {
