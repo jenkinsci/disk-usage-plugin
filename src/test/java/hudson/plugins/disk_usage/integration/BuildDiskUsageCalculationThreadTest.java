@@ -171,9 +171,7 @@ public class BuildDiskUsageCalculationThreadTest {
             public void run(){
                 try {
                     testCalculation.execute(TaskListener.NULL);
-                } catch (IOException ex) {
-                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InterruptedException ex) {
+                } catch (IOException | InterruptedException ex) {
                     Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }

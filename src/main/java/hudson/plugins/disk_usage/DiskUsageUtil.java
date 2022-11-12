@@ -13,7 +13,6 @@ import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -76,11 +75,7 @@ public class DiskUsageUtil {
         try {
 
             p = f.get(1, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOGGER.log(Level.FINEST,e.getMessage(), e);
-        } catch (ExecutionException e) {
-            LOGGER.log(Level.FINEST, e.getMessage(), e);
-        } catch (TimeoutException e) {
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             LOGGER.log(Level.FINEST,e.getMessage(), e);
         }
 
@@ -250,7 +245,7 @@ public class DiskUsageUtil {
         for(String name: jobNames){
             name = name.trim();
             Item item = Jenkins.getInstance().getItem(name);
-            if(item!=null && item instanceof AbstractProject)
+            if(item instanceof AbstractProject)
                 list.add(name);
         }
         return list;
@@ -449,7 +444,7 @@ public class DiskUsageUtil {
         DiskUsageProperty property = getDiskUsageProperty(project);
         exceededFiles.add(project.getBuildDir());
         //load all - force loading all builds to check state
-        Set<DiskUsageBuildInformation> information = (Set<DiskUsageBuildInformation>) property.getDiskUsage().getBuildDiskUsage(true);
+        Set<DiskUsageBuildInformation> information = property.getDiskUsage().getBuildDiskUsage(true);
         //calculate not loaded builds
         for(String build : property.getDiskUsage().getNotLoadedBuilds()){
             File notLoadedBuild = new File(project.getBuildDir(),build);

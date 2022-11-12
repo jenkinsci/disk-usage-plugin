@@ -44,7 +44,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
             //in case of old build we have to recognize by number
             information = property.getDiskUsageBuildInformation(build.getNumber());
         }
-        if(information!=null){;
+        if(information!=null){
             property.getDiskUsage().removeBuild(information);
             property.getDiskUsage().save();
         }

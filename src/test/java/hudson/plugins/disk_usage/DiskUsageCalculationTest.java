@@ -33,7 +33,7 @@ public class DiskUsageCalculationTest extends TestCase{
         calendar.add(Calendar.MINUTE, 10);
         int minute = calendar.get(Calendar.MINUTE);
         //  attribut currentTask should have value calculation
-        TestDiskUsageCalculation calculation = (TestDiskUsageCalculation) new TestDiskUsageCalculation(minute + " * * * *", false);
+        TestDiskUsageCalculation calculation = new TestDiskUsageCalculation(minute + " * * * *", false);
         if(calculation.getLastTask()!=null){
             //should not be any, but if cancel;
             calculation.getLastTask().cancel();
@@ -104,7 +104,7 @@ public class DiskUsageCalculationTest extends TestCase{
         calculation = new TestDiskUsageCalculation(calendar.get(Calendar.MINUTE) + " " + calendar.get(Calendar.HOUR_OF_DAY) + " " + calendar.get(Calendar.DAY_OF_MONTH) + " " +  (calendar.get(Calendar.MONTH) + 1) + " " + dayOfWeek, false);
         period = calculation.getRecurrencePeriod(); 
         expectedPeriod = calendar.getTimeInMillis() - System.currentTimeMillis(); 
-        calendar.setTimeInMillis(System.currentTimeMillis() + period);;
+        calendar.setTimeInMillis(System.currentTimeMillis() + period);
         assertEquals("Disk usage calculaion should be executed accurately in 2 months.", expectedPeriod, period, 60000);
      
     }

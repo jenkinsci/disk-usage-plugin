@@ -222,7 +222,7 @@ public class ProjectDiskUsageActionTest {
         }
         
         public void update(){
-            this.updateTransientActions();;
+            this.updateTransientActions();
         }
         
         @Override

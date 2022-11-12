@@ -155,9 +155,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                         if(workspace.exists() && size!=null && size>0){
                             property.putSlaveWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem)project).getRemote(), diskUsage.wsUsage);
                         }
-                    } catch (IOException ex) {
-                        Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.WARNING, null, ex);
-                    } catch (InterruptedException ex) {
+                    } catch (IOException | InterruptedException ex) {
                         Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.WARNING, null, ex);
                     }
                 }

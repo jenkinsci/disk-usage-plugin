@@ -92,7 +92,7 @@ public class ProjectBuildChecker {
                 }
                 // directory exists and build.xml too - try to load
                 Run run = diskUsage.job.getBuild(buildId);
-                if(run!=null && run instanceof AbstractBuild){
+                if(run instanceof AbstractBuild){
                     diskUsage.moveToLoadedBuilds((AbstractBuild)run, diskUsage.getSizeOfNotLoadedBuild(buildId));
                 }
             }
@@ -130,7 +130,7 @@ public class ProjectBuildChecker {
                if(buildXML.exists()){
                    //try to load
                    Run run = diskUsage.job.getBuild(file.getName());
-                   if(run!=null && run instanceof AbstractBuild){
+                   if(run instanceof AbstractBuild){
                        diskUsage.addBuild((AbstractBuild)run);
                    }
                    else{

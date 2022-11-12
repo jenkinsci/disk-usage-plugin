@@ -455,7 +455,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     public void enableJobsDiskUsageCalculation(){
 
         if(type == GlobalConfiguration.ConfigurationType.CUSTOM && getConfiguration().isDiskUsageCalculatedPerJobs()){
-            getConfiguration().getJobConfiguration().enableRecalculation();;
+            getConfiguration().getJobConfiguration().enableRecalculation();
         }
     }
     

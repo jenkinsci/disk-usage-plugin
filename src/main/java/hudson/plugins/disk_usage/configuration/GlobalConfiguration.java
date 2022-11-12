@@ -162,7 +162,7 @@ public class GlobalConfiguration {
 
             public String getValue(){
                 return "LOWEST";
-            };
+            }
         },
 
         LOW() {
@@ -176,7 +176,7 @@ public class GlobalConfiguration {
 
             public String getValue(){
                 return "LOW";
-            };
+            }
         },
 
         MEDIUM {
@@ -190,7 +190,7 @@ public class GlobalConfiguration {
 
             public String getValue(){
                 return "MEDIUM";
-            };
+            }
         },
 
         HIGH {
@@ -204,7 +204,7 @@ public class GlobalConfiguration {
 
             public String getValue(){
                 return "HIGH";
-            };
+            }
         },
 
         CUSTOM {
@@ -218,7 +218,7 @@ public class GlobalConfiguration {
 
             public String getValue(){
                 return "CUSTOM";
-            };
+            }
         };
 
         public abstract GlobalConfiguration getConfiguration();

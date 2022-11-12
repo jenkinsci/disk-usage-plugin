@@ -81,7 +81,7 @@ public class BuildDiskUsageActionTest {
         matrixProject.setAxes(list);
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild = matrixProject.getLastBuild();
-        matrixProject.setAxes(list);;
+        matrixProject.setAxes(list);
         Long kiloBytes = 2048l;
         int count = 0;
         for(MatrixConfiguration c: matrixProject.getItems()){
