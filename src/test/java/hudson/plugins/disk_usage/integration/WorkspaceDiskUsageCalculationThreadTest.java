@@ -4,6 +4,10 @@
  */
 package hudson.plugins.disk_usage.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import hudson.plugins.disk_usage.*;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -34,8 +38,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -43,7 +49,11 @@ import org.jvnet.hudson.test.recipes.LocalData;
  *
  * @author Lucie Votypkova
  */
-public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{        
+public class WorkspaceDiskUsageCalculationThreadTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     private void waitUntilThreadEnds(WorkspaceDiskUsageCalculationThread calculation) throws InterruptedException{
         Thread thread = null;
         //wait until thread ends
@@ -79,9 +89,9 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     
     private Slave createSlave(String name, String remoteFS) throws Exception{
         DumbSlave slave = new DumbSlave(name, "dummy",
-            remoteFS, "2", Mode.NORMAL, "", createComputerLauncher(null),
+            remoteFS, "2", Mode.NORMAL, "", j.createComputerLauncher(null),
             RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
-    	hudson.addNode(slave);
+    	j.getInstance().addNode(slave);
         while(slave.toComputer()==null || !slave.toComputer().isOnline()){
             Thread.sleep(100);
         }
@@ -93,17 +103,17 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     public void testExecute() throws IOException, InterruptedException, Exception{
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
-        jenkins.getExtensionList(RunListener.class).remove(listener);
-        Slave slave1 = createSlave("slave1", new File(hudson.getRootDir(),"workspace1").getPath());
-        Slave slave2 = createSlave("slave2", new File(hudson.getRootDir(),"workspace2").getPath());
-        FreeStyleProject project1 = createFreeStyleProject("project1");
-        FreeStyleProject project2 = createFreeStyleProject("project2");
+        j.getInstance().getExtensionList(RunListener.class).remove(listener);
+        Slave slave1 = createSlave("slave1", new File(j.getInstance().getRootDir(),"workspace1").getPath());
+        Slave slave2 = createSlave("slave2", new File(j.getInstance().getRootDir(),"workspace2").getPath());
+        FreeStyleProject project1 = j.createFreeStyleProject("project1");
+        FreeStyleProject project2 = j.createFreeStyleProject("project2");
         project1.setAssignedNode(slave1);
         project2.setAssignedNode(slave1);
-        buildAndAssertSuccess(project1);
-        buildAndAssertSuccess(project2);
+        j.buildAndAssertSuccess(project1);
+        j.buildAndAssertSuccess(project2);
         project1.setAssignedNode(slave2);
-        buildAndAssertSuccess(project1);
+        j.buildAndAssertSuccess(project1);
         File f = new File(slave1.getWorkspaceFor(project1).getRemote());
         File file = new File(slave1.getWorkspaceFor(project1).getRemote(), "fileList");
         File file2 = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
@@ -117,8 +127,8 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         }
         thread.execute(TaskListener.NULL);
         waitUntilThreadEnds(thread);
-        Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());       
-        Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size2, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of job workspace disk usage does not return right size.", size2, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
     }
     
     @Test
@@ -126,27 +136,27 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     public void testExecuteMatrixProject() throws Exception {
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
-        jenkins.getExtensionList(RunListener.class).remove(listener);
-        jenkins.setNumExecutors(0);
-        Slave slave1 = createSlave("slave1", new File(hudson.getRootDir(),"workspace1").getPath());
+        j.getInstance().getExtensionList(RunListener.class).remove(listener);
+        j.getInstance().setNumExecutors(0);
+        Slave slave1 = createSlave("slave1", new File(j.getInstance().getRootDir(),"workspace1").getPath());
         AxisList axes = new AxisList();
         TextAxis axis1 = new TextAxis("axis","axis1 axis2 axis3");
         axes.add(axis1);
-        MatrixProject project1 = createMatrixProject("project1");
+        MatrixProject project1 = j.createMatrixProject("project1");
         project1.setAxes(axes);
         project1.setAssignedNode(slave1);
-        buildAndAssertSuccess(project1);
-        MatrixProject project2 = createMatrixProject("project2");
+        j.buildAndAssertSuccess(project1);
+        MatrixProject project2 = j.createMatrixProject("project2");
         AxisList axes2 = new AxisList();
         TextAxis axis2 = new TextAxis("axis","axis1 axis2");
         axes2.add(axis2);       
         project2.setAxes(axes2);
         project2.setAssignedNode(slave1);
-        buildAndAssertSuccess(project2);
-        Slave slave2 = createSlave("slave2", new File(hudson.getRootDir(),"workspace2").getPath());
+        j.buildAndAssertSuccess(project2);
+        Slave slave2 = createSlave("slave2", new File(j.getInstance().getRootDir(),"workspace2").getPath());
         slave1.toComputer().setTemporarilyOffline(true, null);
         project1.setAssignedNode(slave2);
-        buildAndAssertSuccess(project1);
+        j.buildAndAssertSuccess(project1);
         WorkspaceDiskUsageCalculationThread thread = new WorkspaceDiskUsageCalculationThread();
         if(thread.isExecuting()){
           waitUntilThreadEnds(thread);  
@@ -171,11 +181,11 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         sizeAxis1 += getSize(readFileList(fileAxis1)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis1").length();
         sizeAxis2 += getSize(readFileList(fileAxis2)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis2").length();
         sizeAxis3 += getSize(readFileList(fileAxis3)) + new File(slave2.getWorkspaceFor(project1).getRemote()+"/axis/axis3").length();
-        Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         //configurations
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         //project 2
         file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
         fileAxis1 = new File(slave1.getWorkspaceFor(project2).getRemote()+"/axis/axis1", "fileList");
@@ -183,16 +193,16 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         size = getSize(readFileList(file)) + slave1.getWorkspaceFor(project2).length();
         sizeAxis1 = getSize(readFileList(fileAxis1)) + new File(slave1.getWorkspaceFor(project2).getRemote()+"/axis/axis1").length();
         sizeAxis2 = getSize(readFileList(fileAxis2)) + new File(slave1.getWorkspaceFor(project2).getRemote()+"/axis/axis2").length();
-        Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         //configurations
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project2.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project2.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project2.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project2.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
        
     }
     
     @Test
     public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
-        FreeStyleProject projectWithoutDiskUsage = jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
+        FreeStyleProject projectWithoutDiskUsage = j.getInstance().createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
         FreeStyleBuild build = projectWithoutDiskUsage.createExecutable();
         DiskUsageProjectActionFactory.DESCRIPTOR.disableWorkspacesDiskUsageCalculation();
         BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
@@ -206,10 +216,10 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
         WorkspaceDiskUsageCalculationThread testCalculation = new WorkspaceDiskUsageCalculationThread();
         DiskUsageTestUtil.cancelCalculation(testCalculation);
-        FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, "project1");
+        FreeStyleProject project = j.getInstance().createProject(FreeStyleProject.class, "project1");
         TestDiskUsageProperty prop = new TestDiskUsageProperty();
         project.addProperty(prop);
-        Slave slave1 = createSlave("slave1", new File(hudson.getRootDir(),"workspace1").getPath());
+        Slave slave1 = createSlave("slave1", new File(j.getInstance().getRootDir(),"workspace1").getPath());
         prop.putSlaveWorkspace(slave1, slave1.getWorkspaceFor(project).getRemote());
         Thread t = new Thread(testCalculation.getThreadName()){
             
@@ -232,7 +242,7 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testDoNotBreakLazyLoading() throws Exception{
-        AbstractProject project = (AbstractProject) jenkins.getItem("project1");
+        AbstractProject project = (AbstractProject) j.getInstance().getItem("project1");
         project.isBuilding();
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         assertTrue("This test does not have sense if there is loaded all builds", 8 > loadedBuilds);
@@ -249,13 +259,13 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
         excludes.add("excludedJob");
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
-        FreeStyleProject excludedJob = jenkins.createProject(FreeStyleProject.class, "excludedJob");
-        FreeStyleProject includedJob = jenkins.createProject(FreeStyleProject.class, "incudedJob");
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(jenkins.getRootDir(),"workspace1").getPath(), jenkins, createComputerLauncher(null));
+        FreeStyleProject excludedJob = j.getInstance().createProject(FreeStyleProject.class, "excludedJob");
+        FreeStyleProject includedJob = j.getInstance().createProject(FreeStyleProject.class, "incudedJob");
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.getInstance().getRootDir(),"workspace1").getPath(), j.getInstance(), j.createComputerLauncher(null));
         excludedJob.setAssignedLabel(slave1.getSelfLabel());
         includedJob.setAssignedLabel(slave1.getSelfLabel());
-        buildAndAssertSuccess(excludedJob);
-        buildAndAssertSuccess(includedJob);
+        j.buildAndAssertSuccess(excludedJob);
+        j.buildAndAssertSuccess(includedJob);
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
         assertEquals("Disk usage for excluded project should not be counted.", 0, excludedJob.getProperty(DiskUsageProperty.class).getAllWorkspaceSize(), 0);
@@ -266,12 +276,12 @@ public class WorkspaceDiskUsageCalculationThreadTest extends HudsonTestCase{
     @Test
     @LocalData
     public void testDoNotCountSizeTheSameWorkspaceTwice() throws Exception{
-        FreeStyleProject job = jenkins.createProject(FreeStyleProject.class, "project1");
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(jenkins.getRootDir(),"workspace1").getPath(), jenkins, createComputerLauncher(null));
+        FreeStyleProject job = j.getInstance().createProject(FreeStyleProject.class, "project1");
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.getInstance().getRootDir(),"workspace1").getPath(), j.getInstance(), j.createComputerLauncher(null));
         job.setAssignedLabel(slave1.getSelfLabel());
-        buildAndAssertSuccess(job);
-        buildAndAssertSuccess(job);
-        buildAndAssertSuccess(job);
+        j.buildAndAssertSuccess(job);
+        j.buildAndAssertSuccess(job);
+        j.buildAndAssertSuccess(job);
         File file = new File(slave1.getWorkspaceFor(job).getRemote(), "fileList");
         Long size = getSize(readFileList(file)) + slave1.getWorkspaceFor(job).length();
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
