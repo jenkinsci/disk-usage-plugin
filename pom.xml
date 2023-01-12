@@ -21,7 +21,7 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/disk-usage-plugin.git</connection>
+    <connection>scm:git:https://github.com/jenkinsci/disk-usage-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/disk-usage-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/disk-usage-plugin</url>
     <tag>HEAD</tag>
