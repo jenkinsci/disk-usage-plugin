@@ -11,7 +11,7 @@
   <packaging>hpi</packaging>
   <name>Jenkins disk-usage plugin</name>
   <version>0.29-SNAPSHOT</version>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/Disk+Usage+Plugin</url>
+  <url>https://github.com/jenkinsci/disk-usage-plugin</url>
 
   <developers>
     <developer>
