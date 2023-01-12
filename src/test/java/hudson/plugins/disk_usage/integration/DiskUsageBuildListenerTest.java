@@ -26,7 +26,7 @@ public class DiskUsageBuildListenerTest {
     
     @Test
     public void testOnDeleted() throws Exception{
-        AbstractProject project = j.createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
