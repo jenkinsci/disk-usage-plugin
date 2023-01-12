@@ -33,7 +33,6 @@ import hudson.matrix.AxisList;
 import hudson.matrix.TextAxis;
 import hudson.matrix.MatrixProject;
 import hudson.model.FreeStyleProject;
-import hudson.model.Run;
 import hudson.slaves.OfflineCause;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -472,9 +471,11 @@ public class DiskUsagePropertyTest {
                         GregorianCalendar calendar = new GregorianCalendar();
                         calendar.set(2014, 1, 1);
                         calendar.add(GregorianCalendar.MINUTE, count);
-                        Run.ID_FORMATTER.get().format(calendar.getTime());
-                        diskUsage.addBuildInformation(new DiskUsageBuildInformation(Run.ID_FORMATTER.get().format(calendar.getTime()),calendar.getTimeInMillis(), count, 0l), null);
-                    
+                        diskUsage.addBuildInformation(new DiskUsageBuildInformation(
+                            Integer.toString(count),
+                            calendar.getTimeInMillis(),
+                            count,
+                            0l), null);
                     }
                 } catch (ConcurrentModificationException ex) {
                     exception = ex;
