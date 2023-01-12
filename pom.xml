@@ -38,24 +38,6 @@
         <artifactId>mailer</artifactId>
         <version>1.8</version>
     </dependency>
-   <!-- <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>1.447</version>
-      <scope>compile</scope>
-    </dependency>-->
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-core</artifactId>
-      <version>1.4.12</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
-      <version>1.4.12</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>

@@ -40,7 +40,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.lang.annotation.ElementType.METHOD;
-import static org.mockito.Mockito.*;
 
 /**
  *
