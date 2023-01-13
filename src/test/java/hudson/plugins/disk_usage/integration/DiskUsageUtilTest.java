@@ -143,7 +143,7 @@ public class DiskUsageUtilTest {
         AxisList axes = new AxisList();
         TextAxis axis1 = new TextAxis("axis","axis1 axis2 axis3");
         axes.add(axis1);
-        MatrixProject project1 = j.createMatrixProject("project1");
+        MatrixProject project1 = j.jenkins.createProject(MatrixProject.class, "project1");
         project1.setAxes(axes);
         project1.setAssignedNode(slave1);
         j.buildAndAssertSuccess(project1);
@@ -218,7 +218,7 @@ public class DiskUsageUtilTest {
         AxisList axes = new AxisList();
         TextAxis axis1 = new TextAxis("axis","axis1 axis2 axis3");
         axes.add(axis1);
-        MatrixProject project1 = j.createMatrixProject("project1");
+        MatrixProject project1 = j.jenkins.createProject(MatrixProject.class,"project1");
         project1.setAxes(axes);
         project1.setAssignedNode(slave1);
         j.buildAndAssertSuccess(project1);

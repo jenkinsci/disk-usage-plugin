@@ -142,11 +142,11 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         AxisList axes = new AxisList();
         TextAxis axis1 = new TextAxis("axis","axis1 axis2 axis3");
         axes.add(axis1);
-        MatrixProject project1 = j.createMatrixProject("project1");
+        MatrixProject project1 = j.jenkins.createProject(MatrixProject.class,"project1");
         project1.setAxes(axes);
         project1.setAssignedNode(slave1);
         j.buildAndAssertSuccess(project1);
-        MatrixProject project2 = j.createMatrixProject("project2");
+        MatrixProject project2 = j.jenkins.createProject(MatrixProject.class,"project2");
         AxisList axes2 = new AxisList();
         TextAxis axis2 = new TextAxis("axis","axis1 axis2");
         axes2.add(axis2);       

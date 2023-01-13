@@ -1,5 +1,8 @@
 package hudson.plugins.disk_usage.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.plugins.disk_usage.*;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
@@ -19,16 +22,20 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
  * @author Lucie Votypkova
  */
-public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
-    
+public class JobDiskUsageCalculationThreadTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     private void waitUntilThreadEnds(JobWithoutBuildsDiskUsageCalculation calculation) throws InterruptedException{
         while(calculation.isExecuting()){          
             Thread.sleep(100);
@@ -60,10 +67,10 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     public void testExecute() throws IOException, InterruptedException{
         //turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
-        jenkins.getExtensionList(RunListener.class).remove(listener);
+        j.jenkins.getExtensionList(RunListener.class).remove(listener);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
-        FreeStyleProject project = (FreeStyleProject) jenkins.getItem("project1");
-        FreeStyleProject project2 = (FreeStyleProject) jenkins.getItem("project2");
+        FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
+        FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
         //we need all build information are loaded before counting
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
@@ -89,10 +96,10 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         //turn off run listener
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
-        jenkins.getExtensionList(RunListener.class).remove(listener);
+        j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<String,Long> matrixConfigurationsSize = new TreeMap<String,Long>();
-        MatrixProject project = (MatrixProject) jenkins.getItem("project1");
-        FreeStyleProject project2 = (FreeStyleProject) jenkins.getItem("project2");
+        MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
+        FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
         //we need all build information are loaded before counting
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();        
@@ -124,7 +131,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception{
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
         DiskUsageTestUtil.cancelCalculation(calculation);
-        FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, contextPath);
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, j.contextPath);
         final JobWithoutBuildsDiskUsageCalculation testCalculation = new JobWithoutBuildsDiskUsageCalculation();
         Thread t = new Thread(testCalculation.getThreadName()){
             @Override
@@ -144,7 +151,7 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
     }
     
     public void testDoNotCalculateUnenabledDiskUsage() throws Exception{
-        FreeStyleProject projectWithoutDiskUsage = jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
+        FreeStyleProject projectWithoutDiskUsage = j.jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
         DiskUsageProjectActionFactory.DESCRIPTOR.disableJobsDiskUsageCalculation();
         JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
         calculation.execute(TaskListener.NULL);
@@ -157,8 +164,8 @@ public class JobDiskUsageCalculationThreadTest extends HudsonTestCase{
         JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
         if(calculation.isExecuting())
             DiskUsageTestUtil.cancelCalculation(calculation);
-        FreeStyleProject exludedJob = jenkins.createProject(FreeStyleProject.class, "excludedJob");
-        FreeStyleProject includedJob = jenkins.createProject(FreeStyleProject.class, "incudedJob");
+        FreeStyleProject exludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
+        FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "incudedJob");
         List<String> excludes = new ArrayList<String>();
         excludes.add(exludedJob.getName());
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
