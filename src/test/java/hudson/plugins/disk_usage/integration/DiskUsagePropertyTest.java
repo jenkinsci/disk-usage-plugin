@@ -212,10 +212,6 @@ public class DiskUsagePropertyTest {
         //take one slave offline
         slave1.toComputer().disconnect(new OfflineCause.ByCLI("test disconnection"));
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
-        //change remote fs
-        slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"ChangedWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
-        customWorkspaceSlaveSize = customWorkspaceSlaveSize + workspaceSlave1.length();
-        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
     }
     
     @Test

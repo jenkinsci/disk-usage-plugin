@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.597</version>
+    <version>1.607</version>
   </parent>
 
   <artifactId>disk-usage</artifactId>
