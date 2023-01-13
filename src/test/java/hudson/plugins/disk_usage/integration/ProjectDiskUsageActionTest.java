@@ -202,7 +202,8 @@ public class ProjectDiskUsageActionTest {
         
         public ProjectTestBuild createExecutable(Calendar calendar) throws IOException{
             ProjectTestBuild build = new ProjectTestBuild(this, calendar);
-            builds.put(getNextBuildNumber(), build);
+            build.number = this.assignBuildNumber();
+            builds.put(build.number, build);
             return build;
         }
                 

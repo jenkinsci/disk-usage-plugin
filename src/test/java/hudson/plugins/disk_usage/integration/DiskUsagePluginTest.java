@@ -81,7 +81,7 @@ public class DiskUsagePluginTest {
     @LocalData
     public void testDoLoadBuildInformationWhenBuildIsLoaded(){
        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1"); 
-       AbstractBuild build = project.getBuild("2013-08-09_13-02-26");
+       AbstractBuild build = project.getBuild("1");
        int loadedBuilds = project._getRuns().getLoadedBuilds().size();
        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
        assertNotNull("Build should be add after its loading (if it is not present before).", property.getDiskUsageOfBuild(2));
@@ -92,12 +92,12 @@ public class DiskUsagePluginTest {
     @LocalData    
     public void testBuildInfoIsNoLoadedMultipleTimes() throws Exception{
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
-        AbstractBuild build = project.getBuild("2013-08-09_13-02-26");
+        AbstractBuild build = project.getBuild("2");
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         j.jenkins.reload();
         project = (AbstractProject) j.jenkins.getItem("project1");
-        build = project.getBuild("2013-08-09_13-02-26");
+        build = project.getBuild("2");
         property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         assertNotNull("Should be loaded build 2", property.getDiskUsageBuildInformation(2));
         assertEquals("Only one build should be loaded into disk usage build information.", 1, property.getDiskUsageOfBuilds().size());

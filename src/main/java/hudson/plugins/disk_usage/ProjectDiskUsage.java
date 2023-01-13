@@ -93,8 +93,9 @@ public class ProjectDiskUsage implements Saveable{
         int count = 0;
         if(file!=null && file.exists() && file.isDirectory()){
             for(File f : file.listFiles()){
-                if(!FileUtils.isSymlink(f))
+                if(!FileUtils.isSymlink(f) && !f.isDirectory()){
                     count++;
+                }
             }
         }
         return count;

@@ -253,7 +253,7 @@ public class DiskUsagePropertyTest {
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         property.getDiskUsage().loadAllBuilds();
         assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
-        assertEquals("Size of build 3 should be loaded from previous configuration.", 23932L, property.getDiskUsageOfBuild(3), 0);
+        assertEquals("Size of build 2 should be loaded from previous configuration.", 23932L, property.getDiskUsageOfBuild(2), 0);
     }
     
     
@@ -291,8 +291,8 @@ public class DiskUsagePropertyTest {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageOfBuild("2013-08-09_13-02-27"), 0);
-        assertEquals("Build with id 10 should have size 10000", 10000, property.getDiskUsageOfBuild("2013-08-09_13-03-05"), 0);
+        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageOfBuild("1"), 0);
+        assertEquals("Build with id 7 should have size 10000", 10000, property.getDiskUsageOfBuild("7"), 0);
         assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
      }
      
@@ -302,8 +302,8 @@ public class DiskUsagePropertyTest {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageBuildInformation("2013-08-09_13-02-27").getSize(), 0);
-        assertEquals("Build with id 10 should have size 10000", 10000, property.getDiskUsageBuildInformation("2013-08-09_13-03-05").getSize(), 0);
+        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageBuildInformation("1").getSize(), 0);
+        assertEquals("Build with id 7 should have size 10000", 10000, property.getDiskUsageBuildInformation("7").getSize(), 0);
         assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
      }
      
@@ -313,8 +313,8 @@ public class DiskUsagePropertyTest {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageOfBuild(3), 0);
-        assertEquals("Build with id 10 should have size 10000", 10000, property.getDiskUsageOfBuild(10), 0);
+        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageOfBuild(1), 0);
+        assertEquals("Build with id 7 should have size 10000", 10000, property.getDiskUsageOfBuild(7), 0);
         assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
     
      }
@@ -333,10 +333,10 @@ public class DiskUsagePropertyTest {
     }
     
     @Test
-    @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml, jobs/project1/builds/2013-08-09_13-02-27/build.xml, jobs/project1/builds/2013-08-09_13-02-28/build.xml")
+    @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml, jobs/project1/builds/1/build.xml, jobs/project1/builds/3/build.xml")
     @LocalData
     public void testCheckWorkspacesWithLoadingBuilds() throws IOException {
-       File file = new File(j.jenkins.getRootDir(),"jobs/project2/builds/2013-08-09_13-02-26/build.xml");
+       File file = new File(j.jenkins.getRootDir(),"jobs/project2/builds/1/build.xml");
        XmlFile f = new XmlFile(new XStream2(), file);
        String newBuildXml = f.asString().replace("${JENKINS_HOME}",j.jenkins.getRootDir().getAbsolutePath());
        PrintStream st = new PrintStream(file);
@@ -403,8 +403,8 @@ public class DiskUsagePropertyTest {
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         assertTrue("This tests does not sense if there are loaded all builds.",8>loadedBuilds);
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertEquals("Size of builds should be loaded.", 1000, property.getAllDiskUsageOfBuild(1), 0);
-        assertEquals("Size of builds should be loaded.", 7000, property.getAllDiskUsageOfBuild(7), 0);
+        assertEquals("Size of builds should be loaded.", 1000, property.getAllDiskUsageOfBuild(8), 0);
+        assertEquals("Size of builds should be loaded.", 7000, property.getAllDiskUsageOfBuild(4), 0);
         assertTrue("No new build should be loaded.", loadedBuilds <= project._getRuns().getLoadedBuilds().size());      
     }
     
