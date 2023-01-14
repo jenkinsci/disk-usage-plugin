@@ -149,6 +149,8 @@ public class DiskUsagePropertyTest {
         project.addProperty(property);
         Slave slave1 = j.createOnlineSlave();
         Slave slave2 = j.createOnlineSlave();
+        slave1.getWorkspaceRoot().mkdirs();
+        slave2.getWorkspaceRoot().mkdirs();
         FilePath path = j.jenkins.getWorkspaceFor(project);
         path.mkdirs();
         property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
@@ -168,6 +170,8 @@ public class DiskUsagePropertyTest {
         project.addProperty(property);
         Slave slave1 = j.createOnlineSlave();
         Slave slave2 = j.createOnlineSlave();
+        slave1.getWorkspaceRoot().mkdirs();
+        slave2.getWorkspaceRoot().mkdirs();
         FilePath path = j.jenkins.getWorkspaceFor(project);
         path.mkdirs();
         property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
