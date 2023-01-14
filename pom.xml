@@ -27,10 +27,6 @@
     <tag>HEAD</tag>
   </scm>
 
-  <properties>
-    <jenkins.version>2.13</jenkins.version>
-  </properties>
-
   <dependencies>
     <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
