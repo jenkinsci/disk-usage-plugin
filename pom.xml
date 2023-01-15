@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.51</version>
+    <version>4.53</version>
   </parent>
 
   <artifactId>disk-usage</artifactId>
@@ -28,7 +28,7 @@
   </scm>
 
   <properties>
-    <java.level>8</java.level>
+    <java.level>11</java.level>
   </properties>
 
   <dependencies>
@@ -46,6 +46,11 @@
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>javax-mail-api</artifactId>
+      <version>1.6.2-8</version>
     </dependency>
   </dependencies>
 
