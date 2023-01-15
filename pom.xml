@@ -54,16 +54,6 @@
     </dependency>
   </dependencies>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.eclipse.sisu</groupId>
-        <artifactId>org.eclipse.sisu.plexus</artifactId>
-        <version>0.0.0.M3</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <build>
     <plugins>
       <plugin>
