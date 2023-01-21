@@ -1,6 +1,8 @@
 package hudson.plugins.disk_usage.integration;
 
 
+import hudson.Functions;
+import hudson.tasks.BatchFile;
 import java.util.ConcurrentModificationException;
 import java.util.GregorianCalendar;
 import hudson.model.FreeStyleBuild;
@@ -190,7 +192,11 @@ public class DiskUsagePropertyTest {
     @Test
     public void testGetAllNonSlaveOrCustomWorkspaceSizeWithOnlySlaves() throws Exception{
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
-        project.getBuildersList().add(new Shell("echo hello > log"));
+        if (Functions.isWindows()){
+            project.getBuildersList().add(new BatchFile("echo hello > log"));
+        } else {
+            project.getBuildersList().add(new Shell("echo hello > log"));
+        }
         Slave slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"SlaveWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
         Slave slave1 = j.createOnlineSlave();
         Slave slave2= j.createOnlineSlave();
@@ -221,7 +227,11 @@ public class DiskUsagePropertyTest {
     @Test
     public void testGetAllNonSlaveOrCustomWorkspaceSizeWithMaster() throws Exception{
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
-        project.getBuildersList().add(new Shell("echo hello > log"));
+        if (Functions.isWindows()){
+            project.getBuildersList().add(new BatchFile("echo hello > log"));
+        } else {
+            project.getBuildersList().add(new Shell("echo hello > log"));
+        }
         Slave slave1 = j.createOnlineSlave();
         File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
         File customWorkspaceSlave1 = new File(j.jenkins.getRootDir(),"custom2/log");
