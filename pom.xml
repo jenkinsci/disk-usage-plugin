@@ -5,13 +5,14 @@
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>4.53</version>
+    <relativePath />
   </parent>
 
   <artifactId>disk-usage</artifactId>
   <packaging>hpi</packaging>
   <name>Jenkins disk-usage plugin</name>
-  <version>0.29-SNAPSHOT</version>
-  <url>https://github.com/jenkinsci/disk-usage-plugin</url>
+  <version>${revision}${changelist}</version>
+  <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
   <developers>
     <developer>
@@ -28,51 +29,41 @@
   </scm>
 
   <properties>
-    <java.level>11</java.level>
+    <revision>0.29</revision>
+    <changelist>-SNAPSHOT</changelist>
+    <jenkins.version>2.361.4</jenkins.version>
+    <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
+    <!-- TODO fix violations -->
+    <spotbugs.threshold>High</spotbugs.threshold>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-2.361.x</artifactId>
+        <version>1775.vf0577a_a_01778</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>mailer</artifactId>
-        <version>1.8</version>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>jakarta-mail-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mailer</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>junit</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jenkins.plugins</groupId>
-      <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-8</version>
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M4</version>
-        <configuration>
-          <systemProperties>
-            <property>
-              <name>hudson.udp</name>
-              <value>-1</value>
-            </property>
-          </systemProperties>
-          <reuseForks>false</reuseForks>
-          <forkCount>2</forkCount>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
