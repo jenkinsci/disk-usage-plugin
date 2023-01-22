@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import hudson.Functions;
 import hudson.plugins.disk_usage.*;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -24,6 +25,8 @@ import hudson.model.listeners.RunListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
+import hudson.tasks.BatchFile;
+import hudson.tasks.Shell;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -261,6 +264,13 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
         FreeStyleProject excludedJob = j.getInstance().createProject(FreeStyleProject.class, "excludedJob");
         FreeStyleProject includedJob = j.getInstance().createProject(FreeStyleProject.class, "incudedJob");
+        if (Functions.isWindows()){
+            excludedJob.getBuildersList().add(new BatchFile("echo ahoj > log.log"));
+            includedJob.getBuildersList().add(new BatchFile("echo ahoj > log.log"));
+        } else {
+            excludedJob.getBuildersList().add(new Shell("echo ahoj > log.log"));
+            includedJob.getBuildersList().add(new Shell("echo ahoj > log.log"));
+        }
         Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.getInstance().getRootDir(),"workspace1").getPath(), j.getInstance(), j.createComputerLauncher(null));
         excludedJob.setAssignedLabel(slave1.getSelfLabel());
         includedJob.setAssignedLabel(slave1.getSelfLabel());
