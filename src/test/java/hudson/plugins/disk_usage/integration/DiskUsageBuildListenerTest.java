@@ -4,6 +4,8 @@
  */
 package hudson.plugins.disk_usage.integration;
 
+import hudson.Functions;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.io.File;
 import hudson.FilePath;
@@ -26,7 +28,7 @@ public class DiskUsageBuildListenerTest {
     
     @Test
     public void testOnDeleted() throws Exception{
-        AbstractProject project = j.createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
@@ -40,7 +42,11 @@ public class DiskUsageBuildListenerTest {
     @Test
     public void testOnCompleted() throws Exception{
         FreeStyleProject project = j.createFreeStyleProject();
-        project.getBuildersList().add(new Shell("echo ahoj > log.log"));
+        if (Functions.isWindows()){
+            project.getBuildersList().add(new BatchFile("echo ahoj > log.log"));
+        } else {
+            project.getBuildersList().add(new Shell("echo ahoj > log.log"));
+        }
         j.buildAndAssertSuccess(project);
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         assertNotNull("Build information is cached.", property.getDiskUsageBuildInformation(1));

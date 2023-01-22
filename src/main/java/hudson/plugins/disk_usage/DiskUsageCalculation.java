@@ -10,6 +10,7 @@ import hudson.scheduler.CronTab;
 import hudson.triggers.Trigger;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -79,8 +80,11 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
     @Override
     public boolean cancel(){
        cancelled = true;
-       ScheduledThreadPoolExecutor ex = (ScheduledThreadPoolExecutor) Timer.get();
-        ex.purge();
+        final ScheduledExecutorService scheduledExecutorService = Timer.get();
+        if (scheduledExecutorService instanceof ScheduledThreadPoolExecutor){
+            ScheduledThreadPoolExecutor ex = (ScheduledThreadPoolExecutor) scheduledExecutorService;
+            ex.purge();
+        }
        return super.cancel();
     }
     
