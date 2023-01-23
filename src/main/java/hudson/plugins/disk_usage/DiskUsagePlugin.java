@@ -62,7 +62,7 @@ public class DiskUsagePlugin extends Plugin {
     }
     
     public Long getCashedGlobalJobsDiskUsage(){
-        return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
+        return diskUsageBuilds + diskUsageJobsWithoutBuilds;
     }
     
     public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){
@@ -92,7 +92,7 @@ public class DiskUsagePlugin extends Plugin {
     
     public Long getGlobalJobsDiskUsage() throws IOException{
         refreshGlobalInformation();
-        return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
+        return diskUsageBuilds + diskUsageJobsWithoutBuilds;
     }
     
     public Long getGlobalJobsWithoutBuildsDiskUsage() throws IOException{

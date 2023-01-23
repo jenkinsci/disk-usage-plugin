@@ -96,7 +96,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     }
     
     public Long getCashedGlobalJobsDiskUsage(){
-        return (diskUsageBuilds + diskUsageJobsWithoutBuilds);
+        return diskUsageBuilds + diskUsageJobsWithoutBuilds;
     }
     
     public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){

@@ -77,7 +77,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
                 public Long getJobsDiskUsage(){
                     if(jobsWithoutBuildsUsage==null)
                         return getBuildsDiskUsage();
-                    return (jobsWithoutBuildsUsage + getBuildsDiskUsage());
+                    return jobsWithoutBuildsUsage + getBuildsDiskUsage();
                 }
                 
                 public Long getAllSpace(){

@@ -45,7 +45,7 @@ public class DiskUsageRecord {
     public Long getJobsDiskUsage(){
         if(diskUsageJobsWithoutBuilds==null)
             return getBuildsDiskUsage();
-        return (diskUsageJobsWithoutBuilds + getBuildsDiskUsage());
+        return diskUsageJobsWithoutBuilds + getBuildsDiskUsage();
     }
 
     public Long getAllSpace(){

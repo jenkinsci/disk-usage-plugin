@@ -307,7 +307,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         DefaultCategoryDataset dataset2 = new DefaultCategoryDataset();
         for (Object[] usage : usages) {
-            Integer label = ((Integer) usage[0]);
+            Integer label = (Integer) usage[0];
             dataset.addValue(((Long) usage[1]) / base,
                     Messages.DiskUsage_Graph_JobDirectory(), label);
             dataset.addValue(((Long) usage[2]) / base,
