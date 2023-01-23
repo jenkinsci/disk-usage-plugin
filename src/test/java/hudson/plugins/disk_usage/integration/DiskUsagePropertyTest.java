@@ -75,7 +75,7 @@ public class DiskUsagePropertyTest {
         for(MatrixConfiguration c: matrixProject.getItems()){
             DiskUsageProperty configurationProperty = new DiskUsageProperty();
             c.addProperty(configurationProperty);
-            configurationProperty.setDiskUsageWithoutBuilds(count*size1);  
+            configurationProperty.setDiskUsageWithoutBuilds(count * size1);  
             matrixProjectTotalSize += count*size1;
             //matrixProjectTotalSize += c.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
             count++;
@@ -117,8 +117,8 @@ public class DiskUsagePropertyTest {
     public void getWorkspaceSizeTest() throws Exception{
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(),"workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
-        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(),"workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(), "workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(), "workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         project.setAssignedLabel(slave1.getSelfLabel());
         j.buildAndAssertSuccess(project);
@@ -140,7 +140,7 @@ public class DiskUsagePropertyTest {
                 slaveInfo.put(path, workspaceSize);
             }
         }
-        assertEquals("DiskUsage workspaces which is configured as slave workspace is wrong.", workspaceSize*2, prop.getWorkspaceSize(true), 0);
+        assertEquals("DiskUsage workspaces which is configured as slave workspace is wrong.", workspaceSize * 2, prop.getWorkspaceSize(true), 0);
         assertEquals("DiskUsage workspaces which is not configured as slave workspace is wrong.", workspaceSize, prop.getWorkspaceSize(false), 0);
     }
     
@@ -156,7 +156,7 @@ public class DiskUsagePropertyTest {
         FilePath path = j.jenkins.getWorkspaceFor(project);
         path.mkdirs();
         property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
-        property.putSlaveWorkspaceSize(slave1,slave1.getRemoteFS(),5670l);
+        property.putSlaveWorkspaceSize(slave1, slave1.getRemoteFS(), 5670l);
         property.putSlaveWorkspaceSize(slave2, slave2.getRemoteFS(), 7987l);
         j.jenkins.removeNode(slave2);
         property.checkWorkspaces();
@@ -197,7 +197,7 @@ public class DiskUsagePropertyTest {
         } else {
             project.getBuildersList().add(new Shell("echo hello > log"));
         }
-        Slave slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(),"SlaveWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(), "SlaveWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
         Slave slave1 = j.createOnlineSlave();
         Slave slave2= j.createOnlineSlave();
         File workspaceSlave1 = new File(slave3.getRemoteFS(), project.getName()+ "/log");
@@ -289,7 +289,7 @@ public class DiskUsagePropertyTest {
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         for(DiskUsageBuildInformation information : property.getDiskUsageOfBuilds()){
-            assertEquals("Disk usage of build has loaded wrong size.", information.getNumber()*1000, information.getSize(), 0);
+            assertEquals("Disk usage of build has loaded wrong size.", information.getNumber() * 1000, information.getSize(), 0);
         }
         assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
      }
@@ -336,7 +336,7 @@ public class DiskUsagePropertyTest {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        FilePath f = j.jenkins.getWorkspaceFor((TopLevelItem)project);
+        FilePath f = j.jenkins.getWorkspaceFor((TopLevelItem) project);
         property.checkWorkspaces();
         assertEquals("Workspace should have size 4096", 4096, property.getAllWorkspaceSize(), 0);
         assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
@@ -348,7 +348,7 @@ public class DiskUsagePropertyTest {
     public void testCheckWorkspacesWithLoadingBuilds() throws IOException {
        File file = new File(j.jenkins.getRootDir(),"jobs/project2/builds/1/build.xml");
        XmlFile f = new XmlFile(new XStream2(), file);
-       String newBuildXml = f.asString().replace("${JENKINS_HOME}",j.jenkins.getRootDir().getAbsolutePath());
+       String newBuildXml = f.asString().replace("${JENKINS_HOME}", j.jenkins.getRootDir().getAbsolutePath());
        PrintStream st = new PrintStream(file);
        st.print(newBuildXml);
        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
@@ -391,10 +391,10 @@ public class DiskUsagePropertyTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }
@@ -411,7 +411,7 @@ public class DiskUsagePropertyTest {
     public void testDoNotBreakLazyLoading(){
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
-        assertTrue("This tests does not sense if there are loaded all builds.",8>loadedBuilds);
+        assertTrue("This tests does not sense if there are loaded all builds.", 8 > loadedBuilds);
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         assertEquals("Size of builds should be loaded.", 1000, property.getAllDiskUsageOfBuild(8), 0);
         assertEquals("Size of builds should be loaded.", 7000, property.getAllDiskUsageOfBuild(4), 0);

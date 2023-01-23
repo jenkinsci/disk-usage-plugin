@@ -48,7 +48,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
         }
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
         if(information==null){
-            property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), 0l), build);
+            property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), 0l), build);
         }
     }
 

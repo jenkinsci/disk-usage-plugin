@@ -53,10 +53,10 @@ public class BuildDiskUsageActionTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }
@@ -98,7 +98,7 @@ public class BuildDiskUsageActionTest {
                 break;
             }
         }
-        count ++;
+        count++;
         String size = (kiloBytes*count/1024) + " KB";
         assertEquals("String representation of build disk usage which has "  + size + " is wrong.", size, action.getBuildUsageString());
         }

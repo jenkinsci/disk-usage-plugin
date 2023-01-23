@@ -50,7 +50,7 @@ public class DiskUsageBuildListenerTest {
         j.buildAndAssertSuccess(project);
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         assertNotNull("Build information is cached.", property.getDiskUsageBuildInformation(1));
-        assertTrue("Build disk usage should be counted.", property.getDiskUsageOfBuild(1)>0);
-        assertTrue("Workspace of build should be counted.", property.getAllWorkspaceSize()>0);
+        assertTrue("Build disk usage should be counted.", property.getDiskUsageOfBuild(1) > 0);
+        assertTrue("Workspace of build should be counted.", property.getAllWorkspaceSize() > 0);
     }
 }

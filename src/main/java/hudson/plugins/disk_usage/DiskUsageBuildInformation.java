@@ -70,7 +70,7 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
     
     public int compareTo(Object o){
         if(o instanceof DiskUsageBuildInformation){
-            return id.compareTo(((DiskUsageBuildInformation)o).getId());
+            return id.compareTo(((DiskUsageBuildInformation) o).getId());
         }
         throw new IllegalArgumentException("Can not compare with different type");
     }

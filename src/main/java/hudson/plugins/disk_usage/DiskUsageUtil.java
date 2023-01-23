@@ -65,7 +65,7 @@ public class DiskUsageUtil {
             }
             if(item instanceof ItemGroup){
                 
-                for(AbstractProject project : DiskUsageUtil.getAllProjects((ItemGroup<?>)item)){
+                for(AbstractProject project : DiskUsageUtil.getAllProjects((ItemGroup<?>) item)){
                     DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                     if(property==null){
                         try {
@@ -98,12 +98,12 @@ public class DiskUsageUtil {
            return null;
         int unit = Integer.decode(timeUnit);
         int count = Integer.decode(timeCount);
-        return getDate(unit,count);
+        return getDate(unit, count);
     }
     
     public static Date getDate(int unit, int count){
         Calendar calendar = new GregorianCalendar();
-        calendar.set(unit, calendar.get(unit)-count);
+        calendar.set(unit, calendar.get(unit) - count);
         return calendar.getTime();
     }
     
@@ -308,7 +308,7 @@ public class DiskUsageUtil {
                             Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
                             if(paths!=null && !paths.isEmpty()){
                                 for(String path: paths.keySet()){
-                                    exceededFiles.add(new FilePath(node.getChannel(),path));
+                                    exceededFiles.add(new FilePath(node.getChannel(), path));
                                 }
                             }
                         }
@@ -316,7 +316,7 @@ public class DiskUsageUtil {
                     property.checkWorkspaces();
                     listener.getLogger().println("Started calculate disk usage of workspace");
                     Long startTimeOfWorkspaceCalculation = System.currentTimeMillis();
-                    Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(),exceededFiles);
+                    Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(), exceededFiles);
                     listener.getLogger().println("Finished Calculation of disk usage of workspace in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfWorkspaceCalculation));
                     property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
                     property.saveDiskUsage();
@@ -476,7 +476,7 @@ public class DiskUsageUtil {
                 diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getTimeoutWorkspace(), TimeUnit.MINUTES);             
             }
             catch(Exception e){
-                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for file path " + workspace.getRemote() + " through channel " + workspace.getChannel(),e);
+                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for file path " + workspace.getRemote() + " through channel " + workspace.getChannel(), e);
             }
         }
         return diskUsage;
@@ -525,7 +525,7 @@ public class DiskUsageUtil {
                                 Map<String,Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
                                 if(paths!=null && !paths.isEmpty()){
                                     for(String path: paths.keySet()){
-                                        exceededFiles.add(new FilePath(node.getChannel(),path));
+                                        exceededFiles.add(new FilePath(node.getChannel(), path));
                                     }
                                 }
                             }
@@ -549,7 +549,7 @@ public class DiskUsageUtil {
         List<AbstractProject> items = new ArrayList<AbstractProject>();
         for (Item item : itemGroup.getItems()) {
             if(item instanceof AbstractProject){
-                items.add((AbstractProject)item);
+                items.add((AbstractProject) item);
             }
             if (item instanceof ItemGroup) {
                 items.addAll(getAllProjects((ItemGroup) item));

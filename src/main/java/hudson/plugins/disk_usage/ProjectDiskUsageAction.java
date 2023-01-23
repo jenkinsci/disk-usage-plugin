@@ -291,7 +291,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         ArrayList<DiskUsageBuildInformation> builds = new ArrayList<DiskUsageBuildInformation>();
         builds.addAll(property.getDiskUsageOfBuilds());
         //do it in reverse order
-        for (int i=builds.size()-1; i>=0; i--) {
+        for(int i = builds.size() - 1; i >= 0; i--) {
             DiskUsageBuildInformation build = builds.get(i);
             Long diskUsage = property.getDiskUsageOfBuild(build.getId());
                 usages.add(new Object[]{build.getNumber(), getJobRootDirDiskUsage(), diskUsage, getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});

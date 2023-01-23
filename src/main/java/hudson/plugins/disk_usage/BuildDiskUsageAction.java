@@ -81,7 +81,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         Long buildsDiskUsage = getDiskUsage();
         AbstractProject project = build.getProject();
         if(project instanceof ItemGroup){
-           buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup)project);
+           buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup) project);
         }       
         return buildsDiskUsage;
     }
@@ -94,7 +94,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         Long buildsDiskUsage = 0l;
         for(Object item: group.getItems()){
             if(item instanceof ItemGroup){
-                buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup)item);
+                buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup) item);
             }
             else{
                 if(item instanceof AbstractProject){
@@ -125,7 +125,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 AbstractProject project = build.getProject().getRootProject();
                 if(property!=null && (project instanceof TopLevelItem))
-                    property.putSlaveWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem)project).getRemote(), diskUsage.wsUsage);
+                    property.putSlaveWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem) project).getRemote(), diskUsage.wsUsage);
             }
             diskUsage=null;
         }
@@ -165,7 +165,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             }
             //Transient actions can be created even during deletion of job
             if(property.getDiskUsageBuildInformation(build.getNumber())==null && build.getRootDir().exists()){
-                property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size), build);
+                property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size), build);
             }
     }
        

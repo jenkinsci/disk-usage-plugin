@@ -190,7 +190,7 @@ public class DiskUsagePlugin extends Plugin {
         //First iteration just to get scale of the y-axis
         for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record){
             if(getConfiguration().getShowFreeSpaceForJobDirectory()){
-                maxValue = Math.max(maxValue,usage.getAllSpace());
+                maxValue = Math.max(maxValue, usage.getAllSpace());
             }
             maxValue = Math.max(maxValue, usage.getJobsDiskUsage());
             maxValueWorkspace = Math.max(maxValueWorkspace, usage.getSlaveWorkspacesUsage());

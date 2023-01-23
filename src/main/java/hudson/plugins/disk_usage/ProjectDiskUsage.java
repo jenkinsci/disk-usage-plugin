@@ -66,7 +66,7 @@ public class ProjectDiskUsage implements Saveable{
                 loadAllBuilds();
              }
              catch(Exception e){
-                 Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load builds "+getConfigFile(),e);
+                 Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load builds " + getConfigFile(), e);
              }
          }
          information.addAll(buildDiskUsage);
@@ -79,7 +79,7 @@ public class ProjectDiskUsage implements Saveable{
             getConfigFile().write(this);
             SaveableListener.fireOnChange(this, getConfigFile());
         } catch (IOException e) {
-            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to save "+getConfigFile(),e);
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to save " + getConfigFile(), e);
         }
 
     }
@@ -153,7 +153,7 @@ public class ProjectDiskUsage implements Saveable{
                     putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
                 }
                 DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
-                addBuildInformation(information , build);
+                addBuildInformation(information, build);
                 if(information.getSize()==0l){
                     information.setSize(buildOldDiskUsage);
                 }
@@ -190,7 +190,7 @@ public class ProjectDiskUsage implements Saveable{
                     buildDiskUsage = informations;
                 }
             } catch (IOException e) {
-                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load "+file, e);
+                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load " + file, e);
             }
 //        if(buildDiskUsage==null){
 //             //seems like it needs load old data
@@ -214,7 +214,7 @@ public class ProjectDiskUsage implements Saveable{
                 AbstractBuild build = (AbstractBuild) run;
                 BuildDiskUsageAction usage = run.getAction(BuildDiskUsageAction.class);
                 DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
-                 addBuildInformation(information , build);
+                 addBuildInformation(information, build);
                 if(usage!=null){
                     information.setSize(usage.buildDiskUsage);
                     run.getAllActions().remove(usage);

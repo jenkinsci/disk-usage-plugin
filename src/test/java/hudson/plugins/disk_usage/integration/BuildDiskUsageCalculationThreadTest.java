@@ -117,7 +117,7 @@ public class BuildDiskUsageCalculationThreadTest {
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");  
         AbstractBuild matrixBuild = project.getBuildByNumber(1);
-        Long matrixProjectBuildSize = getSize(readFileList(new File(matrixBuild.getRootDir(),"fileList"))) + matrixBuild.getRootDir().length();
+        Long matrixProjectBuildSize = getSize(readFileList(new File(matrixBuild.getRootDir(), "fileList"))) + matrixBuild.getRootDir().length();
         for(AbstractBuild build: project2.getBuilds()){
             File file = new File(build.getRootDir(),"fileList");
             buildSizesProject2.put(build, getSize(readFileList(file)) + build.getRootDir().length());
@@ -224,7 +224,7 @@ public class BuildDiskUsageCalculationThreadTest {
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
         assertEquals("Disk usage for excluded project should not be counted.", 0l, DiskUsageTestUtil.getBuildDiskUsageAction(exludedJob.getLastBuild()).getAllDiskUsage(), 0);
-        assertTrue("Disk usage for excluded project should not be counted.", DiskUsageTestUtil.getBuildDiskUsageAction(includedJob.getLastBuild()).getAllDiskUsage()>0);
+        assertTrue("Disk usage for excluded project should not be counted.", DiskUsageTestUtil.getBuildDiskUsageAction(includedJob.getLastBuild()).getAllDiskUsage() > 0);
         excludes.clear();
     }
     

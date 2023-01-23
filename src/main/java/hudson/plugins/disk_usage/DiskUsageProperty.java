@@ -272,7 +272,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                     if(node.toComputer()!=null && node.toComputer().isOnline()){
                         FilePath path =null;
                         try{
-                            path = node.getWorkspaceFor((TopLevelItem)owner);                  
+                            path = node.getWorkspaceFor((TopLevelItem) owner);                  
                             if(path!=null && path.exists() && (diskUsage.slaveWorkspacesUsage.get(node.getNodeName())==null || !diskUsage.slaveWorkspacesUsage.get(node.getNodeName()).containsKey(path.getRemote()))){
                                 putSlaveWorkspace(node, path.getRemote());
                             }

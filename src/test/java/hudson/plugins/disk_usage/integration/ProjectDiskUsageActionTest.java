@@ -65,10 +65,10 @@ public class ProjectDiskUsageActionTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }
@@ -107,10 +107,10 @@ public class ProjectDiskUsageActionTest {
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()){
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
             matrixBuild1TotalSize += count*size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
             matrixBuild2TotalSize += count*size2;
             count++;
         }
@@ -175,7 +175,7 @@ public class ProjectDiskUsageActionTest {
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         assertTrue("This test does not have sense if there is loaded all builds", 8 > loadedBuilds);
         project.getAction(ProjectDiskUsageAction.class).getGraph();
-        assertTrue("Creation of graph should not cause loading of builds.", project._getRuns().getLoadedBuilds().size() <= loadedBuilds );
+        assertTrue("Creation of graph should not cause loading of builds.", project._getRuns().getLoadedBuilds().size() <= loadedBuilds);
        
     }
      

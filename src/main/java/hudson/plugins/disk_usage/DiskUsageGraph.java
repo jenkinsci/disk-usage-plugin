@@ -34,7 +34,7 @@ public class DiskUsageGraph extends Graph{
 	String workspaceUnit;
 
 	public DiskUsageGraph(CategoryDataset dataset, String unit, CategoryDataset workspaceDataset, String workspaceUnit){
-		super(-1,350,150);
+		super(-1, 350, 150);
 		this.workspaceDataset = workspaceDataset;
 		this.dataset = dataset;
 		this.unit = unit;
@@ -80,21 +80,21 @@ public class DiskUsageGraph extends Graph{
 		ValueAxis rangeAxis = new NumberAxis(Messages.DiskUsage_Graph_WorkspaceDiskUsageAxis() + " [" + workspaceUnit + "]");
 		plot.setRangeAxis(1, rangeAxis);
 		plot.mapDatasetToRangeAxis(1, 1);
-		setColorForArea(plot.getRenderer(), dataset.getRowCount()>2);
+		setColorForArea(plot.getRenderer(), dataset.getRowCount() > 2);
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
-		renderer.setSeriesPaint(1, new Color(255,204,0));
+		renderer.setSeriesPaint(1, new Color(255, 204, 0));
 		return chart;
 	}
 
 		public void setColorForArea(CategoryItemRenderer renderer, boolean global){
 			if(global){
 				renderer.setSeriesPaint(0, Color.LIGHT_GRAY);
-				renderer.setSeriesPaint(1, new Color(60,179,113));
-				renderer.setSeriesPaint(2, new Color(106,90,205));
+				renderer.setSeriesPaint(1, new Color(60, 179, 113));
+				renderer.setSeriesPaint(2, new Color(106, 90, 205));
 			}
 			else{
-				renderer.setSeriesPaint(0, new Color(60,179,113));
-				renderer.setSeriesPaint(1, new Color(106,90,205));
+				renderer.setSeriesPaint(0, new Color(60, 179, 113));
+				renderer.setSeriesPaint(1, new Color(106, 90, 205));
 			}
 		}
 }
