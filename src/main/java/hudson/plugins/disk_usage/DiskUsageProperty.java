@@ -507,5 +507,3 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     
     public static final Logger LOGGER = Logger.getLogger(DiskUsageProperty.class.getName());
 }
-
-    
