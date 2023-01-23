@@ -104,7 +104,7 @@ public class DiskUsageCalculationTest extends TestCase{
         calculation = new TestDiskUsageCalculation(calendar.get(Calendar.MINUTE) + " " + calendar.get(Calendar.HOUR_OF_DAY) + " " + calendar.get(Calendar.DAY_OF_MONTH) + " " +  (calendar.get(Calendar.MONTH) + 1) + " " + dayOfWeek, false);
         period = calculation.getRecurrencePeriod(); 
         expectedPeriod = calendar.getTimeInMillis() - System.currentTimeMillis(); 
-        calendar.setTimeInMillis(System.currentTimeMillis() + period);;
+        calendar.setTimeInMillis(System.currentTimeMillis() + period);
         assertEquals("Disk usage calculaion should be executed accurately in 2 months.", expectedPeriod, period, 60000);
      
     }

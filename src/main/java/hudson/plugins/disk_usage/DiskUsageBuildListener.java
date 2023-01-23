@@ -33,7 +33,7 @@ public class DiskUsageBuildListener extends RunListener<AbstractBuild>{
                 property =  (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);          
         }
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
-        if(information!=null){;
+        if(information!=null){
             property.getDiskUsage().removeBuild(information);
             property.getDiskUsage().save();
         }

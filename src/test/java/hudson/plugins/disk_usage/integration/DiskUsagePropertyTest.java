@@ -364,7 +364,7 @@ public class DiskUsagePropertyTest {
     
     @Test
     public void testGetAllDiskUsageOfBuild() throws IOException, Exception{
-;        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
         TextAxis axis2 = new TextAxis("axis2", "Aaxis", "Baxis", "Caxis");
