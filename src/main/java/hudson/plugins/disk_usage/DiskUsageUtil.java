@@ -204,7 +204,7 @@ public class DiskUsageUtil {
     
     public static List<String> parseExcludedJobsFromString(String jobs){
         List<String> list = new ArrayList<String>();
-        String jobNames[] = jobs.split(",");
+        String[] jobNames = jobs.split(",");
         for(String name: jobNames){
             name = name.trim();
             Item item = Jenkins.getInstance().getItem(name);
