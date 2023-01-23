@@ -151,7 +151,7 @@ public class DiskUsageUtil {
     public static Long getSizeInBytes(String stringSize){
         if(stringSize==null || stringSize.equals("-"))
             return 0l;
-        String []values = stringSize.split(" ");
+        String[] values = stringSize.split(" ");
         int index = getIndex(values[1]);
         Long value = Long.decode(values[0]);
         Double size = value * (Math.pow(1024, index));       
