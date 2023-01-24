@@ -108,8 +108,8 @@ public class ProjectDiskUsage implements Saveable {
         if(workspacesInfo == null) {
             workspacesInfo = new ConcurrentHashMap<String, Long>();
         }
-        //worksace with 0 are only initiative (are not counted yet) or does not exists
-        //no nexist workspaces are removed in method checkWorkspaces in class DiskUsageProperty
+        // worksace with 0 are only initiative (are not counted yet) or does not exists
+        // no nexist workspaces are removed in method checkWorkspaces in class DiskUsageProperty
         if(workspacesInfo.get(path) == null || size > 0l) {
             workspacesInfo.put(path, size);
         }
@@ -142,7 +142,7 @@ public class ProjectDiskUsage implements Saveable {
                 AbstractBuild build = (AbstractBuild) run;
                 BuildDiskUsageAction toRemove = null;
                 long buildOldDiskUsage = 0l;
-                //if not present, add
+                // if not present, add
                 for(Action action: build.getActions()) {
                     if(action instanceof BuildDiskUsageAction) {
                         toRemove = (BuildDiskUsageAction) action;
@@ -170,7 +170,7 @@ public class ProjectDiskUsage implements Saveable {
 //                }
                 // else{
                 //  }
-                //DiskUsageUtil.addBuildDiskUsageAction(build);
+                // DiskUsageUtil.addBuildDiskUsageAction(build);
             }
         }
         allBuildsLoaded = true;
@@ -187,7 +187,7 @@ public class ProjectDiskUsage implements Saveable {
         try {
             file.unmarshal(this);
             if(buildDiskUsage instanceof HashSet) {
-                //saved collection is not serialized in previous versions.
+                // saved collection is not serialized in previous versions.
                 Set<DiskUsageBuildInformation> informations = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
                 informations.addAll(buildDiskUsage);
                 buildDiskUsage = informations;

@@ -288,7 +288,7 @@ public class DiskUsageUtil {
             return;
         }
         try {
-            //count build.xml too
+            // count build.xml too
             build.save();
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
             listener.getLogger().println("Started calculate disk usage of build");
@@ -353,7 +353,7 @@ public class DiskUsageUtil {
                 for(File child: fileList) {
                     if(exceedFiles.contains(child)) {
                         continue;
-                    } //do not count exceeded files
+                    } // do not count exceeded files
                     if(!isSymlink(child)) {
                         size += getFileSize(child, exceedFiles);
                     }
@@ -431,8 +431,8 @@ public class DiskUsageUtil {
             return;
         }
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        //Build disk usage has to be always recalculated to be kept up-to-date 
-        //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
+        // Build disk usage has to be always recalculated to be kept up-to-date 
+        // - artifacts might be kept only for the last build and users sometimes delete files manually as well.
         long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.getInstance().getBuildDirFor(project), buildId), new ArrayList<File>());
         //        if (build instanceof MavenModuleSetBuild) {
 //            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
@@ -448,7 +448,7 @@ public class DiskUsageUtil {
             if(b.getId().equals(buildId)) {
                 build = b;
                 break;
-                //addBuildDiskUsageAction(build);
+                // addBuildDiskUsageAction(build);
             }
         }
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
@@ -468,7 +468,7 @@ public class DiskUsageUtil {
                     property.getDiskUsage().addBuildInformation(information, build);
                 }
                 else {
-                    //should not happen
+                    // should not happen
                     AbstractBuild newLoadedBuild = (AbstractBuild) project._getRuns().getById(buildId);
                     information = new DiskUsageBuildInformation(buildId, newLoadedBuild.getTimeInMillis(), newLoadedBuild.getNumber(), buildSize);
                     property.getDiskUsage().addBuildInformation(information, build);
@@ -518,7 +518,7 @@ public class DiskUsageUtil {
                 node = Jenkins.getInstance().getNode(nodeName);
             }
             if(node == null) {
-                //probably does not exists yet
+                // probably does not exists yet
                 continue;
             }
 

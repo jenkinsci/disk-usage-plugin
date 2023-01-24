@@ -41,7 +41,7 @@ public class BuildDiskUsageCalculationThreadTest {
 
     private void waitUntilThreadEnds(BuildDiskUsageCalculationThread calculation) throws InterruptedException {
         Thread thread = null;
-        //wait until thread ends
+        // wait until thread ends
         for(Thread t: Thread.getAllStackTraces().keySet()) {
             if(calculation.name.equals(t.getName())) {
                 while(thread.isAlive()) {
@@ -75,7 +75,7 @@ public class BuildDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testExecute() throws IOException, InterruptedException {
-        //turn off run listener
+        // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<AbstractBuild, Long> buildSizesProject1 = new TreeMap<AbstractBuild, Long>();
@@ -110,7 +110,7 @@ public class BuildDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testExecuteMatrixProject() throws IOException, InterruptedException {
-        //turn off run listener
+        // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<AbstractBuild, Long>();
@@ -193,7 +193,7 @@ public class BuildDiskUsageCalculationThreadTest {
 
         @Override
         public File getBuildDir() {
-            //is called during disk calculation, to be sure that calculation is in progress I make this operation longer
+            // is called during disk calculation, to be sure that calculation is in progress I make this operation longer
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException ex) {
@@ -208,7 +208,7 @@ public class BuildDiskUsageCalculationThreadTest {
 
         @Override
         public void save() {
-            //do not want save
+            // do not want save
         }
     }
 
@@ -234,7 +234,7 @@ public class BuildDiskUsageCalculationThreadTest {
     public void testDoNotBreakLazyLoading() throws IOException, InterruptedException {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
 
-        //method isBuilding() is used for determining disk usage and its calling load some builds
+        // method isBuilding() is used for determining disk usage and its calling load some builds
         project.isBuilding();
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         assertTrue("Test does not sense if there are all builds loaded, please rewrite it.", loadedBuilds < 8);

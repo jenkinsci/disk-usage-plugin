@@ -59,7 +59,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
 
     private void waitUntilThreadEnds(WorkspaceDiskUsageCalculationThread calculation) throws InterruptedException {
         Thread thread = null;
-        //wait until thread ends
+        // wait until thread ends
         for(Thread t: Thread.getAllStackTraces().keySet()) {
             if(calculation.name.equals(t.getName())) {
                 while(thread.isAlive()) {
@@ -105,7 +105,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testExecute() throws IOException, InterruptedException, Exception {
-        //turn off run listener
+        // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.getInstance().getExtensionList(RunListener.class).remove(listener);
         Slave slave1 = createSlave("slave1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
@@ -138,7 +138,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testExecuteMatrixProject() throws Exception {
-        //turn off run listener
+        // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.getInstance().getExtensionList(RunListener.class).remove(listener);
         j.getInstance().setNumExecutors(0);
@@ -168,7 +168,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         thread.execute(TaskListener.NULL);
         waitUntilThreadEnds(thread);
         slave1.toComputer().setTemporarilyOffline(false, null);
-        //project 1
+        // project 1
         File file = new File(slave1.getWorkspaceFor(project1).getRemote(), "fileList");
         File fileAxis1 = new File(slave1.getWorkspaceFor(project1).getRemote() + "/axis/axis1", "fileList");
         File fileAxis2 = new File(slave1.getWorkspaceFor(project1).getRemote() + "/axis/axis2", "fileList");
@@ -186,11 +186,11 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         sizeAxis2 += getSize(readFileList(fileAxis2)) + new File(slave2.getWorkspaceFor(project1).getRemote() + "/axis/axis2").length();
         sizeAxis3 += getSize(readFileList(fileAxis3)) + new File(slave2.getWorkspaceFor(project1).getRemote() + "/axis/axis3").length();
         assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        //configurations
+        // configurations
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        //project 2
+        // project 2
         file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
         fileAxis1 = new File(slave1.getWorkspaceFor(project2).getRemote() + "/axis/axis1", "fileList");
         fileAxis2 = new File(slave1.getWorkspaceFor(project2).getRemote() + "/axis/axis2", "fileList");
@@ -198,7 +198,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         sizeAxis1 = getSize(readFileList(fileAxis1)) + new File(slave1.getWorkspaceFor(project2).getRemote() + "/axis/axis1").length();
         sizeAxis2 = getSize(readFileList(fileAxis2)) + new File(slave1.getWorkspaceFor(project2).getRemote() + "/axis/axis2").length();
         assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        //configurations
+        // configurations
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project2.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project2.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
 
@@ -308,7 +308,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         public void putSlaveWorkspaceSize(Node node, String path, Long size) {
             LOGGER.fine("workspace size " + size);
             try {
-                Thread.sleep(10000); //make this operation longer
+                Thread.sleep(10000); // make this operation longer
             } catch (InterruptedException ex) {
                 Logger.getLogger(WorkspaceDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
             }

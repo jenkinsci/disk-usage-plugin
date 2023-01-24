@@ -134,7 +134,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         diskUsage = new ProjectDiskUsage();
         diskUsage.setProject(job);
         loadDiskUsage();
-        //transfer old data
+        // transfer old data
         boolean modified = false;
         if(diskUsageWithoutBuilds != null) {
             diskUsage.diskUsageWithoutBuilds = diskUsageWithoutBuilds;
@@ -273,7 +273,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         else {
             checkLoadedBuilds();
         }
-        //only if it is wanted - can cost a quite long time to do it for all
+        // only if it is wanted - can cost a quite long time to do it for all
         if(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCheckWorkspaceOnSlave() && owner instanceof TopLevelItem) {
             for(Node node: Jenkins.getInstance().getNodes()) {
                 if(node.toComputer() != null && node.toComputer().isOnline()) {
@@ -298,12 +298,12 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             if(node == null && nodeName.isEmpty()) {
                 node = Jenkins.getInstance();
             }
-            //delete name of slaves which do not exist
-            if(node == null) {//Jenkins master has empty name
+            // delete name of slaves which do not exist
+            if(node == null) {// Jenkins master has empty name
                 iterator.remove();
             }
             else {
-                //delete path which does not exists
+                // delete path which does not exists
                 if(node != null && node.toComputer() != null && node.getChannel() != null) {
                     Map<String, Long> workspaces = diskUsage.slaveWorkspacesUsage.get(nodeName);
                     Iterator<String> pathIterator = workspaces.keySet().iterator();
@@ -338,7 +338,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             else {
                 node = Jenkins.getInstance().getNode(nodeName);
             }
-            if(node == null) { //slave does not exist
+            if(node == null) { // slave does not exist
                 continue;
             }
             Map<String, Long> paths = getSlaveWorkspaceUsage().get(nodeName);
@@ -388,7 +388,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         Long size = 0l;
         for(String nodeName: getSlaveWorkspaceUsage().keySet()) {
             Node slave = Jenkins.getInstance().getNode(nodeName);
-            if(slave == null && !nodeName.isEmpty() && !(slave instanceof Jenkins)) {//slave does not exist
+            if(slave == null && !nodeName.isEmpty() && !(slave instanceof Jenkins)) {// slave does not exist
                 continue;
             }
             Map<String, Long> paths = getSlaveWorkspaceUsage().get(nodeName);
@@ -471,7 +471,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     public void loadDiskUsage() {
         AbstractProject job = (AbstractProject) owner;
         diskUsage.load();
-        //ensure that build was not removed without calling listener - badly removed, or badly saved (without build.xml)
+        // ensure that build was not removed without calling listener - badly removed, or badly saved (without build.xml)
         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(false)) {
             File buildsDirectory = new File(owner.getRootDir(), "builds");
             File build = new File(buildsDirectory, information.getId());

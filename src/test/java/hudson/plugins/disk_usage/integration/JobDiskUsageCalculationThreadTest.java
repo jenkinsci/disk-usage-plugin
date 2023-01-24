@@ -65,13 +65,13 @@ public class JobDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testExecute() throws IOException, InterruptedException {
-        //turn off run listener
+        // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
-        //we need all build information are loaded before counting
+        // we need all build information are loaded before counting
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         File file = new File(project.getRootDir(), "fileList");
@@ -93,14 +93,14 @@ public class JobDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testMatrixProject() throws IOException, InterruptedException {
-        //turn off run listener
+        // turn off run listener
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<String, Long> matrixConfigurationsSize = new TreeMap<String, Long>();
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
-        //we need all build information are loaded before counting
+        // we need all build information are loaded before counting
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         File file = new File(project.getRootDir(), "fileList");

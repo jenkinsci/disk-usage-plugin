@@ -21,7 +21,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Disk usage information for a single build
  * @author dvrzalik
  */
-//TODO really implementsProminentProjectAction???
+// TODO really implementsProminentProjectAction???
 @ExportedBean(defaultVisibility = 1)
 public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction, RunAction2 {
 
@@ -117,7 +117,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     }
 
     public Object readResolve() {
-        //for keeping backward compatibility
+        // for keeping backward compatibility
         if(diskUsage != null) {
             buildDiskUsage = diskUsage.buildUsage;
             Node node = build.getBuiltOn();
@@ -135,7 +135,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
 
     @Override
     public void onAttached(Run<?, ?> r) {
-        //no action is needed
+        // no action is needed
     }
 
     @Override
@@ -145,7 +145,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         if(property == null) {
             return;
         }
-        //backward compatibility
+        // backward compatibility
             BuildDiskUsageAction action = null;
         for(Action a: build.getActions()) {
             if(a instanceof BuildDiskUsageAction) {
@@ -156,7 +156,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             }
         }
         if(action != null) {
-            //remove old action, now it is added by transition action factory
+            // remove old action, now it is added by transition action factory
             build.getActions().remove(action);
             try {
                 build.save();
@@ -164,7 +164,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
                 Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        //Transient actions can be created even during deletion of job
+        // Transient actions can be created even during deletion of job
         if(property.getDiskUsageBuildInformation(build.getNumber()) == null && build.getRootDir().exists()) {
             property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size), build);
         }

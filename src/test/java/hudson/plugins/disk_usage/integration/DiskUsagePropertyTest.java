@@ -65,7 +65,7 @@ public class DiskUsagePropertyTest {
         Long sizeOfProject = 7546l;
         Long sizeOfMatrixProject = 6800l;
         DiskUsageProperty projectProperty = project.getProperty(DiskUsageProperty.class);
-        //project.addProperty(projectProperty);
+        // project.addProperty(projectProperty);
         projectProperty.setDiskUsageWithoutBuilds(sizeOfProject);
         DiskUsageProperty matrixProjectProperty = matrixProject.getProperty(DiskUsageProperty.class);
         matrixProjectProperty.setDiskUsageWithoutBuilds(sizeOfMatrixProject);
@@ -77,7 +77,7 @@ public class DiskUsagePropertyTest {
             c.addProperty(configurationProperty);
             configurationProperty.setDiskUsageWithoutBuilds(count * size1);
             matrixProjectTotalSize += count * size1;
-            //matrixProjectTotalSize += c.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
+            // matrixProjectTotalSize += c.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
             count++;
         }
         assertEquals("DiskUsageProperty for FreeStyleProject " + project.getDisplayName() + " returns wrong value its size without builds and including sub-projects.", sizeOfProject, project.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds());
@@ -86,7 +86,7 @@ public class DiskUsagePropertyTest {
 
     @Test
     public void testCheckWorkspaces() throws Exception {
-        //turn off run listener
+        // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Slave slave1 = j.createOnlineSlave();
@@ -201,13 +201,13 @@ public class DiskUsagePropertyTest {
         Slave slave1 = j.createOnlineSlave();
         Slave slave2 = j.createOnlineSlave();
         File workspaceSlave1 = new File(slave3.getRemoteFS(), project.getName() + "/log");
-        //DiskUsageTestUtil.createFileWithContent(workspaceSlave1);
+        // DiskUsageTestUtil.createFileWithContent(workspaceSlave1);
         File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
-        //DiskUsageTestUtil.createFileWithContent(workspaceSlave2);
+        // DiskUsageTestUtil.createFileWithContent(workspaceSlave2);
         File customWorkspaceSlave1 = new File(j.jenkins.getRootDir(), "custom2/log");
-        //DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave1);
+        // DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave1);
         File customWorkspaceSlave2 = new File(j.jenkins.getRootDir(), "custom1/log");
-        //DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave2);
+        // DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave2);
         project.setAssignedLabel(slave3.getSelfLabel());
         j.buildAndAssertSuccess(project);
         project.setCustomWorkspace(customWorkspaceSlave1.getParentFile().getAbsolutePath());
@@ -219,7 +219,7 @@ public class DiskUsagePropertyTest {
         j.buildAndAssertSuccess(project);
         Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
-        //take one slave offline
+        // take one slave offline
         slave1.toComputer().disconnect(new OfflineCause.ByCLI("test disconnection"));
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
     }
@@ -248,7 +248,7 @@ public class DiskUsagePropertyTest {
         j.buildAndAssertSuccess(project);
         Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
-        //take one slave offline
+        // take one slave offline
         j.jenkins.setNumExecutors(0);
         assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
     }
@@ -528,7 +528,7 @@ public class DiskUsagePropertyTest {
         fail("Checking of thread safety caused Exception which is not connected with thread safety problem.");
     }
 
-    //JENKINS-29143
+    // JENKINS-29143
     @Test
     public void testThreadSaveOperationUnderSetOfDiskUsageBuildInformation() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();

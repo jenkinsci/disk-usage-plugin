@@ -25,7 +25,7 @@ import jenkins.model.Jenkins;
 @Extension
 public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
 
-    //last scheduled task;
+    // last scheduled task;
     private static DiskUsageCalculation currentTask;
 
     public WorkspaceDiskUsageCalculationThread() {
@@ -43,7 +43,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
                 for(Object item: items) {
                     if(item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
-                        //do not count workspace for running project
+                        // do not count workspace for running project
                         if(project.isBuilding()) {
                             continue;
                         }

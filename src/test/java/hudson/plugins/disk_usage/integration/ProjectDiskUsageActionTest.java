@@ -187,7 +187,7 @@ public class ProjectDiskUsageActionTest {
             ItemListener.fireOnCreated(this);
         }
 
-        //@Override
+        // @Override
         @Override
         public Class<ProjectTestBuild> getBuildClass() {
             return ProjectTestBuild.class;
@@ -217,7 +217,7 @@ public class ProjectDiskUsageActionTest {
 
         @Override
         public void save() {
-            //do not save fake project
+            // do not save fake project
             getRootDir().mkdirs();
         }
     }

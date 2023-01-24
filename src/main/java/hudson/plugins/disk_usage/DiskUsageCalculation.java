@@ -59,7 +59,7 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
     public long scheduledLastInstanceExecutionTime() {
         try {
             CronTab tab = null;
-            if(getLastTask() == null || getLastTask().isCancelled()) { //not scheduled
+            if(getLastTask() == null || getLastTask().isCancelled()) { // not scheduled
                 return 0l;
             }
             tab = getLastTask().getCronTab();
@@ -121,12 +121,12 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis();
             if(nextExecution.getTimeInMillis() - now.getTimeInMillis() <= 60000) {
-                period = period + 60000l; //add one minute to not shedule it during one minute one than once
+                period = period + 60000l; // add one minute to not shedule it during one minute one than once
             }
             return period;
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
-            //it should not happen
+            // it should not happen
             return 1000 * 60 * 6;
         }
     }

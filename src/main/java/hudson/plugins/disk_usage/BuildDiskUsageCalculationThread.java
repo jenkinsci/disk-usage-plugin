@@ -26,7 +26,7 @@ import jenkins.model.Jenkins;
 @Extension
 public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
 
-    //last scheduled task;
+    // last scheduled task;
     private static DiskUsageCalculation currentTask;
 
     public BuildDiskUsageCalculationThread() {
@@ -54,7 +54,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)) {
                             Map<Integer, AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
                             AbstractBuild build = loadedBuilds.get(information.getNumber());
-                            //do not calculat builds in progress
+                            // do not calculat builds in progress
                             if(build != null && build.isBuilding()) {
                                 continue;
                             }

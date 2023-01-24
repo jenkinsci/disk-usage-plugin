@@ -25,7 +25,7 @@ import jenkins.model.Jenkins;
 @Extension
 public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
 
-    //last scheduled task;
+    // last scheduled task;
     private static DiskUsageCalculation currentTask;
 
 
@@ -45,7 +45,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
                 for(Object item: items) {
                     if(item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
-                        //do not count building project
+                        // do not count building project
                         if(project.isBuilding()) {
                             continue;
                         }

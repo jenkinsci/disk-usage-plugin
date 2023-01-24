@@ -191,7 +191,7 @@ public class DiskUsagePlugin extends Plugin {
         }
         long maxValueWorkspace = Math.max(diskUsageNonSlaveWorkspaces, getCashedSlaveDiskUsageWorkspace());
         List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> record = DiskUsageProjectActionFactory.DESCRIPTOR.getHistory();
-        //First iteration just to get scale of the y-axis
+        // First iteration just to get scale of the y-axis
         for(DiskUsageOvearallGraphGenerator.DiskUsageRecord usage: record) {
             if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
                 maxValue = Math.max(maxValue, usage.getAllSpace());
@@ -219,7 +219,7 @@ public class DiskUsagePlugin extends Plugin {
             datasetW.addValue(((Long) usage.getNonSlaveWorkspacesUsage()) / baseWorkspace, "non slave workspaces", label);
         }
 
-        //add current state
+        // add current state
         if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
             dataset.addValue(((Long) jobsDir.getTotalSpace()) / base, "space for jobs directory", "current");
         }
@@ -257,7 +257,7 @@ public class DiskUsagePlugin extends Plugin {
 
     public String getCountIntervalForBuilds() {
         long nextExecution = getBuildsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
-        if(nextExecution <= 0) { //not scheduled
+        if(nextExecution <= 0) { // not scheduled
             nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();
         }
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
@@ -265,7 +265,7 @@ public class DiskUsagePlugin extends Plugin {
 
     public String getCountIntervalForJobs() {
         long nextExecution = getJobsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
-        if(nextExecution <= 0) { //not scheduled
+        if(nextExecution <= 0) { // not scheduled
             nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
         }
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
@@ -273,7 +273,7 @@ public class DiskUsagePlugin extends Plugin {
 
     public String getCountIntervalForWorkspaces() {
         long nextExecution = getWorkspaceDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
-        if(nextExecution <= 0) { //not scheduled
+        if(nextExecution <= 0) { // not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
         }
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);

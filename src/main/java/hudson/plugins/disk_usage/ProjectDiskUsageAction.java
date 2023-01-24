@@ -283,7 +283,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
      * 
      */
     public Graph getGraph() throws IOException {
-        //TODO if(nothing_changed) return;
+        // TODO if(nothing_changed) return;
         List<Object[]> usages = new ArrayList<Object[]>();
         long maxValue = 0;
         long maxValueWorkspace = 0;
@@ -291,10 +291,10 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         maxValueWorkspace = Math.max(getAllCustomOrNonSlaveWorkspaces(), getAllSlaveWorkspaces());
         Long jobRootDirDiskUsage = getJobRootDirDiskUsage();
         maxValue = jobRootDirDiskUsage;
-        //First iteration just to get scale of the y-axis
+        // First iteration just to get scale of the y-axis
         ArrayList<DiskUsageBuildInformation> builds = new ArrayList<DiskUsageBuildInformation>();
         builds.addAll(property.getDiskUsageOfBuilds());
-        //do it in reverse order
+        // do it in reverse order
         for(int i = builds.size() - 1; i >= 0; i--) {
             DiskUsageBuildInformation build = builds.get(i);
             Long diskUsage = property.getDiskUsageOfBuild(build.getId());
