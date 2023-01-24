@@ -78,7 +78,7 @@ public class TestDiskUsageCalculation extends BuildDiskUsageCalculationThread {
         }
         if(currentInstance != null) {
             currentInstance.cancel();
-        }else {
+        } else {
             cancel();
         }
         currentInstance = c;

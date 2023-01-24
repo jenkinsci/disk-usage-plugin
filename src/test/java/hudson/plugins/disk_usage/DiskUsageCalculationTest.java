@@ -153,7 +153,7 @@ public class DiskUsageCalculationTest extends TestCase {
             if(firstLoop) {
                 System.out.println("Waiting for appropriate time ");
                 firstLoop = false;
-            }else {
+            } else {
                 System.out.println(".");
             }
             Thread.sleep(1000);
