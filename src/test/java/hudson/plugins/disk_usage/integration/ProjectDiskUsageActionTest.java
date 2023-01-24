@@ -130,9 +130,9 @@ public class ProjectDiskUsageActionTest {
         calendar1.set(2013, 9, 9);
         calendar2.set(2013, 8, 22);
         calendar3.set(2013, 5, 9);
-        ProjectTestBuild build1 = (ProjectTestBuild) project.createExecutable(calendar1);
-        ProjectTestBuild build2 = (ProjectTestBuild) project.createExecutable(calendar2);
-        ProjectTestBuild build3 = (ProjectTestBuild) project.createExecutable(calendar3);
+        ProjectTestBuild build1 = project.createExecutable(calendar1);
+        ProjectTestBuild build2 = project.createExecutable(calendar2);
+        ProjectTestBuild build3 = project.createExecutable(calendar3);
         Calendar filterCalendar = new GregorianCalendar();
         filterCalendar.set(2013, 8, 30);
         Date youngerThan10days = filterCalendar.getTime();

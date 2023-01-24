@@ -33,7 +33,7 @@ public class DiskUsageCalculationTest extends TestCase {
         calendar.add(Calendar.MINUTE, 10);
         int minute = calendar.get(Calendar.MINUTE);
         //  attribut currentTask should have value calculation
-        TestDiskUsageCalculation calculation = (TestDiskUsageCalculation) new TestDiskUsageCalculation(minute + " * * * *", false);
+        TestDiskUsageCalculation calculation = new TestDiskUsageCalculation(minute + " * * * *", false);
         if(calculation.getLastTask() != null) {
             // should not be any, but if cancel;
             calculation.getLastTask().cancel();
