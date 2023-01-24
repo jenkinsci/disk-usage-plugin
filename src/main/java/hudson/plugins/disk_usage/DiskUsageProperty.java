@@ -162,8 +162,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         if(workspacesInfo==null){
            workspacesInfo = new ConcurrentHashMap<String,Long>();
         }
-        if(!workspacesInfo.containsKey(path))
+        if(!workspacesInfo.containsKey(path)) {
             workspacesInfo.put(path, 0l);
+        }
         getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
         saveDiskUsage();
     }
@@ -178,8 +179,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
     public void putSlaveWorkspaceSize(Node node, String path, Long size){
         Map<String,Long> workspacesInfo = getSlaveWorkspaceUsage().get(node.getNodeName());
-        if(workspacesInfo==null)
-            workspacesInfo = new ConcurrentHashMap<String,Long>();
+        if(workspacesInfo == null) {
+            workspacesInfo = new ConcurrentHashMap<String, Long>();
+        }
         workspacesInfo.put(path, size);
         getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
         saveDiskUsage();
@@ -196,8 +198,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             if(node instanceof Slave){
                 workspacePath = ((Slave) node).getRemoteFS();
             }
-            if(workspacePath==null)
+            if(workspacePath == null) {
                 continue;
+            }
             Map<String,Long> paths = getSlaveWorkspaceUsage().get(nodeName);
             for(String path: paths.keySet()){
                 if(containdedInWorkspace.equals(path.startsWith(workspacePath))){
@@ -214,16 +217,18 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             if(!build.isBuilding()){
                 Node node = build.getBuiltOn();
                 FilePath path = build.getWorkspace();
-                if(path==null)
+                if(path == null) {
                     continue;
+                }
                 Map<String,Long> workspacesInfo = diskUsage.slaveWorkspacesUsage.get(node.getNodeName());
                 if(workspacesInfo==null){
                     workspacesInfo = new ConcurrentHashMap<String,Long>();
                     workspacesInfo.put(path.getRemote(), 0L);
                 }
                 else{
-                    if(!workspacesInfo.keySet().contains(path.getRemote()))
+                    if(!workspacesInfo.keySet().contains(path.getRemote())) {
                         workspacesInfo.put(path.getRemote(), 0L);
+                    }
                 }
                 getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
             }
@@ -238,16 +243,18 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 if(!build.isBuilding()){
                     Node node = build.getBuiltOn();
                     FilePath path = build.getWorkspace();
-                    if(path==null)   
+                    if(path == null) {
                         continue;
+                    }
                     Map<String,Long> workspacesInfo = diskUsage.slaveWorkspacesUsage.get(node.getNodeName());
                     if(workspacesInfo==null){
                         workspacesInfo = new ConcurrentHashMap<String,Long>();
                         workspacesInfo.put(path.getRemote(), 0L);
                     }
                     else{
-                        if(!workspacesInfo.keySet().contains(path.getRemote()))
+                        if(!workspacesInfo.keySet().contains(path.getRemote())) {
                             workspacesInfo.put(path.getRemote(), 0L);
+                        }
                     }
                     getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
                 }
@@ -288,8 +295,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             while(iterator.hasNext()){
                 String nodeName = iterator.next();
                 Node node = Jenkins.getInstance().getNode(nodeName);
-                if(node==null && nodeName.isEmpty())
+                if(node == null && nodeName.isEmpty()) {
                     node = Jenkins.getInstance();
+                }
                 //delete name of slaves which do not exist
                 if(node ==null) {//Jenkins master has empty name
                     iterator.remove();
@@ -329,9 +337,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
             else{
                 node = Jenkins.getInstance().getNode(nodeName);
-            }            
-            if(node==null) //slave does not exist
+            }
+            if(node == null) { //slave does not exist
                 continue;
+            }
             Map<String,Long> paths = getSlaveWorkspaceUsage().get(nodeName);
             for(String path: paths.keySet()){
                 TopLevelItem item = null;
@@ -411,8 +420,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     }
 
     public Long getAllDiskUsageWithoutBuilds(){
-        if(diskUsage.diskUsageWithoutBuilds==null)
-            diskUsage.diskUsageWithoutBuilds=0l;
+        if(diskUsage.diskUsageWithoutBuilds == null) {
+            diskUsage.diskUsageWithoutBuilds = 0l;
+        }
        Long usage = diskUsage.diskUsageWithoutBuilds;
        if(owner instanceof ItemGroup){
                  ItemGroup group = (ItemGroup) owner;

@@ -117,8 +117,9 @@ public class JobDiskUsageCalculationThreadTest {
             matrixConfigurationsSize.put(config.getDisplayName(), size + diskUsageXML);
         }
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
-        if(calculation.isExecuting())
+        if(calculation.isExecuting()) {
             DiskUsageTestUtil.cancelCalculation(calculation);
+        }
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
         assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
@@ -162,8 +163,9 @@ public class JobDiskUsageCalculationThreadTest {
     @Test
     public void testDoNotCalculateExcludedJobs() throws Exception{
         JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
-        if(calculation.isExecuting())
+        if(calculation.isExecuting()) {
             DiskUsageTestUtil.cancelCalculation(calculation);
+        }
         FreeStyleProject exludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
         FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "incudedJob");
         List<String> excludes = new ArrayList<String>();

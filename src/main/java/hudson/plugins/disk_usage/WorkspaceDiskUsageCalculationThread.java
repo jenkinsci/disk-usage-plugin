@@ -44,8 +44,9 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
                     if (item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
                         //do not count workspace for running project
-                        if(project.isBuilding())
+                        if(project.isBuilding()) {
                             continue;
+                        }
                         try{
                             DiskUsageUtil.calculateWorkspaceDiskUsage(project);
                         } catch (Exception ex) {
@@ -95,8 +96,9 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
     
     private boolean startExecution(){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationWorkspaceEnabled())
-          return false;
+        if(!plugin.getConfiguration().isCalculationWorkspaceEnabled()) {
+            return false;
+        }
         return !isExecutingMoreThenOneTimes();
     }
     

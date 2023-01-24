@@ -163,10 +163,12 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                     Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
                     for(DiskUsageBuildInformation information: informations){
                         Date date = new Date(information.getTimestamp());
-                        if(older!=null && !date.before(older))
+                        if(older != null && !date.before(older)) {
                             continue;
-                        if(yonger!=null && !date.after(yonger))
+                        }
+                        if(yonger != null && !date.after(yonger)) {
                             continue;
+                        }
                         Long size = information.getSize();
                         buildsDiskUsage += size;
                         Collection<AbstractBuild> loadedBuilds = (Collection<AbstractBuild>) p._getRuns().getLoadedBuilds().values();
@@ -227,10 +229,12 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
           Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
           for(DiskUsageBuildInformation information: informations){
             Date date = new Date(information.getTimestamp());
-            if(older!=null && !date.before(older))
-                continue;
-            if(yonger!=null && !date.after(yonger))
-                continue;
+              if(older != null && !date.before(older)) {
+                  continue;
+              }
+              if(yonger != null && !date.after(yonger)) {
+                  continue;
+              }
             Long size = information.getSize();
             buildsDiskUsage += size;
             Collection<AbstractBuild> loadedBuilds = (Collection<AbstractBuild>) project._getRuns().getLoadedBuilds().values();

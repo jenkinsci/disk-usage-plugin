@@ -580,8 +580,9 @@ public class DiskUsagePropertyTest {
         class CurrentWorkspacePath extends JenkinsRecipe.Runner<ReplaceHudsonHomeWithCurrentPath>{
             private String paths;
             public void decorateHome(JenkinsRule rule, File home){
-                if(paths.isEmpty())
+                if(paths.isEmpty()) {
                     return;
+                }
                 for(String path : paths.split(",")){
                     path = path.trim();
                     try {

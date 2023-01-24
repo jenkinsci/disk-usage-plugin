@@ -94,8 +94,9 @@ public class DiskUsageUtil {
     }
     
     public static Date getDate(String timeCount, String timeUnit){
-        if(timeUnit==null || !timeUnit.matches("\\d+") || !timeCount.matches("\\d+"))
-           return null;
+        if(timeUnit == null || !timeUnit.matches("\\d+") || !timeCount.matches("\\d+")) {
+            return null;
+        }
         int unit = Integer.decode(timeUnit);
         int count = Integer.decode(timeCount);
         return getDate(unit, count);
@@ -149,8 +150,9 @@ public class DiskUsageUtil {
     }
     
     public static Long getSizeInBytes(String stringSize){
-        if(stringSize==null || "-".equals(stringSize))
+        if(stringSize == null || "-".equals(stringSize)) {
             return 0l;
+        }
         String[] values = stringSize.split(" ");
         int index = getIndex(values[1]);
         Long value = Long.decode(values[0]);
@@ -208,8 +210,9 @@ public class DiskUsageUtil {
         for(String name: jobNames){
             name = name.trim();
             Item item = Jenkins.getInstance().getItem(name);
-            if(item!=null && item instanceof AbstractProject)
+            if(item != null && item instanceof AbstractProject) {
                 list.add(name);
+            }
         }
         return list;
     }
@@ -228,21 +231,26 @@ public class DiskUsageUtil {
     }
 
     public static double getScale(long number) {
-        if(number==0)
+        if(number == 0) {
             return 0;
+        }
         return Math.floor(Math.log(number) / Math.log(1024));
     }
         
     public static int getIndex(String unit){
         int index = 0;
-        if("KB".equals(unit))
+        if("KB".equals(unit)) {
             index = 1;
-        if("MB".equals(unit))
+        }
+        if("MB".equals(unit)) {
             index = 2;
-        if("GB".equals(unit))
-            index = 3;        
-        if("TB".equals(unit))
+        }
+        if("GB".equals(unit)) {
+            index = 3;
+        }
+        if("TB".equals(unit)) {
             index = 4;
+        }
         return index;
     }
 
@@ -336,25 +344,32 @@ public class DiskUsageUtil {
     
     public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
             long size = 0;
-            if(!f.exists())
-                return size;
+        if(!f.exists()) {
+            return size;
+        }
             if (f.isDirectory() && !isSymlink(f)) {
             	File[] fileList = f.listFiles();
-            	if (fileList != null) for (File child : fileList) {
-                    if(exceedFiles.contains(child))
-                        continue; //do not count exceeded files
-                    if (!isSymlink(child)) size += getFileSize(child, exceedFiles);
+                if(fileList != null) {
+                    for(File child: fileList) {
+                        if(exceedFiles.contains(child)) {
+                            continue;
+                        } //do not count exceeded files
+                        if(!isSymlink(child)) {
+                            size += getFileSize(child, exceedFiles);
+                        }
+                    }
                 }
                 else {
-            		LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
-            	}
+                    LOGGER.info("Failed to list files in " + f.getPath() + " - ignoring");
+                }
             }
             return size + f.length();
    }
     
     public static void calculateDiskUsageForProject(AbstractProject project) throws IOException{
-        if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
+        if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project)) {
             return;
+        }
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         List<File> exceededFiles = new ArrayList<File>();       
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
@@ -412,8 +427,9 @@ public class DiskUsageUtil {
 //    }
         public static void calculateDiskUsageForBuild(String buildId, AbstractProject project)
             throws IOException {
-            if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
+            if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project)) {
                 return;
+            }
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         //Build disk usage has to be always recalculated to be kept up-to-date 
         //- artifacts might be kept only for the last build and users sometimes delete files manually as well.
@@ -483,8 +499,9 @@ public class DiskUsageUtil {
     }
     
     public static void calculateWorkspaceDiskUsage(AbstractProject project) throws IOException, InterruptedException {
-        if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project))
+        if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project)) {
             return;
+        }
         DiskUsageProperty property =  (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property==null){
             addProperty(project);

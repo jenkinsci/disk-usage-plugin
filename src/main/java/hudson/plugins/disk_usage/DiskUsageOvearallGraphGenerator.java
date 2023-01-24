@@ -57,38 +57,44 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 		}
                 
                 public Long getNonSlaveWorkspacesUsage(){
-                    if(diskUsageNonSlaveWorkspaces==null)
+                    if(diskUsageNonSlaveWorkspaces == null) {
                         return 0l;
+                    }
                     return diskUsageNonSlaveWorkspaces;
                 }
     
                 public Long getSlaveWorkspacesUsage(){
-                    if(diskUsageNonSlaveWorkspaces==null)
+                    if(diskUsageNonSlaveWorkspaces == null) {
                         return getWorkspacesDiskUsage();
+                    }
                     return getWorkspacesDiskUsage() - diskUsageNonSlaveWorkspaces;
                 }
                 
                 public Long getBuildsDiskUsage(){
-                    if(buildUsage==null)
+                    if(buildUsage == null) {
                         return 0l;
+                    }
                     return buildUsage;
                 }
                 
                 public Long getJobsDiskUsage(){
-                    if(jobsWithoutBuildsUsage==null)
+                    if(jobsWithoutBuildsUsage == null) {
                         return getBuildsDiskUsage();
+                    }
                     return jobsWithoutBuildsUsage + getBuildsDiskUsage();
                 }
                 
                 public Long getAllSpace(){
-                    if(allSpace==null)
+                    if(allSpace == null) {
                         return 0l;
+                    }
                     return allSpace;
                 }
                 
                 public Long getWorkspacesDiskUsage(){
-                    if(wsUsage==null)
+                    if(wsUsage == null) {
                         return 0l;
+                    }
                     return wsUsage;
                 }
 

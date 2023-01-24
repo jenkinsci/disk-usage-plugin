@@ -152,9 +152,13 @@ public class DiskUsagePlugin extends Plugin {
                 ProjectDiskUsageAction dua1 = getDiskUsage(o1);
                 ProjectDiskUsageAction dua2 = getDiskUsage(o2);
                 long result = dua2.getJobRootDirDiskUsage() + dua2.getAllDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() - dua1.getAllDiskUsageWorkspace();
-                
-                if(result > 0) return 1;
-                if(result < 0) return -1;
+
+                if(result > 0) {
+                    return 1;
+                }
+                if(result < 0) {
+                    return -1;
+                }
                 return 0;
             }
         };
@@ -228,44 +232,50 @@ public class DiskUsagePlugin extends Plugin {
     
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        if(getConfiguration().isCalculationBuildsEnabled() && !getBuildsDiskUsageThread().isExecuting())
+        if(getConfiguration().isCalculationBuildsEnabled() && !getBuildsDiskUsageThread().isExecuting()) {
             getBuildsDiskUsageThread().doAperiodicRun();
+        }
         res.forwardToPreviousPage(req);
     }
     
     public void doRecordJobsDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        if(getConfiguration().isCalculationJobsEnabled() && !getJobsDiskUsageThread().isExecuting())
+        if(getConfiguration().isCalculationJobsEnabled() && !getJobsDiskUsageThread().isExecuting()) {
             getJobsDiskUsageThread().doAperiodicRun();
+        }
         res.forwardToPreviousPage(req);
     }
     
     public void doRecordWorkspaceDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        if(getConfiguration().isCalculationWorkspaceEnabled() && !getWorkspaceDiskUsageThread().isExecuting())
+        if(getConfiguration().isCalculationWorkspaceEnabled() && !getWorkspaceDiskUsageThread().isExecuting()) {
             getWorkspaceDiskUsageThread().doAperiodicRun();
+        }
         res.forwardToPreviousPage(req);
     }
        
     
     public String getCountIntervalForBuilds(){
         long nextExecution = getBuildsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
-        if(nextExecution<=0) //not scheduled
-            nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();    
+        if(nextExecution <= 0) { //not scheduled
+            nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();
+        }    
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
     
     public String getCountIntervalForJobs(){
         long nextExecution = getJobsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
-        if(nextExecution<=0) //not scheduled
+        if(nextExecution <= 0) { //not scheduled
             nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
+        }
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
     
     public String getCountIntervalForWorkspaces(){
         long nextExecution = getWorkspaceDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
-            if(nextExecution<=0) //not scheduled
+        if(nextExecution <= 0) { //not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
+        }
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
     

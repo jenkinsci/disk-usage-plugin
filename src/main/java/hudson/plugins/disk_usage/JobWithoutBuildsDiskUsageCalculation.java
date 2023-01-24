@@ -46,8 +46,9 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
                     if (item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
                         //do not count building project
-                        if(project.isBuilding())
+                        if(project.isBuilding()) {
                             continue;
+                        }
                         try{                   
                             DiskUsageUtil.calculateDiskUsageForProject(project);
                         } catch (Exception ex) {
@@ -99,8 +100,9 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation{
     
     private boolean startExecution(){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationJobsEnabled())
-          return false;
+        if(!plugin.getConfiguration().isCalculationJobsEnabled()) {
+            return false;
+        }
         return !isExecutingMoreThenOneTimes();
     }
 

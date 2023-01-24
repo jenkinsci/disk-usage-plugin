@@ -64,8 +64,9 @@ public class DiskUsageTestUtil {
     
     protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild build){
         for(Action a : build.getAllActions()){
-            if(a instanceof BuildDiskUsageAction)
+            if(a instanceof BuildDiskUsageAction) {
                 return (BuildDiskUsageAction) a;
+            }
         }
         return null;
     }

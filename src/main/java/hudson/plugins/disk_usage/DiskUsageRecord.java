@@ -29,8 +29,9 @@ public class DiskUsageRecord {
     }
 
     public Long getBuildsDiskUsage(){
-        if(diskUsageBuilds==null)
+        if(diskUsageBuilds == null) {
             return 0l;
+        }
         return diskUsageBuilds;
     }
     
@@ -43,20 +44,23 @@ public class DiskUsageRecord {
     }
 
     public Long getJobsDiskUsage(){
-        if(diskUsageJobsWithoutBuilds==null)
+        if(diskUsageJobsWithoutBuilds == null) {
             return getBuildsDiskUsage();
+        }
         return diskUsageJobsWithoutBuilds + getBuildsDiskUsage();
     }
 
     public Long getAllSpace(){
-        if(allSpace==null)
+        if(allSpace == null) {
             return 0l;
+        }
         return allSpace;
     }
 
     public Long getWorkspacesDiskUsage(){
-        if(diskUsageWorkspaces==null)
+        if(diskUsageWorkspaces == null) {
             return 0l;
+        }
         return diskUsageWorkspaces;
     }
 

@@ -31,8 +31,9 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
     
     public boolean isExecuting() {
         for(Thread t: Thread.getAllStackTraces().keySet()){
-            if(t.getName().equals(getThreadName()))
+            if(t.getName().equals(getThreadName())) {
                 return t.isAlive() && !t.isInterrupted();
+            }
         }
         return false;
     }
@@ -41,8 +42,9 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
         int count = 0;
         for(Thread t: Thread.getAllStackTraces().keySet()){
             if(t.getName().equals(getThreadName())){
-                if(t.isAlive() && !t.isInterrupted())
+                if(t.isAlive() && !t.isInterrupted()) {
                     count++;
+                }
             }
         }
         return count>1;
@@ -57,8 +59,9 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
     public long scheduledLastInstanceExecutionTime() {
         try {
             CronTab tab = null;
-            if(getLastTask()==null || getLastTask().isCancelled()) //not scheduled
+            if(getLastTask() == null || getLastTask().isCancelled()) { //not scheduled
                 return 0l;
+            }
             tab = getLastTask().getCronTab();
                 long time = getCronTab().ceil(new GregorianCalendar().getTimeInMillis()).getTimeInMillis(); 
                 if(time< new GregorianCalendar().getTimeInMillis()){
@@ -117,8 +120,9 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis();
-            if(nextExecution.getTimeInMillis() - now.getTimeInMillis()<=60000)
+            if(nextExecution.getTimeInMillis() - now.getTimeInMillis() <= 60000) {
                 period = period + 60000l; //add one minute to not shedule it during one minute one than once
+            }
             return period;           
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);

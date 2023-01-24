@@ -124,8 +124,9 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             if(node!=null && diskUsage.wsUsage!=null && diskUsage.wsUsage > 0){
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 AbstractProject project = build.getProject().getRootProject();
-                if(property!=null && (project instanceof TopLevelItem))
+                if(property != null && (project instanceof TopLevelItem)) {
                     property.putSlaveWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem) project).getRemote(), diskUsage.wsUsage);
+                }
             }
             diskUsage=null;
         }

@@ -74,7 +74,9 @@ public class ProjectDiskUsage implements Saveable{
      }
     
     public synchronized void save() {
-        if(BulkChange.contains(this))   return;
+        if(BulkChange.contains(this)) {
+            return;
+        }
         try {
             getConfigFile().write(this);
             SaveableListener.fireOnChange(this, getConfigFile());
@@ -103,8 +105,9 @@ public class ProjectDiskUsage implements Saveable{
     
     public void putSlaveWorkspaceSize(Node node, String path, Long size){
         Map<String,Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
-        if(workspacesInfo==null)
-            workspacesInfo = new ConcurrentHashMap<String,Long>();
+        if(workspacesInfo == null) {
+            workspacesInfo = new ConcurrentHashMap<String, Long>();
+        }
         //worksace with 0 are only initiative (are not counted yet) or does not exists
         //no nexist workspaces are removed in method checkWorkspaces in class DiskUsageProperty
         if(workspacesInfo.get(path)==null || size>0l ){ 
@@ -248,8 +251,9 @@ public class ProjectDiskUsage implements Saveable{
         while(iterator.hasNext()){
             DiskUsageBuildInformation information = iterator.next();
             File buildDir = new File(Jenkins.getInstance().getBuildDirFor(job), information.getId());
-            if(!buildDir.exists())
+            if(!buildDir.exists()) {
                 buildDiskUsage.remove(information);
+            }
         }
     }
 }

@@ -254,14 +254,16 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     }
     
     public String getUnit(String unit){
-        if(unit==null)
+        if(unit == null) {
             return null;
+        }
         return unit.split(" ")[1];
     }
     
     public String getValue(String size){
-        if(size==null)
+        if(size == null) {
             return null;
+        }
         return size.split(" ")[0];
     }
 
@@ -355,8 +357,9 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         calculationBuilds = form.containsKey("calculationBuilds");
         countIntervalBuilds = calculationBuilds? form.getJSONObject("calculationBuilds").getString("countIntervalBuilds") : "0 */6 * * *";
         BuildDiskUsageCalculationThread buildCalculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
-        if(!oldCountIntervalBuilds.equals(countIntervalBuilds) || oldCalculationBuilds!=calculationBuilds)
+        if(!oldCountIntervalBuilds.equals(countIntervalBuilds) || oldCalculationBuilds != calculationBuilds) {
             buildCalculation.reschedule();
+        }
     }
     
     private void configureJobsCalculation(JSONObject form){
@@ -365,8 +368,9 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         calculationJobs = form.containsKey("calculationJobs");
         countIntervalJobs = calculationJobs? form.getJSONObject("calculationJobs").getString("countIntervalJobs") : "0 */6 * * *";
         JobWithoutBuildsDiskUsageCalculation jobCalculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
-        if(!oldcountIntervalJobs.equals(countIntervalJobs) || oldCalculationJobs!=calculationJobs)
+        if(!oldcountIntervalJobs.equals(countIntervalJobs) || oldCalculationJobs != calculationJobs) {
             jobCalculation.reschedule();
+        }
     }
     
     private void configureWorkspacesCalculation(JSONObject form){
@@ -375,8 +379,9 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         calculationWorkspace = form.containsKey("calculationWorkspace");
         countIntervalWorkspace = calculationWorkspace? form.getJSONObject("calculationWorkspace").getString("countIntervalWorkspace") : "0 */6 * * *";
         WorkspaceDiskUsageCalculationThread workspaceCalculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
-        if(!oldCountIntervalWorkspace.equals(countIntervalWorkspace) || oldCalculationWorkspace!=calculationWorkspace)
+        if(!oldCountIntervalWorkspace.equals(countIntervalWorkspace) || oldCalculationWorkspace != calculationWorkspace) {
             workspaceCalculation.reschedule();
+        }
     }
 
     public int getTimeoutWorkspace() {

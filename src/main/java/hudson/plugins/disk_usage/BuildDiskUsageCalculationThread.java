@@ -108,8 +108,9 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     
     private boolean startExecution(){
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationBuildsEnabled())
-          return false;
+        if(!plugin.getConfiguration().isCalculationBuildsEnabled()) {
+            return false;
+        }
         return !isExecutingMoreThenOneTimes();
     }
     

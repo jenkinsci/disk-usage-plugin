@@ -62,8 +62,9 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         //wait until thread ends
         for(Thread t : Thread.getAllStackTraces().keySet()){
             if(calculation.name.equals(t.getName())){
-                while(thread.isAlive())
+                while(thread.isAlive()) {
                     Thread.sleep(100);
+                }
                 break;
             }
         }
@@ -312,8 +313,9 @@ public class WorkspaceDiskUsageCalculationThreadTest {
                 Logger.getLogger(WorkspaceDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
             }
             Map<String,Long> workspacesInfo = getSlaveWorkspaceUsage().get(node.getNodeName());
-            if(workspacesInfo==null)
-                workspacesInfo = new ConcurrentHashMap<String,Long>();
+            if(workspacesInfo == null) {
+                workspacesInfo = new ConcurrentHashMap<String, Long>();
+            }
             workspacesInfo.put(path, size);
             getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
             saveDiskUsage();

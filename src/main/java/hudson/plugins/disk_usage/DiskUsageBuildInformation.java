@@ -54,8 +54,9 @@ public class DiskUsageBuildInformation implements Serializable, Comparable{
     }
     
     public Long getSize(){
-        if(size==null)
+        if(size == null) {
             return 0L;
+        }
         return size;
     }
     
