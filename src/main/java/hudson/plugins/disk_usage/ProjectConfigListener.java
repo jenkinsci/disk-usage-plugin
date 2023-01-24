@@ -12,7 +12,7 @@ import hudson.model.listeners.SaveableListener;
  * @author Lucie Votypkova
  */
 @Extension
-public class ProjectConfigListener extends SaveableListener{
+public class ProjectConfigListener extends SaveableListener {
 
-    
+
 }

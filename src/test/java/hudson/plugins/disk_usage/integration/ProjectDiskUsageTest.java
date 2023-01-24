@@ -21,14 +21,14 @@ import static org.junit.Assert.*;
  * @author lucinka
  */
 public class ProjectDiskUsageTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
-    
+
+
     @Test
     @LocalData
-    public void testAllInfoLoaded() throws IOException{
+    public void testAllInfoLoaded() throws IOException {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
@@ -37,20 +37,20 @@ public class ProjectDiskUsageTest {
         assertEquals("Set of DisUsageBuildInformation does not contains all builds of job.", 8, informations.size());
         assertTrue("The test have to be rewritten because loaded builds is not less then all builds.", 8 > loadedBuilds);
     }
-    
+
     @Test
     @LocalData
-    public void testFirstLoad() throws IOException{
+    public void testFirstLoad() throws IOException {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
-        Set<DiskUsageBuildInformation> informations = ((DiskUsageProperty)project.getProperty(DiskUsageProperty.class)).getDiskUsage().getBuildDiskUsage(false);
+        Set<DiskUsageBuildInformation> informations = ((DiskUsageProperty) project.getProperty(DiskUsageProperty.class)).getDiskUsage().getBuildDiskUsage(false);
         assertEquals("Set of DisUsageBuildInformation should not contain information about builds because they are not loaded.", 0, informations.size());
     }
-    
+
     @Test
     @LocalData
-    public void testLoadingAllBuildInformationFromPreviousVersion(){
-       AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
-       DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-       assertEquals("Builds information should be loaded.", 8, property.getDiskUsage().getBuildDiskUsage(true).size(), 0);
+    public void testLoadingAllBuildInformationFromPreviousVersion() {
+        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        assertEquals("Builds information should be loaded.", 8, property.getDiskUsage().getBuildDiskUsage(true).size(), 0);
     }
 }

@@ -18,29 +18,30 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Lucie Votypkova
  */
 @Extension
-public class DiskUsageManagement extends ManagementLink implements RootAction{
+public class DiskUsageManagement extends ManagementLink implements RootAction {
 
-   public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace", "JobDirectory (without builds)"};
+    public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace", "JobDirectory (without builds)"};
 
-        public String getIconFileName() {
-            return "/plugin/disk-usage/icons/diskusage48.png";
-        }
+    public String getIconFileName() {
+        return "/plugin/disk-usage/icons/diskusage48.png";
+    }
 
-        public String getDisplayName() {
-            return Messages.DisplayName();
-        }
+    public String getDisplayName() {
+        return Messages.DisplayName();
+    }
 
-        public String getUrlName() {
-            return "disk-usage";
-        }
+    public String getUrlName() {
+        return "disk-usage";
+    }
 
-        @Override public String getDescription() {
-            return Messages.Description();
-        }  
-        
-        public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException{
-            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-            res.sendRedirect(Jenkins.getInstance().getRootUrlFromRequest() + "plugin/disk-usage");
-        }
-    
+    @Override
+    public String getDescription() {
+        return Messages.Description();
+    }
+
+    public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        res.sendRedirect(Jenkins.getInstance().getRootUrlFromRequest() + "plugin/disk-usage");
+    }
+
 }

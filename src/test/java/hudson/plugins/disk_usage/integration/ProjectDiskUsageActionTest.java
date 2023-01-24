@@ -32,12 +32,12 @@ import static org.junit.Assert.*;
  * @author Lucie Votypkova
  */
 public class ProjectDiskUsageActionTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
-    public void testGetBuildsDiskUsage() throws Exception{
+    public void testGetBuildsDiskUsage() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -63,23 +63,23 @@ public class ProjectDiskUsageActionTest {
         int count = 1;
         Long matrixBuild1TotalSize = sizeOfMatrixBuild1;
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
-        for(MatrixConfiguration c: matrixProject.getItems()){
+        for(MatrixConfiguration c: matrixProject.getItems()) {
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
-            matrixBuild1TotalSize += count*size1;
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
+            matrixBuild1TotalSize += count * size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
-            matrixBuild2TotalSize += count*size2;
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
+            matrixBuild2TotalSize += count * size2;
             count++;
         }
         Long matrixProjectBuildsTotalSize = matrixBuild1TotalSize + matrixBuild2TotalSize;
         assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
-        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));       
-        
+        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
+
     }
-    
+
     @Test
-    public void testGetBuildsDiskUsageNotDeletedConfigurations() throws Exception{
+    public void testGetBuildsDiskUsageNotDeletedConfigurations() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -105,24 +105,24 @@ public class ProjectDiskUsageActionTest {
         int count = 1;
         Long matrixBuild1TotalSize = sizeOfMatrixBuild1;
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
-        for(MatrixConfiguration c: matrixProject.getItems()){
+        for(MatrixConfiguration c: matrixProject.getItems()) {
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count*size1);
-            matrixBuild1TotalSize += count*size1;
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
+            matrixBuild1TotalSize += count * size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
-            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count*size2);
-            matrixBuild2TotalSize += count*size2;
+            DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
+            matrixBuild2TotalSize += count * size2;
             count++;
         }
         matrixBuild2.delete();
         Long matrixProjectBuildsTotalSize = matrixBuild1TotalSize + matrixBuild2TotalSize - sizeOfMatrixBuild2;
         assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
-        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));       
-        
+        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
+
     }
-    
+
     @Test
-     public void getAllBuildDiskUsageFiltered() throws Exception{
+    public void getAllBuildDiskUsageFiltered() throws Exception {
         ProjectTest project = new ProjectTest(j.jenkins, "project");
         Calendar calendar1 = new GregorianCalendar();
         Calendar calendar2 = new GregorianCalendar();
@@ -151,7 +151,7 @@ public class ProjectDiskUsageActionTest {
         DiskUsageTestUtil.getBuildDiskUsageAction(build2).setDiskUsage(sizeofBuild2);
         DiskUsageTestUtil.getBuildDiskUsageAction(build3).setDiskUsage(sizeofBuild3);
         project.update();
-        Map<String,Long> size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(null, youngerThan10days);
+        Map<String, Long> size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(null, youngerThan10days);
         assertEquals("Disk usage of builds should count only build 1 (only build 1 is younger than 10 days ago).", sizeofBuild1, size.get("all"), 0);
         size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(olderThan7days, youngerThan10days);
         assertEquals("Disk usage of builds should count only build 1 (only build 1 is younger than 10 days ago and older than 8 days ago).", 0, size.get("all"), 0);
@@ -164,71 +164,71 @@ public class ProjectDiskUsageActionTest {
         size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(olderThan3weeks, null);
         assertEquals("Disk usage of builds should count only build 3 (only build 3 is older tah 3 weeks).", sizeofBuild3, size.get("all"), 0);
 
-       
+
     }
-    
+
     @Test
     @LocalData
-    public void testNotToBreakLazyLoading() throws IOException{
+    public void testNotToBreakLazyLoading() throws IOException {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         project.isBuilding();
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         assertTrue("This test does not have sense if there is loaded all builds", 8 > loadedBuilds);
         project.getAction(ProjectDiskUsageAction.class).getGraph();
-        assertTrue("Creation of graph should not cause loading of builds.", project._getRuns().getLoadedBuilds().size() <= loadedBuilds );
-       
+        assertTrue("Creation of graph should not cause loading of builds.", project._getRuns().getLoadedBuilds().size() <= loadedBuilds);
+
     }
-     
-     public class ProjectTest extends Project<ProjectTest,ProjectTestBuild> implements TopLevelItem{
-         
-         ProjectTest(ItemGroup group, String name){
-             super(group, name);
-             onCreatedFromScratch();
-             ItemListener.fireOnCreated(this);
-         }
-         
-        //@Override
+
+    public class ProjectTest extends Project<ProjectTest, ProjectTestBuild> implements TopLevelItem {
+
+        ProjectTest(ItemGroup group, String name) {
+            super(group, name);
+            onCreatedFromScratch();
+            ItemListener.fireOnCreated(this);
+        }
+
+        // @Override
         @Override
-         public Class<ProjectTestBuild> getBuildClass(){
-             return ProjectTestBuild.class;
-         }
-        
+        public Class<ProjectTestBuild> getBuildClass() {
+            return ProjectTestBuild.class;
+        }
+
         @Override
-        public ProjectTestBuild createExecutable() throws IOException{
+        public ProjectTestBuild createExecutable() throws IOException {
             ProjectTestBuild build = new ProjectTestBuild(this);
             builds.put(getNextBuildNumber(), build);
             return build;
         }
-        
-        public ProjectTestBuild createExecutable(Calendar calendar) throws IOException{
+
+        public ProjectTestBuild createExecutable(Calendar calendar) throws IOException {
             ProjectTestBuild build = new ProjectTestBuild(this, calendar);
             build.number = this.assignBuildNumber();
             builds.put(build.number, build);
             return build;
         }
-                
+
         public TopLevelItemDescriptor getDescriptor() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
-        public void update(){
-            this.updateTransientActions();;
+
+        public void update() {
+            this.updateTransientActions();
         }
-        
+
         @Override
-        public void save(){
-            //do not save fake project
+        public void save() {
+            // do not save fake project
             getRootDir().mkdirs();
         }
-     }
-     
-     public class ProjectTestBuild extends Build<ProjectTest,ProjectTestBuild>{        
+    }
 
-         
+    public class ProjectTestBuild extends Build<ProjectTest, ProjectTestBuild> {
+
+
         public ProjectTestBuild(ProjectTest project) throws IOException {
             super(project);
         }
-        
+
         public ProjectTestBuild(ProjectTest project, Calendar calendar) throws IOException {
             super(project, calendar);
         }
@@ -237,6 +237,6 @@ public class ProjectDiskUsageActionTest {
             super(project, buildDir);
         }
 
-     }
-    
+    }
+
 }

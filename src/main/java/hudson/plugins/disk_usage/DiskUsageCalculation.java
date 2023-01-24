@@ -21,95 +21,98 @@ import jenkins.util.Timer;
  *
  * @author lucinka
  */
-public abstract class DiskUsageCalculation extends AsyncAperiodicWork{ 
-    
+public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
+
     private boolean cancelled;
-    
-    public DiskUsageCalculation(String name){        
-        super(name); 
+
+    public DiskUsageCalculation(String name) {
+        super(name);
     }
-    
+
     public boolean isExecuting() {
-        for(Thread t: Thread.getAllStackTraces().keySet()){
-            if(t.getName().equals(getThreadName()))
+        for(Thread t: Thread.getAllStackTraces().keySet()) {
+            if(t.getName().equals(getThreadName())) {
                 return t.isAlive() && !t.isInterrupted();
+            }
         }
         return false;
     }
-    
+
     public boolean isExecutingMoreThenOneTimes() {
         int count = 0;
-        for(Thread t: Thread.getAllStackTraces().keySet()){
-            if(t.getName().equals(getThreadName())){
-                if(t.isAlive() && !t.isInterrupted())
+        for(Thread t: Thread.getAllStackTraces().keySet()) {
+            if(t.getName().equals(getThreadName())) {
+                if(t.isAlive() && !t.isInterrupted()) {
                     count++;
+                }
             }
         }
-        return count>1;
+        return count > 1;
     }
-    
-    public String getThreadName(){
-        return name +" thread";
+
+    public String getThreadName() {
+        return name + " thread";
     }
-        
+
     public abstract DiskUsageCalculation getLastTask();
-    
+
     public long scheduledLastInstanceExecutionTime() {
         try {
             CronTab tab = null;
-            if(getLastTask()==null || getLastTask().isCancelled()) //not scheduled
+            if(getLastTask() == null || getLastTask().isCancelled()) { // not scheduled
                 return 0l;
+            }
             tab = getLastTask().getCronTab();
-                long time = getCronTab().ceil(new GregorianCalendar().getTimeInMillis()).getTimeInMillis(); 
-                if(time< new GregorianCalendar().getTimeInMillis()){
-                    return 0;
-                }
-                return time;
+            long time = getCronTab().ceil(new GregorianCalendar().getTimeInMillis()).getTimeInMillis();
+            if(time < new GregorianCalendar().getTimeInMillis()) {
+                return 0;
+            }
+            return time;
 
         } catch (ANTLRException ex) {
             Logger.getLogger(DiskUsageCalculation.class.getName()).log(Level.SEVERE, null, ex);
             return -1;
         }
     }
-    
+
     @Override
-    public long getInitialDelay(){
+    public long getInitialDelay() {
         return getRecurrencePeriod();
-    } 
-    
+    }
+
     @Override
-    public boolean cancel(){
-       cancelled = true;
+    public boolean cancel() {
+        cancelled = true;
         final ScheduledExecutorService scheduledExecutorService = Timer.get();
-        if (scheduledExecutorService instanceof ScheduledThreadPoolExecutor){
+        if(scheduledExecutorService instanceof ScheduledThreadPoolExecutor) {
             ScheduledThreadPoolExecutor ex = (ScheduledThreadPoolExecutor) scheduledExecutorService;
             ex.purge();
         }
-       return super.cancel();
+        return super.cancel();
     }
-    
-    public boolean isCancelled(){
+
+    public boolean isCancelled() {
         return cancelled;
     }
-    
-    public void reschedule(){
-        if(getLastTask()==null){
+
+    public void reschedule() {
+        if(getLastTask() == null) {
             cancel();
         }
-        else{
-            getLastTask().cancel();   
+        else {
+            getLastTask().cancel();
         }
         Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
-        
+
         try {
             Thread.sleep(60000);
         } catch (InterruptedException ex) {
             Logger.getLogger(DiskUsageCalculation.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public abstract CronTab getCronTab() throws ANTLRException;
-    
+
     @Override
     public long getRecurrencePeriod() {
         try {
@@ -117,14 +120,15 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork{
             GregorianCalendar now = new GregorianCalendar();
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis();
-            if(nextExecution.getTimeInMillis() - now.getTimeInMillis()<=60000)
-                period = period + 60000l; //add one minute to not shedule it during one minute one than once
-            return period;           
+            if(nextExecution.getTimeInMillis() - now.getTimeInMillis() <= 60000) {
+                period = period + 60000l; // add one minute to not shedule it during one minute one than once
+            }
+            return period;
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
-            //it should not happen
-            return 1000*60*6;
+            // it should not happen
+            return 1000 * 60 * 6;
         }
     }
-    
+
 }

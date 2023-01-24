@@ -16,34 +16,36 @@ import jenkins.model.Jenkins;
  * @author Lucie Votypkova
  */
 @Extension
-public class DiskUsageItemListener extends ItemListener{
-    
+public class DiskUsageItemListener extends ItemListener {
+
     @Override
     public void onDeleted(Item item) {
-        if(item instanceof AbstractProject)
-            DiskUsageProjectActionFactory.DESCRIPTOR.onDeleteJob((AbstractProject) item); 
+        if(item instanceof AbstractProject) {
+            DiskUsageProjectActionFactory.DESCRIPTOR.onDeleteJob((AbstractProject) item);
+        }
     }
-    
+
     @Override
-     public void onRenamed(Item item, String oldName, String newName) {
-         if(item instanceof AbstractProject)
+    public void onRenamed(Item item, String oldName, String newName) {
+        if(item instanceof AbstractProject) {
             DiskUsageProjectActionFactory.DESCRIPTOR.onRenameJob(oldName, newName);
-    } 
-    
+        }
+    }
+
     @Override
-    public void onCreated(Item item){
+    public void onCreated(Item item) {
         DiskUsageUtil.addProperty(item);
 
-    }   
-    
+    }
+
     @Override
-    public void onCopied(Item src, Item item){
+    public void onCopied(Item src, Item item) {
         DiskUsageUtil.addProperty(item);
     }
-    
+
     @Override
-    public void onLoaded(){
-        for(Item item : Jenkins.getInstance().getItems()){
+    public void onLoaded() {
+        for(Item item: Jenkins.getInstance().getItems()) {
             DiskUsageUtil.addProperty(item);
         }
     }

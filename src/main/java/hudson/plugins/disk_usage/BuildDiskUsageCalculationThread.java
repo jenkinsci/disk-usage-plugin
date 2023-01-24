@@ -24,77 +24,77 @@ import jenkins.model.Jenkins;
  * @author dvrzalik
  */
 @Extension
-public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {   
-    
-    //last scheduled task;
+public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
+
+    // last scheduled task;
     private static DiskUsageCalculation currentTask;
-      
-    public BuildDiskUsageCalculationThread(){        
-        super("Calculation of builds disk usage"); 
-    }   
-    
+
+    public BuildDiskUsageCalculationThread() {
+        super("Calculation of builds disk usage");
+    }
+
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
-        if(!isCancelled() && startExecution()){
-            try{
+        if(!isCancelled() && startExecution()) {
+            try {
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
                 items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
-                
-                for (Object item : items) {
-                    if (item instanceof AbstractProject) {
+
+                for(Object item: items) {
+                    if(item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
-                      //  if (!project.isBuilding()) {
-                            DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-                            if(property==null){
-                                property = new DiskUsageProperty();
-                                project.addProperty(property);
+                        //  if (!project.isBuilding()) {
+                        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                        if(property == null) {
+                            property = new DiskUsageProperty();
+                            project.addProperty(property);
+                        }
+                        ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
+                        for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)) {
+                            Map<Integer, AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
+                            AbstractBuild build = loadedBuilds.get(information.getNumber());
+                            // do not calculat builds in progress
+                            if(build != null && build.isBuilding()) {
+                                continue;
                             }
-                            ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
-                            for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)){ 
-                                Map<Integer,AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
-                                AbstractBuild build = loadedBuilds.get(information.getNumber());
-                                //do not calculat builds in progress
-                                if(build!=null && build.isBuilding()){
-                                    continue;
-                                }
-                                try{
-                                    DiskUsageUtil.calculateDiskUsageForBuild(information.getId(), project);
-                                }
-                                catch(Exception e){
-                                    logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), e);
-                                }
+                            try {
+                                DiskUsageUtil.calculateDiskUsageForBuild(information.getId(), project);
                             }
-                       // } 
+                            catch (Exception e) {
+                                logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), e);
+                            }
+                        }
+                        // } 
                     }
                 }
             } catch (Exception ex) {
                 logger.log(Level.WARNING, "Error when recording disk usage for builds", ex);
             }
         }
-        else{
+        else {
             DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-            if(plugin.getConfiguration().isCalculationBuildsEnabled()){
+            if(plugin.getConfiguration().isCalculationBuildsEnabled()) {
                 logger.log(Level.FINER, "Calculation of builds is already in progress.");
             }
-            else{
+            else {
                 logger.log(Level.FINER, "Calculation of builds is disabled.");
             }
         }
     }
-    
-    public CronTab getCronTab() throws ANTLRException{
+
+    public CronTab getCronTab() throws ANTLRException {
         String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
         CronTab tab = new CronTab(cron);
         return tab;
-    }   
+    }
 
     @Override
-    public AperiodicWork getNewInstance() {   
-        if(currentTask!=null){
+    public AperiodicWork getNewInstance() {
+        if(currentTask != null) {
             currentTask.cancel();
         }
-        else{
+        else {
             cancel();
         }
         currentTask = new BuildDiskUsageCalculationThread();
@@ -105,12 +105,13 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     public DiskUsageCalculation getLastTask() {
         return currentTask;
     }
-    
-    private boolean startExecution(){
+
+    private boolean startExecution() {
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationBuildsEnabled())
-          return false;
+        if(!plugin.getConfiguration().isCalculationBuildsEnabled()) {
+            return false;
+        }
         return !isExecutingMoreThenOneTimes();
     }
-    
+
 }

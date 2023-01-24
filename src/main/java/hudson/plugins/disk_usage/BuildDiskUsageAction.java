@@ -21,7 +21,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Disk usage information for a single build
  * @author dvrzalik
  */
-//TODO really implementsProminentProjectAction???
+// TODO really implementsProminentProjectAction???
 @ExportedBean(defaultVisibility = 1)
 public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction, RunAction2 {
 
@@ -30,12 +30,12 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     AbstractBuild build;
     @Deprecated
     DiskUsage diskUsage;
-    
+
     public BuildDiskUsageAction(AbstractBuild build) {
         this.build = build;
-    }        
+    }
 
-        public String getIconFileName() {
+    public String getIconFileName() {
         return null;
     }
 
@@ -46,127 +46,128 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     public String getUrlName() {
         return Messages.UrlName();
     }
-    
-    public void setDiskUsage(Long size) throws IOException{
+
+    public void setDiskUsage(Long size) throws IOException {
         AbstractProject project = build.getProject();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        if(property==null){
+        if(property == null) {
             DiskUsageUtil.addProperty(project);
             property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
-        if(information!=null){
+        if(information != null) {
             information.setSize(size);
         }
-        else{    
+        else {
             property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size), build);
         }
-        property.saveDiskUsage(); 
+        property.saveDiskUsage();
     }
-    
+
     /**
      * @return Disk usage of the build (included child builds)
      */
     public Long getDiskUsage() {
         AbstractProject project = build.getProject();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        if(property==null){
+        if(property == null) {
             DiskUsageUtil.addProperty(project);
             property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         }
         return property.getDiskUsageOfBuild(build.getId());
     }
-    
-    public Long getAllDiskUsage(){
+
+    public Long getAllDiskUsage() {
         Long buildsDiskUsage = getDiskUsage();
         AbstractProject project = build.getProject();
-        if(project instanceof ItemGroup){
-           buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup)project);
-        }       
+        if(project instanceof ItemGroup) {
+            buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup) project);
+        }
         return buildsDiskUsage;
     }
-    
-    public String getBuildUsageString(){
+
+    public String getBuildUsageString() {
         return DiskUsageUtil.getSizeString(getAllDiskUsage());
     }
 
-    private Long getBuildsDiskUsageAllSubItems(ItemGroup group){
+    private Long getBuildsDiskUsageAllSubItems(ItemGroup group) {
         Long buildsDiskUsage = 0l;
-        for(Object item: group.getItems()){
-            if(item instanceof ItemGroup){
-                buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup)item);
+        for(Object item: group.getItems()) {
+            if(item instanceof ItemGroup) {
+                buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup) item);
             }
-            else{
-                if(item instanceof AbstractProject){
+            else {
+                if(item instanceof AbstractProject) {
                     AbstractProject project = (AbstractProject) item;
                     DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-                    if(property==null){
+                    if(property == null) {
                         DiskUsageUtil.addProperty(project);
                         property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                     }
                     Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
-                    for(DiskUsageBuildInformation information :  informations){
-                        if(information.getNumber() == build.getNumber()){
+                    for(DiskUsageBuildInformation information:  informations) {
+                        if(information.getNumber() == build.getNumber()) {
                             buildsDiskUsage += information.getSize();
                         }
-                    }                
+                    }
                 }
             }
         }
         return buildsDiskUsage;
     }
-    
+
     public Object readResolve() {
-        //for keeping backward compatibility
-        if(diskUsage!=null){
+        // for keeping backward compatibility
+        if(diskUsage != null) {
             buildDiskUsage = diskUsage.buildUsage;
             Node node = build.getBuiltOn();
-            if(node!=null && diskUsage.wsUsage!=null && diskUsage.wsUsage > 0){
+            if(node != null && diskUsage.wsUsage != null && diskUsage.wsUsage > 0) {
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
                 AbstractProject project = build.getProject().getRootProject();
-                if(property!=null && (project instanceof TopLevelItem))
-                    property.putSlaveWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem)project).getRemote(), diskUsage.wsUsage);
+                if(property != null && (project instanceof TopLevelItem)) {
+                    property.putSlaveWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem) project).getRemote(), diskUsage.wsUsage);
+                }
             }
-            diskUsage=null;
+            diskUsage = null;
         }
         return this;
     }
 
     @Override
     public void onAttached(Run<?, ?> r) {
-        //no action is needed
+        // no action is needed
     }
 
     @Override
     public void onLoad(Run<?, ?> r) {
         DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
         long size = 0L;
-        if(property==null){
+        if(property == null) {
             return;
         }
-        //backward compatibility
+        // backward compatibility
             BuildDiskUsageAction action = null;
-            for(Action a : build.getActions()){
-                if(a instanceof BuildDiskUsageAction){
-                    action = (BuildDiskUsageAction) a;
-                    if(action.buildDiskUsage != null){
-                        size=action.buildDiskUsage;
-                    }            
+        for(Action a: build.getActions()) {
+            if(a instanceof BuildDiskUsageAction) {
+                action = (BuildDiskUsageAction) a;
+                if(action.buildDiskUsage != null) {
+                    size = action.buildDiskUsage;
                 }
             }
-            if(action!=null){
-                //remove old action, now it is added by transition action factory
-                build.getActions().remove(action);
-                try {
-                    build.save();
-                } catch (IOException ex) {
-                    Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        }
+        if(action != null) {
+            // remove old action, now it is added by transition action factory
+            build.getActions().remove(action);
+            try {
+                build.save();
+            } catch (IOException ex) {
+                Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
             }
-            //Transient actions can be created even during deletion of job
-            if(property.getDiskUsageBuildInformation(build.getNumber())==null && build.getRootDir().exists()){
-                property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(),build.getTimeInMillis(), build.getNumber(), size), build);
-            }
+        }
+        // Transient actions can be created even during deletion of job
+        if(property.getDiskUsageBuildInformation(build.getNumber()) == null && build.getRootDir().exists()) {
+            property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size), build);
+        }
     }
-       
+
 }
