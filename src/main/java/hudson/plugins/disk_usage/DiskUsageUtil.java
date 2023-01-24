@@ -189,7 +189,7 @@ public class DiskUsageUtil {
             builder.append("\n");
             builder.append("List of workspaces:");
             for(String slaveName: property.getSlaveWorkspaceUsage().keySet()) {
-                Long s = 0l;
+                Long s = 0L;
                 for(Long l:property.getSlaveWorkspaceUsage().get(slaveName).values()) {
                     s += l;
                 }
@@ -205,7 +205,7 @@ public class DiskUsageUtil {
     }
 
     public static List<String> parseExcludedJobsFromString(String jobs) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         String[] jobNames = jobs.split(",");
         for(String name: jobNames) {
             name = name.trim();
@@ -301,7 +301,7 @@ public class DiskUsageUtil {
                 property =  (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
             }
             if(build.getWorkspace() != null) {
-                ArrayList<FilePath> exceededFiles = new ArrayList<FilePath>();
+                ArrayList<FilePath> exceededFiles = new ArrayList<>();
                 AbstractProject project = build.getProject();
                 Node node = build.getBuiltOn();
                 if(project instanceof ItemGroup) {
@@ -371,7 +371,7 @@ public class DiskUsageUtil {
             return;
         }
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        List<File> exceededFiles = new ArrayList<File>();
+        List<File> exceededFiles = new ArrayList<>();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property == null) {
             addProperty(project);
@@ -433,7 +433,7 @@ public class DiskUsageUtil {
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         // Build disk usage has to be always recalculated to be kept up-to-date 
         // - artifacts might be kept only for the last build and users sometimes delete files manually as well.
-        long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.getInstance().getBuildDirFor(project), buildId), new ArrayList<File>());
+        long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.getInstance().getBuildDirFor(project), buildId), new ArrayList<>());
         //        if (build instanceof MavenModuleSetBuild) {
 //            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
 //            for (List<MavenBuild> mavenBuilds : builds) {
@@ -486,7 +486,7 @@ public class DiskUsageUtil {
     }
 
     public static Long calculateWorkspaceDiskUsageForPath(FilePath workspace, ArrayList<FilePath> exceeded) throws IOException, InterruptedException {
-        Long diskUsage = 0l;
+        Long diskUsage = 0L;
         if(workspace.exists()) {
             try {
                 diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getTimeoutWorkspace(), TimeUnit.MINUTES);
@@ -529,7 +529,7 @@ public class DiskUsageUtil {
                     FilePath workspace = new FilePath(node.toComputer().getChannel(), projectWorkspace);
                     if(workspace.exists()) {
                         Long diskUsage = property.getSlaveWorkspaceUsage().get(node.getNodeName()).get(workspace.getRemote());
-                        ArrayList<FilePath> exceededFiles = new ArrayList<FilePath>();
+                        ArrayList<FilePath> exceededFiles = new ArrayList<>();
                         if(project instanceof ItemGroup) {
                             List<AbstractProject> projects = getAllProjects((ItemGroup) project);
                             for(AbstractProject p: projects) {
@@ -563,7 +563,7 @@ public class DiskUsageUtil {
     }
 
     public static List<AbstractProject> getAllProjects(ItemGroup<? extends Item> itemGroup) {
-        List<AbstractProject> items = new ArrayList<AbstractProject>();
+        List<AbstractProject> items = new ArrayList<>();
         for(Item item: itemGroup.getItems()) {
             if(item instanceof AbstractProject) {
                 items.add((AbstractProject) item);
@@ -580,6 +580,8 @@ public class DiskUsageUtil {
      */
     public static class DiskUsageCallable implements Callable<Long, IOException> {
 
+        private static final long serialVersionUID = 1;
+
         public static final Logger LOGGER = Logger
             .getLogger(DiskUsageCallable.class.getName());
 
@@ -593,7 +595,7 @@ public class DiskUsageUtil {
 
         public Long call() throws IOException {
             File f = new File(path.getRemote());
-            List<File> exceeded = new ArrayList<File>();
+            List<File> exceeded = new ArrayList<>();
             for(FilePath file: exceedFilesPath) {
                 exceeded.add(new File(file.getRemote()));
             }

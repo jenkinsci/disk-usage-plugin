@@ -36,9 +36,9 @@ import org.apache.commons.io.FileUtils;
 public class ProjectDiskUsage implements Saveable {
 
     protected transient Job job;
-    protected Long diskUsageWithoutBuilds = 0l;
-    protected Map<String, Map<String, Long>> slaveWorkspacesUsage = new ConcurrentHashMap<String, Map<String, Long>>();
-    private Set<DiskUsageBuildInformation> buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
+    protected Long diskUsageWithoutBuilds = 0L;
+    protected Map<String, Map<String, Long>> slaveWorkspacesUsage = new ConcurrentHashMap<>();
+    private Set<DiskUsageBuildInformation> buildDiskUsage = new CopyOnWriteArraySet<>();
     private boolean allBuildsLoaded;
 
 
@@ -59,7 +59,7 @@ public class ProjectDiskUsage implements Saveable {
     }
 
     public Set<DiskUsageBuildInformation> getBuildDiskUsage(boolean needAll) {
-        Set<DiskUsageBuildInformation> information = new HashSet<DiskUsageBuildInformation>();
+        Set<DiskUsageBuildInformation> information = new HashSet<>();
         AbstractProject p = (AbstractProject) job;
         if(needAll && !allBuildsLoaded) {
             try {
@@ -106,7 +106,7 @@ public class ProjectDiskUsage implements Saveable {
     public void putSlaveWorkspaceSize(Node node, String path, Long size) {
         Map<String, Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
         if(workspacesInfo == null) {
-            workspacesInfo = new ConcurrentHashMap<String, Long>();
+            workspacesInfo = new ConcurrentHashMap<>();
         }
         // worksace with 0 are only initiative (are not counted yet) or does not exists
         // no nexist workspaces are removed in method checkWorkspaces in class DiskUsageProperty
@@ -133,7 +133,7 @@ public class ProjectDiskUsage implements Saveable {
         }
         AbstractProject project = (AbstractProject) job;
         List<Run> list = project.getBuilds();
-        buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
+        buildDiskUsage = new CopyOnWriteArraySet<>();
         for(Run run: list) {
             if(run instanceof AbstractBuild) {
                 if(containsBuildWithId(run.getId())) {
@@ -141,7 +141,7 @@ public class ProjectDiskUsage implements Saveable {
                 }
                 AbstractBuild build = (AbstractBuild) run;
                 BuildDiskUsageAction toRemove = null;
-                long buildOldDiskUsage = 0l;
+                long buildOldDiskUsage = 0L;
                 // if not present, add
                 for(Action action: build.getActions()) {
                     if(action instanceof BuildDiskUsageAction) {
@@ -188,7 +188,7 @@ public class ProjectDiskUsage implements Saveable {
             file.unmarshal(this);
             if(buildDiskUsage instanceof HashSet) {
                 // saved collection is not serialized in previous versions.
-                Set<DiskUsageBuildInformation> informations = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
+                Set<DiskUsageBuildInformation> informations = new CopyOnWriteArraySet<>();
                 informations.addAll(buildDiskUsage);
                 buildDiskUsage = informations;
             }
@@ -210,7 +210,7 @@ public class ProjectDiskUsage implements Saveable {
      * 
      */
     public void loadOldData() {
-        buildDiskUsage = new CopyOnWriteArraySet<DiskUsageBuildInformation>();
+        buildDiskUsage = new CopyOnWriteArraySet<>();
         List<Run> list = job.getBuilds();
         for(Run run: list) {
             if(run instanceof AbstractBuild) {

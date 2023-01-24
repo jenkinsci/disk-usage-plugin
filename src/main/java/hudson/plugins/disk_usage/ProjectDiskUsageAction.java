@@ -62,7 +62,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     }
 
     public Long getAllCustomOrNonSlaveWorkspaces() {
-        Long diskUsage = 0l;
+        Long diskUsage = 0L;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property != null) {
             diskUsage += property.getAllNonSlaveOrCustomWorkspaceSize();
@@ -88,7 +88,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
      * @return disk usage project and its sub-projects
      */
     public Long getAllDiskUsageWorkspace() {
-        Long diskUsage = 0l;
+        Long diskUsage = 0L;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property != null) {
             diskUsage += property.getAllWorkspaceSize();
@@ -141,9 +141,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     }
 
     private Map<String, Long> getBuildsDiskUsageAllSubItems(ItemGroup group, Date older, Date yonger) throws IOException {
-        Map<String, Long> diskUsage = new TreeMap<String, Long>();
-        Long buildsDiskUsage = 0l;
-        Long locked = 0l;
+        Map<String, Long> diskUsage = new TreeMap<>();
+        Long buildsDiskUsage = 0L;
+        Long locked = 0L;
         Long notLoaded = 0L;
         for(Object item: group.getItems()) {
             if(item instanceof ItemGroup) {
@@ -214,10 +214,10 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
             DiskUsageUtil.addProperty(project);
             property = project.getProperty(DiskUsageProperty.class);
         }
-        Map<String, Long> diskUsage = new TreeMap<String, Long>();
-        Long buildsDiskUsage = 0l;
-        Long locked = 0l;
-        Long notLoaded = 0l;
+        Map<String, Long> diskUsage = new TreeMap<>();
+        Long buildsDiskUsage = 0L;
+        Long locked = 0L;
+        Long notLoaded = 0L;
         if(project != null) {
             if(project instanceof ItemGroup) {
                 ItemGroup group = (ItemGroup) project;
@@ -284,7 +284,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
      */
     public Graph getGraph() throws IOException {
         // TODO if(nothing_changed) return;
-        List<Object[]> usages = new ArrayList<Object[]>();
+        List<Object[]> usages = new ArrayList<>();
         long maxValue = 0;
         long maxValueWorkspace = 0;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
@@ -292,7 +292,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         Long jobRootDirDiskUsage = getJobRootDirDiskUsage();
         maxValue = jobRootDirDiskUsage;
         // First iteration just to get scale of the y-axis
-        ArrayList<DiskUsageBuildInformation> builds = new ArrayList<DiskUsageBuildInformation>();
+        ArrayList<DiskUsageBuildInformation> builds = new ArrayList<>();
         builds.addAll(property.getDiskUsageOfBuilds());
         // do it in reverse order
         for(int i = builds.size() - 1; i >= 0; i--) {

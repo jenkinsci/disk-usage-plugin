@@ -52,9 +52,9 @@ public class ProjectDiskUsageActionTest {
         MatrixBuild matrixBuild1 = matrixProject.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild2 = matrixProject.getLastBuild();
-        Long sizeofBuild = 7546l;
-        Long sizeOfMatrixBuild1 = 6800l;
-        Long sizeOfMatrixBuild2 = 14032l;
+        Long sizeofBuild = 7546L;
+        Long sizeOfMatrixBuild1 = 6800L;
+        Long sizeOfMatrixBuild2 = 14032L;
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
@@ -94,9 +94,9 @@ public class ProjectDiskUsageActionTest {
         MatrixBuild matrixBuild1 = matrixProject.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild2 = matrixProject.getLastBuild();
-        Long sizeofBuild = 7546l;
-        Long sizeOfMatrixBuild1 = 6800l;
-        Long sizeOfMatrixBuild2 = 14032l;
+        Long sizeofBuild = 7546L;
+        Long sizeOfMatrixBuild1 = 6800L;
+        Long sizeOfMatrixBuild2 = 14032L;
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
@@ -144,9 +144,9 @@ public class ProjectDiskUsageActionTest {
         Date olderThan5months = filterCalendar.getTime();
         filterCalendar.set(2013, 8, 19);
         Date olderThan3weeks = filterCalendar.getTime();
-        Long sizeofBuild1 = 7546l;
-        Long sizeofBuild2 = 9546l;
-        Long sizeofBuild3 = 15546l;
+        Long sizeofBuild1 = 7546L;
+        Long sizeofBuild2 = 9546L;
+        Long sizeofBuild3 = 15546L;
         DiskUsageTestUtil.getBuildDiskUsageAction(build1).setDiskUsage(sizeofBuild1);
         DiskUsageTestUtil.getBuildDiskUsageAction(build2).setDiskUsage(sizeofBuild2);
         DiskUsageTestUtil.getBuildDiskUsageAction(build3).setDiskUsage(sizeofBuild3);

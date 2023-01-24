@@ -62,8 +62,8 @@ public class DiskUsagePropertyTest {
         list.add(axis1);
         list.add(axis2);
         matrixProject.setAxes(list);
-        Long sizeOfProject = 7546l;
-        Long sizeOfMatrixProject = 6800l;
+        Long sizeOfProject = 7546L;
+        Long sizeOfMatrixProject = 6800L;
         DiskUsageProperty projectProperty = project.getProperty(DiskUsageProperty.class);
         // project.addProperty(projectProperty);
         projectProperty.setDiskUsageWithoutBuilds(sizeOfProject);
@@ -132,7 +132,7 @@ public class DiskUsagePropertyTest {
             project.addProperty(prop);
         }
         prop.checkWorkspaces();
-        Long workspaceSize = 7509l;
+        Long workspaceSize = 7509L;
         Map<String, Map<String, Long>> diskUsage = prop.getSlaveWorkspaceUsage();
         for(String name: diskUsage.keySet()) {
             Map<String, Long> slaveInfo = diskUsage.get(name);
@@ -378,9 +378,9 @@ public class DiskUsagePropertyTest {
         MatrixBuild matrixBuild1 = matrixProject.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild2 = matrixProject.getLastBuild();
-        Long sizeofBuild = 7546l;
-        Long sizeOfMatrixBuild1 = 6800l;
-        Long sizeOfMatrixBuild2 = 14032l;
+        Long sizeofBuild = 7546L;
+        Long sizeOfMatrixBuild1 = 6800L;
+        Long sizeOfMatrixBuild2 = 14032L;
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);

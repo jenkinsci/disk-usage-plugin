@@ -12,7 +12,7 @@ public class DiskUsageUtilTest {
     @Test
     public void testGetSizeInBytes() {
         String sizeInString = "57 B";
-        Long size = 57l;
+        Long size = 57L;
         Assert.assertEquals("Byte representation of size 57 B is wrong.", 57, DiskUsageUtil.getSizeInBytes(sizeInString), 0);
         sizeInString = "5 KB";
         size = 1024l * 5;
@@ -33,7 +33,7 @@ public class DiskUsageUtilTest {
     @Test
     public void testGetSizeInString() {
         String sizeInString = "57 B";
-        Long size = 57l;
+        Long size = 57L;
         Assert.assertEquals("String representation of size 57 B is wrong.", sizeInString, DiskUsageUtil.getSizeString(size));
         sizeInString = "5 KB";
         size = 1024l * 5;

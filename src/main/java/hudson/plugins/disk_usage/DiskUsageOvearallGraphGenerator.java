@@ -37,9 +37,9 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
     public static class DiskUsageRecord extends DiskUsage {
         private static SimpleDateFormat sdf = new SimpleDateFormat("d/M");
         Date date;
-        private Long jobsWithoutBuildsUsage = 0l;
-        private Long allSpace = 0l;
-        private Long diskUsageNonSlaveWorkspaces = 0l;
+        private Long jobsWithoutBuildsUsage = 0L;
+        private Long allSpace = 0L;
+        private Long diskUsageNonSlaveWorkspaces = 0L;
 
 
         public DiskUsageRecord(Long diskUsageBuilds, Long diskUsageWorkspaces, Long diskUsageJobsWithoutBuilds, Long allSpace, Long diskUsageNonSlaveWorkspaces) {

@@ -38,7 +38,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         if(!isCancelled() && startExecution()) {
             try {
-                List<Item> items = new ArrayList<Item>();
+                List<Item> items = new ArrayList<>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
                 items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
 
@@ -89,8 +89,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
     @Override
     public CronTab getCronTab() throws ANTLRException {
         String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForJobs();
-        CronTab tab = new CronTab(cron);
-        return tab;
+        return new CronTab(cron);
     }
 
     @Override

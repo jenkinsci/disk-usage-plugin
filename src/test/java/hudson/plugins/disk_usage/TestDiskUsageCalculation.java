@@ -21,9 +21,9 @@ public class TestDiskUsageCalculation extends BuildDiskUsageCalculationThread {
 
     private String cron;
 
-    public boolean executing = false;
+    public boolean executing;
 
-    private boolean sleep = false;
+    private boolean sleep;
 
     private static List<TestDiskUsageCalculation> instancesHistory;
 

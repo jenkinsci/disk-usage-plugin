@@ -91,7 +91,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     }
 
     private Long getBuildsDiskUsageAllSubItems(ItemGroup group) {
-        Long buildsDiskUsage = 0l;
+        Long buildsDiskUsage = 0L;
         for(Object item: group.getItems()) {
             if(item instanceof ItemGroup) {
                 buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup) item);

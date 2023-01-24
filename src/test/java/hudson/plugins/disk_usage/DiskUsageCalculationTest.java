@@ -143,7 +143,7 @@ public class DiskUsageCalculationTest extends TestCase {
     public void testTaskIsScheduledOnlyOneTimesPerMinute() throws Exception {
         //  Trigger.timer = new Timer("Jenkins cron thread");
         //  attribut currentTask should have value calculation
-        List<TestDiskUsageCalculation> scheduledInstances = new ArrayList<TestDiskUsageCalculation>();
+        List<TestDiskUsageCalculation> scheduledInstances = new ArrayList<>();
         TestDiskUsageCalculation calculation = (TestDiskUsageCalculation) new TestDiskUsageCalculation("* * * * *", false).getNewInstance();
         TestDiskUsageCalculation.startLoadInstancesHistory(scheduledInstances);
         GregorianCalendar calendar = new GregorianCalendar();

@@ -148,7 +148,7 @@ public class DiskUsageUtilTest {
         project1.setAssignedNode(slave1);
         j.buildAndAssertSuccess(project1);
         Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(), "workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
-        ArrayList<String> slaves = new ArrayList<String>();
+        ArrayList<String> slaves = new ArrayList<>();
         slaves.add("slave2");
         LabelAxis axis2 = new LabelAxis("label", slaves);
         axes.add(axis2);
