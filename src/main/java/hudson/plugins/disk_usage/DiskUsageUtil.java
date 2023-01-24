@@ -149,7 +149,7 @@ public class DiskUsageUtil {
     }
     
     public static Long getSizeInBytes(String stringSize){
-        if(stringSize==null || stringSize.equals("-"))
+        if(stringSize==null || "-".equals(stringSize))
             return 0l;
         String[] values = stringSize.split(" ");
         int index = getIndex(values[1]);
@@ -235,13 +235,13 @@ public class DiskUsageUtil {
         
     public static int getIndex(String unit){
         int index = 0;
-        if(unit.equals("KB"))
+        if("KB".equals(unit))
             index = 1;
-        if(unit.equals("MB"))
+        if("MB".equals(unit))
             index = 2;
-        if(unit.equals("GB"))
+        if("GB".equals(unit))
             index = 3;        
-        if(unit.equals("TB"))
+        if("TB".equals(unit))
             index = 4;
         return index;
     }
