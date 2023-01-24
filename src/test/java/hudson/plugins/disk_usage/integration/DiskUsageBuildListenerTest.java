@@ -22,12 +22,12 @@ import static org.junit.Assert.*;
  * @author Lucie Votypkova
  */
 public class DiskUsageBuildListenerTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
-    public void testOnDeleted() throws Exception{
+    public void testOnDeleted() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
@@ -38,11 +38,11 @@ public class DiskUsageBuildListenerTest {
         assertNotNull("Disk usage property whoud contains cashed information about build 1.", property.getDiskUsageOfBuild(1));
         assertNotNull("Disk usage property whoud contains cashed information about build 3.", property.getDiskUsageOfBuild(3));
     }
-    
+
     @Test
-    public void testOnCompleted() throws Exception{
+    public void testOnCompleted() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        if (Functions.isWindows()){
+        if(Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo ahoj > log.log"));
         } else {
             project.getBuildersList().add(new Shell("echo ahoj > log.log"));

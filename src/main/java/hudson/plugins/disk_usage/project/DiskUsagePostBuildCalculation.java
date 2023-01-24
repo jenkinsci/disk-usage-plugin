@@ -21,26 +21,25 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author lucinka
  */
-public class DiskUsagePostBuildCalculation extends Recorder{
-    
-    public DiskUsagePostBuildCalculation(){
+public class DiskUsagePostBuildCalculation extends Recorder {
+
+    public DiskUsagePostBuildCalculation() {
     }
-    
+
     @Override
-      public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener){
+    public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener) {
         listener.getLogger().println("append disk usage");
-          DiskUsageUtil.calculationDiskUsageOfBuild(build, listener);
-          return true;
-      }
-    
-    
+        DiskUsageUtil.calculationDiskUsageOfBuild(build, listener);
+        return true;
+    }
+
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
-    
-    
+
+
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
@@ -57,5 +56,5 @@ public class DiskUsagePostBuildCalculation extends Recorder{
             return true;
         }
     }
-    
+
 }

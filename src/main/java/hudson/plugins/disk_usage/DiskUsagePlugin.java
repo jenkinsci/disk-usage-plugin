@@ -28,24 +28,24 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 @Extension
 public class DiskUsagePlugin extends Plugin {
-    
+
     private Long diskUsageBuilds = 0l;
     private Long diskUsageJobsWithoutBuilds = 0l;
     private Long diskUsageWorkspaces = 0l;
     private Long diskUsageLockedBuilds = 0l;
     private Long diskUsageNonSlaveWorkspaces = 0l;
-    
-    public DiskUsagePlugin(){
+
+    public DiskUsagePlugin() {
     }
-    
-    public void refreshGlobalInformation() throws IOException{
+
+    public void refreshGlobalInformation() throws IOException {
         diskUsageBuilds = 0l;
         diskUsageWorkspaces = 0l;
         diskUsageJobsWithoutBuilds = 0l;
         diskUsageLockedBuilds = 0l;
         diskUsageNonSlaveWorkspaces = 0l;
-        for(Item item: Jenkins.getInstance().getItems()){
-            if(item instanceof AbstractProject){
+        for(Item item: Jenkins.getInstance().getItems()) {
+            if(item instanceof AbstractProject) {
                 AbstractProject project = (AbstractProject) item;
                 ProjectDiskUsageAction action = (ProjectDiskUsageAction) project.getAction(ProjectDiskUsageAction.class);
                 diskUsageBuilds += action.getBuildsDiskUsage().get("all");
@@ -56,78 +56,78 @@ public class DiskUsagePlugin extends Plugin {
             }
         }
     }
-    
-    public Long getCashedGlobalBuildsDiskUsage(){
+
+    public Long getCashedGlobalBuildsDiskUsage() {
         return diskUsageBuilds;
     }
-    
-    public Long getCashedGlobalJobsDiskUsage(){
+
+    public Long getCashedGlobalJobsDiskUsage() {
         return diskUsageBuilds + diskUsageJobsWithoutBuilds;
     }
-    
-    public Long getCashedGlobalJobsWithoutBuildsDiskUsage(){
+
+    public Long getCashedGlobalJobsWithoutBuildsDiskUsage() {
         return diskUsageJobsWithoutBuilds;
     }
-    
-    public Long getCashedGlobalLockedBuildsDiskUsage(){
-     return diskUsageLockedBuilds;   
+
+    public Long getCashedGlobalLockedBuildsDiskUsage() {
+        return diskUsageLockedBuilds;
     }
-    
-    public Long getCashedGlobalWorkspacesDiskUsage(){
+
+    public Long getCashedGlobalWorkspacesDiskUsage() {
         return diskUsageWorkspaces;
     }
-    
-    public Long getCashedNonSlaveDiskUsageWorkspace(){
+
+    public Long getCashedNonSlaveDiskUsageWorkspace() {
         return diskUsageNonSlaveWorkspaces;
     }
-    
-    public Long getCashedSlaveDiskUsageWorkspace(){
+
+    public Long getCashedSlaveDiskUsageWorkspace() {
         return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
     }
-    
-    public Long getGlobalBuildsDiskUsage() throws IOException{
+
+    public Long getGlobalBuildsDiskUsage() throws IOException {
         refreshGlobalInformation();
         return diskUsageBuilds;
     }
-    
-    public Long getGlobalJobsDiskUsage() throws IOException{
+
+    public Long getGlobalJobsDiskUsage() throws IOException {
         refreshGlobalInformation();
         return diskUsageBuilds + diskUsageJobsWithoutBuilds;
     }
-    
-    public Long getGlobalJobsWithoutBuildsDiskUsage() throws IOException{
+
+    public Long getGlobalJobsWithoutBuildsDiskUsage() throws IOException {
         refreshGlobalInformation();
         return diskUsageJobsWithoutBuilds;
     }
-    
-    public Long getGlobalWorkspacesDiskUsage() throws IOException{
+
+    public Long getGlobalWorkspacesDiskUsage() throws IOException {
         refreshGlobalInformation();
         return diskUsageWorkspaces;
     }
-    
-    
-    public Long getGlobalNonSlaveDiskUsageWorkspace() throws IOException{
+
+
+    public Long getGlobalNonSlaveDiskUsageWorkspace() throws IOException {
         refreshGlobalInformation();
         return diskUsageNonSlaveWorkspaces;
     }
-    
-    public Long getGlobalSlaveDiskUsageWorkspace() throws IOException{
+
+    public Long getGlobalSlaveDiskUsageWorkspace() throws IOException {
         refreshGlobalInformation();
         return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
     }
-    
-    public BuildDiskUsageCalculationThread getBuildsDiskUsageThread(){
+
+    public BuildDiskUsageCalculationThread getBuildsDiskUsageThread() {
         return AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
     }
-    
-    public JobWithoutBuildsDiskUsageCalculation getJobsDiskUsageThread(){
+
+    public JobWithoutBuildsDiskUsageCalculation getJobsDiskUsageThread() {
         return AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
     }
-    
-    public WorkspaceDiskUsageCalculationThread getWorkspaceDiskUsageThread(){
-       return AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class); 
+
+    public WorkspaceDiskUsageCalculationThread getWorkspaceDiskUsageThread() {
+        return AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
     }
-    
+
     /**
      * @return DiskUsage for given project (shortcut for the view). Never null.
      */
@@ -135,11 +135,11 @@ public class DiskUsagePlugin extends Plugin {
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         return action;
     }
-    
-    public String getDiskUsageInString(Long size){
+
+    public String getDiskUsageInString(Long size) {
         return DiskUsageUtil.getSizeString(size);
     }
-    
+
     /**
      * @return Project list sorted by occupied disk space
      */
@@ -148,7 +148,7 @@ public class DiskUsagePlugin extends Plugin {
         Comparator<AbstractProject> comparator = new Comparator<AbstractProject>() {
 
             public int compare(AbstractProject o1, AbstractProject o2) {
-                
+
                 ProjectDiskUsageAction dua1 = getDiskUsage(o1);
                 ProjectDiskUsageAction dua2 = getDiskUsage(o2);
                 long result = dua2.getJobRootDirDiskUsage() + dua2.getAllDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() - dua1.getAllDiskUsageWorkspace();
@@ -168,37 +168,37 @@ public class DiskUsagePlugin extends Plugin {
 
         return projectList;
     }
-    
-    public void doFilter(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
+
+    public void doFilter(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
         Date older = DiskUsageUtil.getDate(req.getParameter("older"), req.getParameter("olderUnit"));
         Date younger = DiskUsageUtil.getDate(req.getParameter("younger"), req.getParameter("youngerUnit"));
         req.setAttribute("filter", "filter");
         req.setAttribute("older", older);
         req.setAttribute("younger", younger);
-        
-        req.getView(this, "index.jelly").forward(req, rsp);     
+
+        req.getView(this, "index.jelly").forward(req, rsp);
     }
-    
-    public DiskUsageProjectActionFactory.DescriptorImpl getConfiguration(){
+
+    public DiskUsageProjectActionFactory.DescriptorImpl getConfiguration() {
         return DiskUsageProjectActionFactory.DESCRIPTOR;
     }
-    
-    public Graph getOverallGraph(){
+
+    public Graph getOverallGraph() {
         File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
         long maxValue = getCashedGlobalJobsDiskUsage();
-        if(getConfiguration().getShowFreeSpaceForJobDirectory()){
+        if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
             maxValue = jobsDir.getTotalSpace();
         }
         long maxValueWorkspace = Math.max(diskUsageNonSlaveWorkspaces, getCashedSlaveDiskUsageWorkspace());
         List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> record = DiskUsageProjectActionFactory.DESCRIPTOR.getHistory();
         //First iteration just to get scale of the y-axis
-        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record){
-            if(getConfiguration().getShowFreeSpaceForJobDirectory()){
+        for(DiskUsageOvearallGraphGenerator.DiskUsageRecord usage: record) {
+            if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
                 maxValue = Math.max(maxValue, usage.getAllSpace());
             }
             maxValue = Math.max(maxValue, usage.getJobsDiskUsage());
             maxValueWorkspace = Math.max(maxValueWorkspace, usage.getSlaveWorkspacesUsage());
-            maxValueWorkspace = Math.max(maxValueWorkspace, usage.getNonSlaveWorkspacesUsage());           
+            maxValueWorkspace = Math.max(maxValueWorkspace, usage.getNonSlaveWorkspacesUsage());
         }
         int floor = (int) DiskUsageUtil.getScale(maxValue);
         int floorWorkspace = (int) DiskUsageUtil.getScale(maxValueWorkspace);
@@ -208,28 +208,28 @@ public class DiskUsagePlugin extends Plugin {
         double baseWorkspace = Math.pow(1024, floorWorkspace);
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         DefaultCategoryDataset datasetW = new DefaultCategoryDataset();
-        for (DiskUsageOvearallGraphGenerator.DiskUsageRecord usage : record) {
+        for(DiskUsageOvearallGraphGenerator.DiskUsageRecord usage: record) {
             Date label = usage.getDate();
-            if(getConfiguration().getShowFreeSpaceForJobDirectory()){
+            if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
                 dataset.addValue(((Long) usage.getAllSpace()) / base, "space for jobs directory", label);
             }
             dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
             dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
-            datasetW.addValue(((Long) usage.getSlaveWorkspacesUsage()) / baseWorkspace, "slave workspaces", label); 
-            datasetW.addValue(((Long) usage.getNonSlaveWorkspacesUsage()) / baseWorkspace, "non slave workspaces", label); 
+            datasetW.addValue(((Long) usage.getSlaveWorkspacesUsage()) / baseWorkspace, "slave workspaces", label);
+            datasetW.addValue(((Long) usage.getNonSlaveWorkspacesUsage()) / baseWorkspace, "non slave workspaces", label);
         }
-        
+
         //add current state
-        if(getConfiguration().getShowFreeSpaceForJobDirectory()){
-                dataset.addValue(((Long) jobsDir.getTotalSpace()) / base, "space for jobs directory", "current");
+        if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
+            dataset.addValue(((Long) jobsDir.getTotalSpace()) / base, "space for jobs directory", "current");
         }
         dataset.addValue(((Long) getCashedGlobalJobsDiskUsage()) / base, "all jobs", "current");
         dataset.addValue(((Long) getCashedGlobalBuildsDiskUsage()) / base, "all builds", "current");
         datasetW.addValue(((Long) getCashedSlaveDiskUsageWorkspace()) / baseWorkspace, "slave workspaces", "current");
         datasetW.addValue(((Long) getCashedNonSlaveDiskUsageWorkspace()) / baseWorkspace, "non slave workspaces", "current");
         return  new DiskUsageGraph(dataset, unit, datasetW, unitWorkspace);
-    }  
-    
+    }
+
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationBuildsEnabled() && !getBuildsDiskUsageThread().isExecuting()) {
@@ -237,7 +237,7 @@ public class DiskUsagePlugin extends Plugin {
         }
         res.forwardToPreviousPage(req);
     }
-    
+
     public void doRecordJobsDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationJobsEnabled() && !getJobsDiskUsageThread().isExecuting()) {
@@ -245,7 +245,7 @@ public class DiskUsagePlugin extends Plugin {
         }
         res.forwardToPreviousPage(req);
     }
-    
+
     public void doRecordWorkspaceDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationWorkspaceEnabled() && !getWorkspaceDiskUsageThread().isExecuting()) {
@@ -253,34 +253,34 @@ public class DiskUsagePlugin extends Plugin {
         }
         res.forwardToPreviousPage(req);
     }
-       
-    
-    public String getCountIntervalForBuilds(){
+
+
+    public String getCountIntervalForBuilds() {
         long nextExecution = getBuildsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution <= 0) { //not scheduled
             nextExecution = getBuildsDiskUsageThread().getRecurrencePeriod();
-        }    
+        }
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
-    public String getCountIntervalForJobs(){
+
+    public String getCountIntervalForJobs() {
         long nextExecution = getJobsDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution <= 0) { //not scheduled
             nextExecution = getJobsDiskUsageThread().getRecurrencePeriod();
         }
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
-    public String getCountIntervalForWorkspaces(){
+
+    public String getCountIntervalForWorkspaces() {
         long nextExecution = getWorkspaceDiskUsageThread().scheduledLastInstanceExecutionTime() - System.currentTimeMillis();
         if(nextExecution <= 0) { //not scheduled
             nextExecution = getWorkspaceDiskUsageThread().getRecurrencePeriod();
         }
         return DiskUsageUtil.formatTimeInMilisec(nextExecution);
     }
-    
-    public boolean hasAdministrativePermission(){
+
+    public boolean hasAdministrativePermission() {
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
     }
-    
+
 }

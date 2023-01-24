@@ -20,12 +20,12 @@ import static org.junit.Assert.*;
  * @author Lucie Votypkova
  */
 public class BuildDiskUsageActionTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
-    public void testGetAllDiskUsage() throws Exception{
+    public void testGetAllDiskUsage() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -51,23 +51,23 @@ public class BuildDiskUsageActionTest {
         int count = 1;
         Long matrixBuild1TotalSize = sizeOfMatrixBuild1;
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
-        for(MatrixConfiguration c: matrixProject.getItems()){
+        for(MatrixConfiguration c: matrixProject.getItems()) {
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
-            matrixBuild1TotalSize += count*size1;
+            matrixBuild1TotalSize += count * size1;
             AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
-            matrixBuild2TotalSize += count*size2;
+            matrixBuild2TotalSize += count * size2;
             count++;
         }
         assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, DiskUsageTestUtil.getBuildDiskUsageAction(build).getAllDiskUsage());
         assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).getAllDiskUsage());
         assertEquals("BuildDiskUsageAction for build 2 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild2TotalSize, DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).getAllDiskUsage());
-        
+
     }
-    
+
     @Test
-    public void getBuildUsageStringMatrixProject() throws Exception{
+    public void getBuildUsageStringMatrixProject() throws Exception {
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
         TextAxis axis2 = new TextAxis("axis2", "Aaxis", "Baxis", "Caxis");
@@ -80,10 +80,10 @@ public class BuildDiskUsageActionTest {
         matrixProject.setAxes(list);
         Long kiloBytes = 2048l;
         int count = 0;
-        for(MatrixConfiguration c: matrixProject.getItems()){
+        for(MatrixConfiguration c: matrixProject.getItems()) {
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
-            for(Action action : configurationBuild.getAllActions()){
-                if(action instanceof BuildDiskUsageAction){
+            for(Action action: configurationBuild.getAllActions()) {
+                if(action instanceof BuildDiskUsageAction) {
                     BuildDiskUsageAction a = (BuildDiskUsageAction) action;
                     a.setDiskUsage(kiloBytes);
                 }
@@ -91,28 +91,28 @@ public class BuildDiskUsageActionTest {
             count++;
         }
         BuildDiskUsageAction action = null;
-        for(Action a: matrixBuild.getAllActions()){
-            if(a instanceof BuildDiskUsageAction){
+        for(Action a: matrixBuild.getAllActions()) {
+            if(a instanceof BuildDiskUsageAction) {
                 action = (BuildDiskUsageAction) a ;
                 action.setDiskUsage(kiloBytes);
                 break;
             }
         }
         count++;
-        String size = (kiloBytes*count/1024) + " KB";
+        String size = (kiloBytes * count / 1024) + " KB";
         assertEquals("String representation of build disk usage which has "  + size + " is wrong.", size, action.getBuildUsageString());
-        }
-    
+    }
+
     @Test
-    public void getBuildUsageStringFreeStyleProject() throws Exception{
+    public void getBuildUsageStringFreeStyleProject() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         j.buildAndAssertSuccess(project);
         AbstractBuild build = project.getLastBuild();
         Long bytes = 100l;
         Long kiloBytes = 2048l;
-        Long megaBytes = kiloBytes*1024;
-        Long gygaBytes = megaBytes*1024;
-        Long teraBytes = gygaBytes*1024;
+        Long megaBytes = kiloBytes * 1024;
+        Long gygaBytes = megaBytes * 1024;
+        Long teraBytes = gygaBytes * 1024;
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(bytes);
         assertEquals("String representation of build disk usage is wrong which has 100 B is wrong.", "100 B", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(kiloBytes);
@@ -124,5 +124,5 @@ public class BuildDiskUsageActionTest {
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(teraBytes);
         assertEquals("String representation of build disk usage is wrong which has 2T B is wrong.", "2 TB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
     }
-    
+
 }

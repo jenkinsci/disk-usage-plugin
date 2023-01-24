@@ -23,59 +23,59 @@ import jenkins.model.Jenkins;
  * @author Lucie Votypkova
  */
 @Extension
-public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
-    
+public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
+
     //last scheduled task;
-    private static DiskUsageCalculation currentTask;    
-    
-    public WorkspaceDiskUsageCalculationThread(){
-        super("Calculation of workspace usage");       
-    }  
+    private static DiskUsageCalculation currentTask;
+
+    public WorkspaceDiskUsageCalculationThread() {
+        super("Calculation of workspace usage");
+    }
 
     @Override
-    public void execute(TaskListener listener) throws IOException, InterruptedException {                
-         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
-        if(!isCancelled() && startExecution()){
-            try{
+    public void execute(TaskListener listener) throws IOException, InterruptedException {
+        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        if(!isCancelled() && startExecution()) {
+            try {
                 List<Item> items = new ArrayList<Item>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
                 items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
-                for (Object item : items) {
-                    if (item instanceof AbstractProject) {
+                for(Object item: items) {
+                    if(item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
                         //do not count workspace for running project
                         if(project.isBuilding()) {
                             continue;
                         }
-                        try{
+                        try {
                             DiskUsageUtil.calculateWorkspaceDiskUsage(project);
                         } catch (Exception ex) {
                             logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), ex);
-                        }               
+                        }
                     }
                 }
             }
-            catch(Exception e){
+            catch (Exception e) {
                 logger.log(Level.WARNING, "Error when recording disk usage for workspaces.", e);
             }
         }
-        else{
-            if(plugin.getConfiguration().isCalculationWorkspaceEnabled()){
+        else {
+            if(plugin.getConfiguration().isCalculationWorkspaceEnabled()) {
                 logger.log(Level.FINER, "Calculation of workspace is already in progress.");
             }
-            else{
+            else {
                 logger.log(Level.FINER, "Calculation of workspace is disabled.");
             }
         }
-        
-    } 
-    
+
+    }
+
     @Override
-    public AperiodicWork getNewInstance() {  
-        if(currentTask!=null){
+    public AperiodicWork getNewInstance() {
+        if(currentTask != null) {
             currentTask.cancel();
         }
-        else{
+        else {
             cancel();
         }
         currentTask = new WorkspaceDiskUsageCalculationThread();
@@ -93,13 +93,13 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation{
     public DiskUsageCalculation getLastTask() {
         return currentTask;
     }
-    
-    private boolean startExecution(){
+
+    private boolean startExecution() {
         DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         if(!plugin.getConfiguration().isCalculationWorkspaceEnabled()) {
             return false;
         }
         return !isExecutingMoreThenOneTimes();
     }
-    
+
 }

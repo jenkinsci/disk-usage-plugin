@@ -16,14 +16,14 @@ import java.util.logging.Logger;
  * @author Lucie Votypkova
  */
 @Extension
-public class DiskUsageWorkspaceListener extends WorkspaceListener{
-    
+public class DiskUsageWorkspaceListener extends WorkspaceListener {
+
     @Override
-    public void afterDelete(AbstractProject project){
+    public void afterDelete(AbstractProject project) {
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        if(property!=null){
+        if(property != null) {
             property.checkWorkspaces();
         }
     }
-    
+
 }

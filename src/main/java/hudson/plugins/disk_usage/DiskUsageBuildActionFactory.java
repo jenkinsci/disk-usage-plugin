@@ -19,7 +19,7 @@ import jenkins.model.TransientActionFactory;
  * @author Lucie Votypkova
  */
 @Extension
-public class DiskUsageBuildActionFactory extends TransientActionFactory<AbstractBuild>{
+public class DiskUsageBuildActionFactory extends TransientActionFactory<AbstractBuild> {
 
     @Override
     public Class type() {
@@ -28,6 +28,6 @@ public class DiskUsageBuildActionFactory extends TransientActionFactory<Abstract
 
     @Override
     public Collection<? extends Action> createFor(AbstractBuild t) {
-        return new ArrayList<Action>(Collections.singleton(new BuildDiskUsageAction(t))); 
+        return new ArrayList<Action>(Collections.singleton(new BuildDiskUsageAction(t)));
     }
 }

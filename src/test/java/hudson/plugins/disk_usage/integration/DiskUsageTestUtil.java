@@ -31,56 +31,56 @@ import jenkins.model.Jenkins;
  * @author Lucie Votypkova
  */
 public class DiskUsageTestUtil {
-    protected static List<File> readFileList(File file) throws FileNotFoundException, IOException{
+    protected static List<File> readFileList(File file) throws FileNotFoundException, IOException {
         List<File> files = new ArrayList<File>();
         String path = file.getParentFile().getAbsolutePath();
         BufferedReader content = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         String line = content.readLine();
-        while(line!=null){
+        while(line != null) {
             files.add(new File(path + "/" + line));
             line = content.readLine();
         }
         return files;
     }
-    
-    protected static Long getSize(List<File> files){
+
+    protected static Long getSize(List<File> files) {
         Long lenght = 0l;
-        for(File file: files){
+        for(File file: files) {
             lenght += file.length();
         }
         return lenght;
     }
-    
-    protected static Slave createSlave(String name, String remoteFS, Jenkins jenkins, ComputerLauncher launcher) throws Exception{
+
+    protected static Slave createSlave(String name, String remoteFS, Jenkins jenkins, ComputerLauncher launcher) throws Exception {
         DumbSlave slave = new DumbSlave(name, "dummy",
-            remoteFS, "2", Mode.NORMAL, "", launcher,
-            RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
-    	jenkins.addNode(slave);
-        while(slave.toComputer()==null || !slave.toComputer().isOnline()){
+        remoteFS, "2", Mode.NORMAL, "", launcher,
+        RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
+        jenkins.addNode(slave);
+        while(slave.toComputer() == null || !slave.toComputer().isOnline()) {
             Thread.sleep(100);
         }
         return slave;
     }
-    
-    protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild build){
-        for(Action a : build.getAllActions()){
+
+    protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild build) {
+        for(Action a: build.getAllActions()) {
             if(a instanceof BuildDiskUsageAction) {
                 return (BuildDiskUsageAction) a;
             }
         }
         return null;
     }
-    
-    protected static void cancelCalculation(DiskUsageCalculation calculation){
-       for(Thread t : Thread.getAllStackTraces().keySet()){
-           if(t.getName().equals(calculation.getThreadName())){
-               t.interrupt();
-               return;
-           }
-       } 
+
+    protected static void cancelCalculation(DiskUsageCalculation calculation) {
+        for(Thread t: Thread.getAllStackTraces().keySet()) {
+            if(t.getName().equals(calculation.getThreadName())) {
+                t.interrupt();
+                return;
+            }
+        }
     }
-    
-    protected static void createFileWithContent(File file) throws FileNotFoundException{
+
+    protected static void createFileWithContent(File file) throws FileNotFoundException {
         file.getParentFile().mkdirs();
         PrintStream stream = new PrintStream(file);
         stream.println("hello");

@@ -11,15 +11,16 @@ package hudson.plugins.disk_usage;
  */
 @Deprecated
 public class DiskUsage {
-    
-    public DiskUsage() {}
-    
-    public DiskUsage(Long buildUsage, Long wsUsage){
+
+    public DiskUsage() {
+    }
+
+    public DiskUsage(Long buildUsage, Long wsUsage) {
         this.buildUsage = buildUsage;
         this.wsUsage = wsUsage;
     }
-    
+
     Long buildUsage;
     Long wsUsage;
-    
+
 }
