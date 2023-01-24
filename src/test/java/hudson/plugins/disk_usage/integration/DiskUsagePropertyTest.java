@@ -398,8 +398,8 @@ public class DiskUsagePropertyTest {
             matrixBuild2TotalSize += count * size2;
             count++;
         }
-        hudson.plugins.disk_usage.DiskUsageProperty freeStyleProjectProperty = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        DiskUsageProperty matrixProjectProperty = (DiskUsageProperty) matrixProject.getProperty(DiskUsageProperty.class);
+        hudson.plugins.disk_usage.DiskUsageProperty freeStyleProjectProperty = project.getProperty(DiskUsageProperty.class);
+        DiskUsageProperty matrixProjectProperty = matrixProject.getProperty(DiskUsageProperty.class);
         assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, freeStyleProjectProperty.getAllDiskUsageOfBuild(1));
         assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, matrixProjectProperty.getAllDiskUsageOfBuild(1));
         assertEquals("BuildDiskUsageAction for build 2 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild2TotalSize, matrixProjectProperty.getAllDiskUsageOfBuild(2));
