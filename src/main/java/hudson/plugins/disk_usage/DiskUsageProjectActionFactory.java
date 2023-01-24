@@ -52,7 +52,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
         private boolean calculationWorkspace = true;
 
-        private boolean checkWorkspaceOnSlave = false;
+        private boolean checkWorkspaceOnSlave;
 
         private String email;
 
@@ -66,12 +66,12 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
         private boolean showFreeSpaceForJobDirectory = true;
 
-        private List<String> excludedJobs = new ArrayList<String>();
+        private List<String> excludedJobs = new ArrayList<>();
 
-        private Long diskUsageBuilds = 0l;
-        private Long diskUsageJobsWithoutBuilds = 0l;
-        private Long diskUsageWorkspaces = 0l;
-        private Long diskUsageLockedBuilds = 0l;
+        private Long diskUsageBuilds = 0L;
+        private Long diskUsageJobsWithoutBuilds = 0L;
+        private Long diskUsageWorkspaces = 0L;
+        private Long diskUsageLockedBuilds = 0L;
 
         private boolean showGraph = true;
         private int historyLength = 183;

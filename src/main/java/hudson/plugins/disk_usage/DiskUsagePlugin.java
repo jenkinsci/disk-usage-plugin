@@ -29,11 +29,11 @@ import org.kohsuke.stapler.StaplerResponse;
 @Extension
 public class DiskUsagePlugin extends Plugin {
 
-    private Long diskUsageBuilds = 0l;
-    private Long diskUsageJobsWithoutBuilds = 0l;
-    private Long diskUsageWorkspaces = 0l;
-    private Long diskUsageLockedBuilds = 0l;
-    private Long diskUsageNonSlaveWorkspaces = 0l;
+    private Long diskUsageBuilds = 0L;
+    private Long diskUsageJobsWithoutBuilds = 0L;
+    private Long diskUsageWorkspaces = 0L;
+    private Long diskUsageLockedBuilds = 0L;
+    private Long diskUsageNonSlaveWorkspaces = 0L;
 
     public DiskUsagePlugin() {
     }
@@ -132,8 +132,7 @@ public class DiskUsagePlugin extends Plugin {
      * @return DiskUsage for given project (shortcut for the view). Never null.
      */
     public ProjectDiskUsageAction getDiskUsage(Job project) {
-        ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
-        return action;
+        return project.getAction(ProjectDiskUsageAction.class);
     }
 
     public String getDiskUsageInString(Long size) {

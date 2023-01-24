@@ -43,7 +43,7 @@ public class JobDiskUsageCalculationThreadTest {
     }
 
     private List<File> readFileList(File file) throws FileNotFoundException, IOException {
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
         String path = file.getParentFile().getAbsolutePath();
         BufferedReader content = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         String line = content.readLine();
@@ -55,7 +55,7 @@ public class JobDiskUsageCalculationThreadTest {
     }
 
     private Long getSize(List<File> files) {
-        Long length = 0l;
+        Long length = 0L;
         for(File file: files) {
             length += file.length();
         }
@@ -97,7 +97,7 @@ public class JobDiskUsageCalculationThreadTest {
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Map<String, Long> matrixConfigurationsSize = new TreeMap<String, Long>();
+        Map<String, Long> matrixConfigurationsSize = new TreeMap<>();
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
         // we need all build information are loaded before counting
@@ -168,7 +168,7 @@ public class JobDiskUsageCalculationThreadTest {
         }
         FreeStyleProject exludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
         FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "incudedJob");
-        List<String> excludes = new ArrayList<String>();
+        List<String> excludes = new ArrayList<>();
         excludes.add(exludedJob.getName());
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         calculation.execute(TaskListener.NULL);

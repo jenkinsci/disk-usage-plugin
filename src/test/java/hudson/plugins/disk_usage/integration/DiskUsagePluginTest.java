@@ -32,15 +32,15 @@ public class DiskUsagePluginTest {
         FreeStyleBuild build1 = project.createExecutable();
         FreeStyleBuild build2 = project.createExecutable();
         FreeStyleBuild build3 = project.createExecutable();
-        Long sizeofBuild1 = 7546l;
-        Long sizeofBuild2 = 6800l;
-        Long sizeofBuild3 = 14032l;
+        Long sizeofBuild1 = 7546L;
+        Long sizeofBuild2 = 6800L;
+        Long sizeofBuild3 = 14032L;
         DiskUsageTestUtil.getBuildDiskUsageAction(build1).setDiskUsage(sizeofBuild1);
         DiskUsageTestUtil.getBuildDiskUsageAction(build2).setDiskUsage(sizeofBuild2);
         DiskUsageTestUtil.getBuildDiskUsageAction(build3).setDiskUsage(sizeofBuild3);
         DiskUsagePlugin plugin = j.jenkins.getPlugin(DiskUsagePlugin.class);
-        Long workspaceUsage = 20345l;
-        Long jobUsage = 5980l;
+        Long workspaceUsage = 20345L;
+        Long jobUsage = 5980L;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property == null) {
             property = new DiskUsageProperty();

@@ -71,7 +71,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     }
 
     private List<File> readFileList(File file) throws FileNotFoundException, IOException {
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
         String path = file.getParentFile().getAbsolutePath();
         BufferedReader content = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         String line = content.readLine();
@@ -83,7 +83,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     }
 
     private Long getSize(List<File> files) {
-        Long length = 0l;
+        Long length = 0L;
         for(File file: files) {
 
             length += file.length();
@@ -259,7 +259,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testDoNotCalculateExcludedJobs() throws Exception {
-        List<String> excludes = new ArrayList<String>();
+        List<String> excludes = new ArrayList<>();
         excludes.add("excludedJob");
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
@@ -314,7 +314,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
             }
             Map<String, Long> workspacesInfo = getSlaveWorkspaceUsage().get(node.getNodeName());
             if(workspacesInfo == null) {
-                workspacesInfo = new ConcurrentHashMap<String, Long>();
+                workspacesInfo = new ConcurrentHashMap<>();
             }
             workspacesInfo.put(path, size);
             getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);

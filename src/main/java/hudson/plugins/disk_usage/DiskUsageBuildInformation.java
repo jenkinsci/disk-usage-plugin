@@ -15,6 +15,8 @@ import java.text.SimpleDateFormat;
  */
 public class DiskUsageBuildInformation implements Serializable, Comparable {
 
+    private static final long serialVersionUID = 1;
+
     private static final DateFormat LEGACY_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
     private String id;

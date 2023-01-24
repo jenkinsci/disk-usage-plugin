@@ -37,7 +37,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     public void execute(TaskListener listener) throws IOException, InterruptedException {
         if(!isCancelled() && startExecution()) {
             try {
-                List<Item> items = new ArrayList<Item>();
+                List<Item> items = new ArrayList<>();
                 ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
                 items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
 
@@ -85,8 +85,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
 
     public CronTab getCronTab() throws ANTLRException {
         String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
-        CronTab tab = new CronTab(cron);
-        return tab;
+        return new CronTab(cron);
     }
 
     @Override

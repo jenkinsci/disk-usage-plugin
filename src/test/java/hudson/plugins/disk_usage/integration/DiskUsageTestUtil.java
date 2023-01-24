@@ -32,7 +32,7 @@ import jenkins.model.Jenkins;
  */
 public class DiskUsageTestUtil {
     protected static List<File> readFileList(File file) throws FileNotFoundException, IOException {
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
         String path = file.getParentFile().getAbsolutePath();
         BufferedReader content = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         String line = content.readLine();
@@ -44,7 +44,7 @@ public class DiskUsageTestUtil {
     }
 
     protected static Long getSize(List<File> files) {
-        Long lenght = 0l;
+        Long lenght = 0L;
         for(File file: files) {
             lenght += file.length();
         }

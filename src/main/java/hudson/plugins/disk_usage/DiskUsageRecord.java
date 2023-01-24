@@ -13,11 +13,11 @@ import java.util.Date;
  */
 public class DiskUsageRecord {
     private Long date;
-    private Long diskUsageBuilds = 0l;
-    private Long diskUsageJobsWithoutBuilds = 0l;
-    private Long diskUsageWorkspaces = 0l;
-    private Long allSpace = 0l;
-    private Long diskUsageNonSlaveWorkspaces = 0l;
+    private Long diskUsageBuilds = 0L;
+    private Long diskUsageJobsWithoutBuilds = 0L;
+    private Long diskUsageWorkspaces = 0L;
+    private Long allSpace = 0L;
+    private Long diskUsageNonSlaveWorkspaces = 0L;
 
     public DiskUsageRecord(Long diskUsageBuilds, Long diskUsageWorkspaces, Long diskUsageJobsWithoutBuilds, Long allSpace, Long diskUsageNonSlaveWorkspaces) {
         this.diskUsageBuilds = diskUsageBuilds;

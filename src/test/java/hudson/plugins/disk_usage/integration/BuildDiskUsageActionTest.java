@@ -40,9 +40,9 @@ public class BuildDiskUsageActionTest {
         MatrixBuild matrixBuild1 = matrixProject.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild2 = matrixProject.getLastBuild();
-        Long sizeofBuild = 7546l;
-        Long sizeOfMatrixBuild1 = 6800l;
-        Long sizeOfMatrixBuild2 = 14032l;
+        Long sizeofBuild = 7546L;
+        Long sizeOfMatrixBuild1 = 6800L;
+        Long sizeOfMatrixBuild2 = 14032L;
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
@@ -78,7 +78,7 @@ public class BuildDiskUsageActionTest {
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild = matrixProject.getLastBuild();
         matrixProject.setAxes(list);
-        Long kiloBytes = 2048l;
+        Long kiloBytes = 2048L;
         int count = 0;
         for(MatrixConfiguration c: matrixProject.getItems()) {
             AbstractBuild configurationBuild = c.getBuildByNumber(1);
@@ -108,8 +108,8 @@ public class BuildDiskUsageActionTest {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         j.buildAndAssertSuccess(project);
         AbstractBuild build = project.getLastBuild();
-        Long bytes = 100l;
-        Long kiloBytes = 2048l;
+        Long bytes = 100L;
+        Long kiloBytes = 2048L;
         Long megaBytes = kiloBytes * 1024;
         Long gygaBytes = megaBytes * 1024;
         Long teraBytes = gygaBytes * 1024;

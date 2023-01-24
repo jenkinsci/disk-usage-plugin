@@ -53,7 +53,7 @@ public class BuildDiskUsageCalculationThreadTest {
     }
 
     private List<File> readFileList(File file) throws FileNotFoundException, IOException {
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
         String path = file.getParentFile().getAbsolutePath();
         BufferedReader content = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         String line = content.readLine();
@@ -65,7 +65,7 @@ public class BuildDiskUsageCalculationThreadTest {
     }
 
     private Long getSize(List<File> files) {
-        Long lenght = 0l;
+        Long lenght = 0L;
         for(File file: files) {
             lenght += file.length();
         }
@@ -78,8 +78,8 @@ public class BuildDiskUsageCalculationThreadTest {
         // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Map<AbstractBuild, Long> buildSizesProject1 = new TreeMap<AbstractBuild, Long>();
-        Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<AbstractBuild, Long>();
+        Map<AbstractBuild, Long> buildSizesProject1 = new TreeMap<>();
+        Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<>();
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
         for(AbstractBuild build: project.getBuilds()) {
@@ -113,8 +113,8 @@ public class BuildDiskUsageCalculationThreadTest {
         // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<AbstractBuild, Long>();
-        Map<String, Long> matrixConfigurationBuildsSize = new TreeMap<String, Long>();
+        Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<>();
+        Map<String, Long> matrixConfigurationBuildsSize = new TreeMap<>();
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
         AbstractBuild matrixBuild = project.getBuildByNumber(1);
@@ -216,7 +216,7 @@ public class BuildDiskUsageCalculationThreadTest {
     public void testDoNotCalculateExcludedJobs() throws Exception {
         FreeStyleProject exludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
         FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "incudedJob");
-        List<String> excludes = new ArrayList<String>();
+        List<String> excludes = new ArrayList<>();
         excludes.add(exludedJob.getName());
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         j.buildAndAssertSuccess(exludedJob);
