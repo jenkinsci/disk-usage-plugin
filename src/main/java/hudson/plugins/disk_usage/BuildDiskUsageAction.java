@@ -146,7 +146,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             return;
         }
         // backward compatibility
-            BuildDiskUsageAction action = null;
+        BuildDiskUsageAction action = null;
         for(Action a: build.getActions()) {
             if(a instanceof BuildDiskUsageAction) {
                 action = (BuildDiskUsageAction) a;

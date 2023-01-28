@@ -44,7 +44,6 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                 for(Object item: items) {
                     if(item instanceof AbstractProject) {
                         AbstractProject project = (AbstractProject) item;
-                        //  if (!project.isBuilding()) {
                         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                         if(property == null) {
                             property = new DiskUsageProperty();
@@ -65,7 +64,6 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                                 logger.log(Level.WARNING, "Error when recording disk usage for " + project.getName(), e);
                             }
                         }
-                        // } 
                     }
                 }
             } catch (Exception ex) {

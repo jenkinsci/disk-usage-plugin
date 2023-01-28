@@ -160,17 +160,6 @@ public class ProjectDiskUsage implements Saveable {
                 if(information.getSize() == 0l) {
                     information.setSize(buildOldDiskUsage);
                 }
-//                if(usage==null){
-//                    run.getActions().add(new BuildDiskUsageAction(build));
-//                    try {
-//                        build.save();
-//                    } catch (IOException ex) {
-//                        Logger.getLogger(ProjectDiskUsage.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
-                // else{
-                //  }
-                // DiskUsageUtil.addBuildDiskUsageAction(build);
             }
         }
         allBuildsLoaded = true;
@@ -195,11 +184,6 @@ public class ProjectDiskUsage implements Saveable {
         } catch (IOException e) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load " + file, e);
         }
-//        if(buildDiskUsage==null){
-//             //seems like it needs load old data
-//             loadOldData();
-//        }
-//        removeDeletedBuilds();
     }
 
     /**

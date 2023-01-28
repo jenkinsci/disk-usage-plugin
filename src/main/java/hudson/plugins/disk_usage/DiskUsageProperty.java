@@ -171,7 +171,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
     public Map<String, Map<String, Long>> getSlaveWorkspaceUsage() {
         if(diskUsage.slaveWorkspacesUsage == null) {
-            // diskUsage.slaveWorkspacesUsage = new ConcurrentHashMap<String,Map<String,Long>>();
             checkWorkspaces();
         }
         return diskUsage.slaveWorkspacesUsage;
@@ -398,19 +397,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
         return size;
     }
-
-//    public Object readResolve() {
-//        //ensure that build was not removed without calling listener - badly removed, or badly saved (without build.xml)
-//       
-//        for(DiskUsageBuildInformation information : diskUsage.getBuildDiskUsage(false)){
-//            File buildsDirectory = new File(owner.getRootDir(),"builds");
-//            File build = new File(buildsDirectory,information.toString());
-//            if(!build.exists()){
-//                diskUsage.removeBuild(information);
-//            }
-//        }
-//        return this;
-//     }
 
     public Long getDiskUsageWithoutBuilds() {
         if(diskUsage.diskUsageWithoutBuilds == null) {

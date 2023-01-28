@@ -187,7 +187,6 @@ public class ProjectDiskUsageActionTest {
             ItemListener.fireOnCreated(this);
         }
 
-        // @Override
         @Override
         public Class<ProjectTestBuild> getBuildClass() {
             return ProjectTestBuild.class;

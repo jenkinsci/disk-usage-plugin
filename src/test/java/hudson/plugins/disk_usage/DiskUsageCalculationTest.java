@@ -28,7 +28,6 @@ public class DiskUsageCalculationTest extends TestCase {
      */
     @Test
     public void testScheduledExecutionTime() throws Exception {
-        // Trigger.timer = new Timer("Jenkins cron thread"); // it should be enought there is no need to start Jenkins
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.add(Calendar.MINUTE, 10);
         int minute = calendar.get(Calendar.MINUTE);
@@ -117,7 +116,6 @@ public class DiskUsageCalculationTest extends TestCase {
      */
     @Test
     public void testReschedule() throws Exception {
-        // Trigger.timer = new Timer("Jenkins cron thread");
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.add(Calendar.MINUTE, 10);
         int minute = calendar.get(Calendar.MINUTE);
@@ -128,20 +126,13 @@ public class DiskUsageCalculationTest extends TestCase {
         minute = calendar.get(Calendar.MINUTE);
         calculation.setCron(minute + " * * * *");
         calculation.reschedule(); // should cancel this calculation and schedule new instance
-//        try{
-//            System.out.println("new schedule");
-//            calculation.doRun();
-//        }
-//        catch(IllegalArgumentException e){
-//                fail("Calculation should be canceled.");
-//        }
+
         assertEquals("A new calculation should be scheduled with a new scheduled time.", calendar.getTimeInMillis(), calculation.scheduledLastInstanceExecutionTime(), 60000);
 
     }
 
     @Test
     public void testTaskIsScheduledOnlyOneTimesPerMinute() throws Exception {
-        //  Trigger.timer = new Timer("Jenkins cron thread");
         //  attribut currentTask should have value calculation
         List<TestDiskUsageCalculation> scheduledInstances = new ArrayList<>();
         TestDiskUsageCalculation calculation = (TestDiskUsageCalculation) new TestDiskUsageCalculation("* * * * *", false).getNewInstance();
