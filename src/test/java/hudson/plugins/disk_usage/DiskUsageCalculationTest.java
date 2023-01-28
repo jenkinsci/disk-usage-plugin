@@ -4,22 +4,21 @@
  */
 package hudson.plugins.disk_usage;
 
-import hudson.triggers.Trigger;
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import jenkins.util.Timer;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 /**
  *
  * @author lucinka
  */
-public class DiskUsageCalculationTest extends TestCase {
+public class DiskUsageCalculationTest {
 
     /**
      * Depends on test testReschedule() - if testReshedule fails this test probably will fail too.
