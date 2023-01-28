@@ -1,4 +1,5 @@
 buildPlugin(
+  timeout: 30,
   useContainerAgent: true,
   configurations: [
     [platform: 'linux', jdk: 17],
