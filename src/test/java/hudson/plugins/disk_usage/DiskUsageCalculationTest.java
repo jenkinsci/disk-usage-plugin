@@ -6,6 +6,8 @@ package hudson.plugins.disk_usage;
 
 import static org.junit.Assert.assertEquals;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -136,21 +138,17 @@ public class DiskUsageCalculationTest {
         List<TestDiskUsageCalculation> scheduledInstances = new ArrayList<>();
         TestDiskUsageCalculation calculation = (TestDiskUsageCalculation) new TestDiskUsageCalculation("* * * * *", false).getNewInstance();
         TestDiskUsageCalculation.startLoadInstancesHistory(scheduledInstances);
-        GregorianCalendar calendar = new GregorianCalendar();
-        int seconds = calendar.get(Calendar.SECOND);
-        boolean firstLoop = true;
-        while((seconds > 55 && seconds < 59) || seconds == 0) { // have enought time for measure in current minute
-            if(firstLoop) {
-                System.out.println("Waiting for appropriate time ");
-                firstLoop = false;
-            } else {
-                System.out.println(".");
+
+        final var thread = new Thread(() -> {
+            try {
+                calculation.doRun();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
             }
-            Thread.sleep(1000);
-            seconds = calendar.get(Calendar.SECOND);
-        }
-        calculation.doRun();
-        Thread.sleep(2000);
+        });
+        thread.start();
+        Thread.sleep(Duration.of(1, ChronoUnit.MINUTES).toMillis());
+        thread.join();
         assertEquals("Method getRecurencePeriod should not able to schedule more than 1 task in 1 minute", 1, scheduledInstances.size());
         TestDiskUsageCalculation.stopLoadInstancesHistory();
     }
