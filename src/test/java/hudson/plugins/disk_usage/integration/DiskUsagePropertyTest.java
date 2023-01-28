@@ -65,7 +65,6 @@ public class DiskUsagePropertyTest {
         Long sizeOfProject = 7546L;
         Long sizeOfMatrixProject = 6800L;
         DiskUsageProperty projectProperty = project.getProperty(DiskUsageProperty.class);
-        // project.addProperty(projectProperty);
         projectProperty.setDiskUsageWithoutBuilds(sizeOfProject);
         DiskUsageProperty matrixProjectProperty = matrixProject.getProperty(DiskUsageProperty.class);
         matrixProjectProperty.setDiskUsageWithoutBuilds(sizeOfMatrixProject);
@@ -77,7 +76,6 @@ public class DiskUsagePropertyTest {
             c.addProperty(configurationProperty);
             configurationProperty.setDiskUsageWithoutBuilds(count * size1);
             matrixProjectTotalSize += count * size1;
-            // matrixProjectTotalSize += c.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
             count++;
         }
         assertEquals("DiskUsageProperty for FreeStyleProject " + project.getDisplayName() + " returns wrong value its size without builds and including sub-projects.", sizeOfProject, project.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds());
@@ -200,14 +198,12 @@ public class DiskUsagePropertyTest {
         Slave slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(), "SlaveWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
         Slave slave1 = j.createOnlineSlave();
         Slave slave2 = j.createOnlineSlave();
+
         File workspaceSlave1 = new File(slave3.getRemoteFS(), project.getName() + "/log");
-        // DiskUsageTestUtil.createFileWithContent(workspaceSlave1);
         File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
-        // DiskUsageTestUtil.createFileWithContent(workspaceSlave2);
         File customWorkspaceSlave1 = new File(j.jenkins.getRootDir(), "custom2/log");
-        // DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave1);
         File customWorkspaceSlave2 = new File(j.jenkins.getRootDir(), "custom1/log");
-        // DiskUsageTestUtil.createFileWithContent(customWorkspaceSlave2);
+
         project.setAssignedLabel(slave3.getSelfLabel());
         j.buildAndAssertSuccess(project);
         project.setCustomWorkspace(customWorkspaceSlave1.getParentFile().getAbsolutePath());

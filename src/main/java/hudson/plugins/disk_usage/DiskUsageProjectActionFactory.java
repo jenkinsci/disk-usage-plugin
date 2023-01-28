@@ -290,7 +290,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                 Logger.getLogger(DiskUsageProjectActionFactory.class.getName()).log(Level.SEVERE, null, ex);
                 return false;
             }
-            // workspaceTimeOut = form.getInt("countInterval");
+
             checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
             configureBuildsCalculation(form);
             configureJobsCalculation(form);

@@ -407,24 +407,6 @@ public class DiskUsageUtil {
         }
     }
 
-
-//    public static void addBuildDiskUsageAction(AbstractBuild build){
-//        BuildDiskUsageAction action = null;
-//        for(Action a: build.getActions()){
-//            if(a instanceof BuildDiskUsageAction){
-//                action = (BuildDiskUsageAction) a;
-//                break;
-//            }
-//        }
-//        if(action == null){
-//            build.addAction(new BuildDiskUsageAction(build));
-//            try {
-//                build.save();
-//            } catch (IOException ex) {
-//                Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
-//    }
     public static void calculateDiskUsageForBuild(String buildId, AbstractProject project)
         throws IOException {
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project)) {
@@ -434,21 +416,13 @@ public class DiskUsageUtil {
         // Build disk usage has to be always recalculated to be kept up-to-date 
         // - artifacts might be kept only for the last build and users sometimes delete files manually as well.
         long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.getInstance().getBuildDirFor(project), buildId), new ArrayList<>());
-        //        if (build instanceof MavenModuleSetBuild) {
-//            Collection<List<MavenBuild>> builds = ((MavenModuleSetBuild) build).getModuleBuilds().values();
-//            for (List<MavenBuild> mavenBuilds : builds) {
-//                for (MavenBuild mavenBuild : mavenBuilds) {
-//                    calculateDiskUsageForBuild(mavenBuild);
-//                }
-//            }
-//      }
+
         Collection<AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds().values();
         AbstractBuild build = null;
         for(AbstractBuild b: loadedBuilds) {
             if(b.getId().equals(buildId)) {
                 build = b;
                 break;
-                // addBuildDiskUsageAction(build);
             }
         }
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
