@@ -103,12 +103,6 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
             getLastTask().cancel();
         }
         Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
-
-        try {
-            Thread.sleep(60000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DiskUsageCalculation.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     public abstract CronTab getCronTab() throws ANTLRException;
