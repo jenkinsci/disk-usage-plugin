@@ -1,47 +1,42 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
- <j:if test="${it.getConfiguration().isCalculationBuildsEnabled()}">
-    <form action="recordBuildDiskUsage">
-       ${%Interval.Message('builds', it.getCountIntervalForBuilds())}<br/>
-       <input type="hidden" name="name" value="${h.name}"/>
-       <j:choose>
-         <j:when test="${it.getBuildsDiskUsageThread().isExecuting()}">
-           ${%Counting of build disk usage is executing now.} <br/>
-         </j:when>
-         <j:otherwise>
-           <f:submit value="${%Record Builds Disk Usage}" /><br/>
-         </j:otherwise>
-       </j:choose>
+  <j:if test="${it.getConfiguration().isCalculationBuildsEnabled()}">
+    <form action="recordBuildDiskUsage" class="jenkins-!-margin-bottom-5">
+      ${%Interval.Message('builds', it.getCountIntervalForBuilds())}
+      <j:choose>
+        <j:when test="${it.getBuildsDiskUsageThread().isExecuting()}">
+          ${%Counting of build disk usage is executing now.}
+        </j:when>
+        <j:otherwise>
+          <f:submit value="${%Record Builds Disk Usage}" />
+        </j:otherwise>
+      </j:choose>
     </form>
-    <br/>
-    </j:if>
- <j:if test="${it.getConfiguration().isCalculationJobsEnabled()}">
-    <form action="recordJobsDiskUsage">
-      ${%Interval.Message('jobs', it.getCountIntervalForJobs())}<br/>
-          <input type="hidden" name="name" value="${h.name}"/>
-          <j:choose>
-         <j:when test="${it.getJobsDiskUsageThread().isExecuting()}">
-           ${%Counting of job disk usage is executing now.} <br/>
-         </j:when>
-         <j:otherwise>
-           <f:submit value="${%Record Jobs Disk Usage}" /><br/>
-         </j:otherwise>
-       </j:choose>
-      </form>
-      <br/>
-      </j:if>
-     <j:if test="${it.getConfiguration().isCalculationWorkspaceEnabled()}">
-    <form action="recordWorkspaceDiskUsage">
-        ${%Interval.Message('workspaces', it.getCountIntervalForWorkspaces())}<br/>
-        <input type="hidden" name="name" value="${h.name}"/>
-         <j:choose>
-         <j:when test="${it.getWorkspaceDiskUsageThread().isExecuting()}">
-           ${%Counting of workspace disk usage is executing now.} <br/>
-         </j:when>
-         <j:otherwise>
-           <f:submit value="${%Record Workspaces Disk Usage}" /><br/>
-         </j:otherwise>
-       </j:choose>   
+  </j:if>
+  <j:if test="${it.getConfiguration().isCalculationJobsEnabled()}">
+    <form action="recordJobsDiskUsage" class="jenkins-!-margin-bottom-5">
+      ${%Interval.Message('jobs', it.getCountIntervalForJobs())}
+      <j:choose>
+        <j:when test="${it.getJobsDiskUsageThread().isExecuting()}">
+          ${%Counting of job disk usage is executing now.}
+        </j:when>
+        <j:otherwise>
+          <f:submit value="${%Record Jobs Disk Usage}" />
+        </j:otherwise>
+      </j:choose>
     </form>
-    </j:if>
+  </j:if>
+  <j:if test="${it.getConfiguration().isCalculationWorkspaceEnabled()}">
+    <form action="recordWorkspaceDiskUsage" class="jenkins-!-margin-bottom-5">
+      ${%Interval.Message('workspaces', it.getCountIntervalForWorkspaces())}
+      <j:choose>
+        <j:when test="${it.getWorkspaceDiskUsageThread().isExecuting()}">
+          ${%Counting of workspace disk usage is executing now.}
+        </j:when>
+        <j:otherwise>
+          <f:submit value="${%Record Workspaces Disk Usage}" />
+        </j:otherwise>
+      </j:choose>
+    </form>
+  </j:if>
 </j:jelly>
