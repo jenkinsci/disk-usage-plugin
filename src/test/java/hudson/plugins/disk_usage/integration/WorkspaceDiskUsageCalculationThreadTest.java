@@ -40,10 +40,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -91,15 +89,15 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         return length;
     }
 
-    private Slave createSlave(String name, String remoteFS) throws Exception {
-        DumbSlave slave = new DumbSlave(name, "dummy",
-        remoteFS, "2", Mode.NORMAL, "", j.createComputerLauncher(null),
-        RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
-        j.getInstance().addNode(slave);
-        while(slave.toComputer() == null || !slave.toComputer().isOnline()) {
+    private Slave createAgent(String name, String remoteFS) throws Exception {
+        DumbSlave agent = new DumbSlave(name, "dummy",
+                                        remoteFS, "2", Mode.NORMAL, "", j.createComputerLauncher(null),
+                                        RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
+        j.getInstance().addNode(agent);
+        while(agent.toComputer() == null || !agent.toComputer().isOnline()) {
             Thread.sleep(100);
         }
-        return slave;
+        return agent;
     }
 
     @Test
@@ -108,23 +106,23 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.getInstance().getExtensionList(RunListener.class).remove(listener);
-        Slave slave1 = createSlave("slave1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
-        Slave slave2 = createSlave("slave2", new File(j.getInstance().getRootDir(), "workspace2").getPath());
+        Slave agent1 = createAgent("agent1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
+        Slave agent2 = createAgent("agent2", new File(j.getInstance().getRootDir(), "workspace2").getPath());
         FreeStyleProject project1 = j.createFreeStyleProject("project1");
         FreeStyleProject project2 = j.createFreeStyleProject("project2");
-        project1.setAssignedNode(slave1);
-        project2.setAssignedNode(slave1);
+        project1.setAssignedNode(agent1);
+        project2.setAssignedNode(agent1);
         j.buildAndAssertSuccess(project1);
         j.buildAndAssertSuccess(project2);
-        project1.setAssignedNode(slave2);
+        project1.setAssignedNode(agent2);
         j.buildAndAssertSuccess(project1);
-        File f = new File(slave1.getWorkspaceFor(project1).getRemote());
-        File file = new File(slave1.getWorkspaceFor(project1).getRemote(), "fileList");
-        File file2 = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
-        Long size = getSize(readFileList(file)) + slave1.getWorkspaceFor(project1).length();
-        size += getSize(readFileList(file2)) + slave2.getWorkspaceFor(project1).length();
-        file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
-        Long size2 = getSize(readFileList(file)) + slave1.getWorkspaceFor(project2).length() + slave2.getWorkspaceFor(project2).length();
+        File f = new File(agent1.getWorkspaceFor(project1).getRemote());
+        File file = new File(agent1.getWorkspaceFor(project1).getRemote(), "fileList");
+        File file2 = new File(agent2.getWorkspaceFor(project1).getRemote(), "fileList");
+        Long size = getSize(readFileList(file)) + agent1.getWorkspaceFor(project1).length();
+        size += getSize(readFileList(file2)) + agent2.getWorkspaceFor(project1).length();
+        file = new File(agent1.getWorkspaceFor(project2).getRemote(), "fileList");
+        Long size2 = getSize(readFileList(file)) + agent1.getWorkspaceFor(project2).length() + agent2.getWorkspaceFor(project2).length();
         WorkspaceDiskUsageCalculationThread thread = new WorkspaceDiskUsageCalculationThread();
         if(thread.isExecuting()) {
             waitUntilThreadEnds(thread);
@@ -142,24 +140,24 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.getInstance().getExtensionList(RunListener.class).remove(listener);
         j.getInstance().setNumExecutors(0);
-        Slave slave1 = createSlave("slave1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
+        Slave agent1 = createAgent("agent1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
         AxisList axes = new AxisList();
         TextAxis axis1 = new TextAxis("axis", "axis1 axis2 axis3");
         axes.add(axis1);
         MatrixProject project1 = j.jenkins.createProject(MatrixProject.class, "project1");
         project1.setAxes(axes);
-        project1.setAssignedNode(slave1);
+        project1.setAssignedNode(agent1);
         j.buildAndAssertSuccess(project1);
         MatrixProject project2 = j.jenkins.createProject(MatrixProject.class, "project2");
         AxisList axes2 = new AxisList();
         TextAxis axis2 = new TextAxis("axis", "axis1 axis2");
         axes2.add(axis2);
         project2.setAxes(axes2);
-        project2.setAssignedNode(slave1);
+        project2.setAssignedNode(agent1);
         j.buildAndAssertSuccess(project2);
-        Slave slave2 = createSlave("slave2", new File(j.getInstance().getRootDir(), "workspace2").getPath());
-        slave1.toComputer().setTemporarilyOffline(true, null);
-        project1.setAssignedNode(slave2);
+        Slave agent2 = createAgent("agent2", new File(j.getInstance().getRootDir(), "workspace2").getPath());
+        agent1.toComputer().setTemporarilyOffline(true, null);
+        project1.setAssignedNode(agent2);
         j.buildAndAssertSuccess(project1);
         WorkspaceDiskUsageCalculationThread thread = new WorkspaceDiskUsageCalculationThread();
         if(thread.isExecuting()) {
@@ -167,36 +165,44 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         }
         thread.execute(TaskListener.NULL);
         waitUntilThreadEnds(thread);
-        slave1.toComputer().setTemporarilyOffline(false, null);
+        agent1.toComputer().setTemporarilyOffline(false, null);
         // project 1
-        File file = new File(slave1.getWorkspaceFor(project1).getRemote(), "fileList");
-        File fileAxis1 = new File(slave1.getWorkspaceFor(project1).getRemote() + "/axis/axis1", "fileList");
-        File fileAxis2 = new File(slave1.getWorkspaceFor(project1).getRemote() + "/axis/axis2", "fileList");
-        File fileAxis3 = new File(slave1.getWorkspaceFor(project1).getRemote() + "/axis/axis3", "fileList");
-        Long size = getSize(readFileList(file)) + slave1.getWorkspaceFor(project1).length();
-        Long sizeAxis1 = getSize(readFileList(fileAxis1)) + new File(slave1.getWorkspaceFor(project1).getRemote() + "/axis/axis1").length();
-        Long sizeAxis2 = getSize(readFileList(fileAxis2)) + new File(slave1.getWorkspaceFor(project1).getRemote() + "/axis/axis2").length();
-        Long sizeAxis3 = getSize(readFileList(fileAxis3)) + new File(slave1.getWorkspaceFor(project1).getRemote() + "/axis/axis3").length();
-        file = new File(slave2.getWorkspaceFor(project1).getRemote(), "fileList");
-        fileAxis1 = new File(slave2.getWorkspaceFor(project1).getRemote() + "/axis/axis1", "fileList");
-        fileAxis2 = new File(slave2.getWorkspaceFor(project1).getRemote() + "/axis/axis2", "fileList");
-        fileAxis3 = new File(slave2.getWorkspaceFor(project1).getRemote() + "/axis/axis3", "fileList");
-        size += getSize(readFileList(file)) + slave2.getWorkspaceFor(project1).length();
-        sizeAxis1 += getSize(readFileList(fileAxis1)) + new File(slave2.getWorkspaceFor(project1).getRemote() + "/axis/axis1").length();
-        sizeAxis2 += getSize(readFileList(fileAxis2)) + new File(slave2.getWorkspaceFor(project1).getRemote() + "/axis/axis2").length();
-        sizeAxis3 += getSize(readFileList(fileAxis3)) + new File(slave2.getWorkspaceFor(project1).getRemote() + "/axis/axis3").length();
+        File file = new File(agent1.getWorkspaceFor(project1).getRemote(), "fileList");
+        File fileAxis1 = new File(agent1.getWorkspaceFor(project1).getRemote() + "/axis/axis1", "fileList");
+        File fileAxis2 = new File(agent1.getWorkspaceFor(project1).getRemote() + "/axis/axis2", "fileList");
+        File fileAxis3 = new File(agent1.getWorkspaceFor(project1).getRemote() + "/axis/axis3", "fileList");
+        Long size = getSize(readFileList(file)) + agent1.getWorkspaceFor(project1).length();
+        Long sizeAxis1 = getSize(readFileList(fileAxis1)) + new File(
+            agent1.getWorkspaceFor(project1).getRemote() + "/axis/axis1").length();
+        Long sizeAxis2 = getSize(readFileList(fileAxis2)) + new File(
+            agent1.getWorkspaceFor(project1).getRemote() + "/axis/axis2").length();
+        Long sizeAxis3 = getSize(readFileList(fileAxis3)) + new File(
+            agent1.getWorkspaceFor(project1).getRemote() + "/axis/axis3").length();
+        file = new File(agent2.getWorkspaceFor(project1).getRemote(), "fileList");
+        fileAxis1 = new File(agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis1", "fileList");
+        fileAxis2 = new File(agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis2", "fileList");
+        fileAxis3 = new File(agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis3", "fileList");
+        size += getSize(readFileList(file)) + agent2.getWorkspaceFor(project1).length();
+        sizeAxis1 += getSize(readFileList(fileAxis1)) + new File(
+            agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis1").length();
+        sizeAxis2 += getSize(readFileList(fileAxis2)) + new File(
+            agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis2").length();
+        sizeAxis3 += getSize(readFileList(fileAxis3)) + new File(
+            agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis3").length();
         assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         // configurations
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         // project 2
-        file = new File(slave1.getWorkspaceFor(project2).getRemote(), "fileList");
-        fileAxis1 = new File(slave1.getWorkspaceFor(project2).getRemote() + "/axis/axis1", "fileList");
-        fileAxis2 = new File(slave1.getWorkspaceFor(project2).getRemote() + "/axis/axis2", "fileList");
-        size = getSize(readFileList(file)) + slave1.getWorkspaceFor(project2).length();
-        sizeAxis1 = getSize(readFileList(fileAxis1)) + new File(slave1.getWorkspaceFor(project2).getRemote() + "/axis/axis1").length();
-        sizeAxis2 = getSize(readFileList(fileAxis2)) + new File(slave1.getWorkspaceFor(project2).getRemote() + "/axis/axis2").length();
+        file = new File(agent1.getWorkspaceFor(project2).getRemote(), "fileList");
+        fileAxis1 = new File(agent1.getWorkspaceFor(project2).getRemote() + "/axis/axis1", "fileList");
+        fileAxis2 = new File(agent1.getWorkspaceFor(project2).getRemote() + "/axis/axis2", "fileList");
+        size = getSize(readFileList(file)) + agent1.getWorkspaceFor(project2).length();
+        sizeAxis1 = getSize(readFileList(fileAxis1)) + new File(
+            agent1.getWorkspaceFor(project2).getRemote() + "/axis/axis1").length();
+        sizeAxis2 = getSize(readFileList(fileAxis2)) + new File(
+            agent1.getWorkspaceFor(project2).getRemote() + "/axis/axis2").length();
         assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
         // configurations
         assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project2.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
@@ -223,8 +229,8 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         FreeStyleProject project = j.getInstance().createProject(FreeStyleProject.class, "project1");
         TestDiskUsageProperty prop = new TestDiskUsageProperty();
         project.addProperty(prop);
-        Slave slave1 = createSlave("slave1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
-        prop.putSlaveWorkspace(slave1, slave1.getWorkspaceFor(project).getRemote());
+        Slave agent1 = createAgent("agent1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
+        prop.putAgentWorkspace(agent1, agent1.getWorkspaceFor(project).getRemote());
         Thread t = new Thread(testCalculation.getThreadName()){
 
             @Override
@@ -272,9 +278,9 @@ public class WorkspaceDiskUsageCalculationThreadTest {
             excludedJob.getBuildersList().add(new Shell("echo ahoj > log.log"));
             includedJob.getBuildersList().add(new Shell("echo ahoj > log.log"));
         }
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.getInstance().getRootDir(), "workspace1").getPath(), j.getInstance(), j.createComputerLauncher(null));
-        excludedJob.setAssignedLabel(slave1.getSelfLabel());
-        includedJob.setAssignedLabel(slave1.getSelfLabel());
+        Slave agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.getInstance().getRootDir(), "workspace1").getPath(), j.getInstance(), j.createComputerLauncher(null));
+        excludedJob.setAssignedLabel(agent1.getSelfLabel());
+        includedJob.setAssignedLabel(agent1.getSelfLabel());
         j.buildAndAssertSuccess(excludedJob);
         j.buildAndAssertSuccess(includedJob);
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
@@ -288,36 +294,36 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     @LocalData
     public void testDoNotCountSizeTheSameWorkspaceTwice() throws Exception {
         FreeStyleProject job = j.getInstance().createProject(FreeStyleProject.class, "project1");
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.getInstance().getRootDir(), "workspace1").getPath(), j.getInstance(), j.createComputerLauncher(null));
-        job.setAssignedLabel(slave1.getSelfLabel());
+        Slave agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.getInstance().getRootDir(), "workspace1").getPath(), j.getInstance(), j.createComputerLauncher(null));
+        job.setAssignedLabel(agent1.getSelfLabel());
         j.buildAndAssertSuccess(job);
         j.buildAndAssertSuccess(job);
         j.buildAndAssertSuccess(job);
-        File file = new File(slave1.getWorkspaceFor(job).getRemote(), "fileList");
-        Long size = getSize(readFileList(file)) + slave1.getWorkspaceFor(job).length();
+        File file = new File(agent1.getWorkspaceFor(job).getRemote(), "fileList");
+        Long size = getSize(readFileList(file)) + agent1.getWorkspaceFor(job).length();
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
-        assertFalse("Disk usage should be counted correctly even for one workspace.", size > job.getAction(ProjectDiskUsageAction.class).getAllSlaveWorkspaces());
-        assertEquals("Disk usage should be counted only one times for the same workspace.", size, job.getAction(ProjectDiskUsageAction.class).getAllSlaveWorkspaces(), 0);
+        assertFalse("Disk usage should be counted correctly even for one workspace.", size > job.getAction(ProjectDiskUsageAction.class).getAllAgentWorkspaces());
+        assertEquals("Disk usage should be counted only one times for the same workspace.", size, job.getAction(ProjectDiskUsageAction.class).getAllAgentWorkspaces(), 0);
     }
 
     @TestExtension
     public static class TestDiskUsageProperty extends DiskUsageProperty {
 
         @Override
-        public void putSlaveWorkspaceSize(Node node, String path, Long size) {
+        public void putAgentWorkspaceSize(Node node, String path, Long size) {
             LOGGER.fine("workspace size " + size);
             try {
                 Thread.sleep(10000); // make this operation longer
             } catch (InterruptedException ex) {
                 Logger.getLogger(WorkspaceDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
             }
-            Map<String, Long> workspacesInfo = getSlaveWorkspaceUsage().get(node.getNodeName());
+            Map<String, Long> workspacesInfo = getAgentWorkspaceUsage().get(node.getNodeName());
             if(workspacesInfo == null) {
                 workspacesInfo = new ConcurrentHashMap<>();
             }
             workspacesInfo.put(path, size);
-            getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
+            getAgentWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
             saveDiskUsage();
         }
     }

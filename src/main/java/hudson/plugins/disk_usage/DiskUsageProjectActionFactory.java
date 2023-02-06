@@ -151,11 +151,21 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
             return countIntervalWorkspace;
         }
 
+        @Deprecated(forRemoval = true)
         public boolean getCheckWorkspaceOnSlave() {
+            return getCheckWorkspaceOnAgent();
+        }
+
+        public boolean getCheckWorkspaceOnAgent() {
             return checkWorkspaceOnSlave;
         }
 
+        @Deprecated(forRemoval = true)
         public void setCheckWorkspaceOnSlave(boolean check) {
+            checkWorkspaceOnSlave = check;
+        }
+
+        public void setCheckWorkspaceOnAgent(boolean check) {
             checkWorkspaceOnSlave = check;
         }
 
@@ -291,7 +301,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                 return false;
             }
 
-            checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnSlave");
+            checkWorkspaceOnSlave = form.getBoolean("checkWorkspaceOnAgent");
             configureBuildsCalculation(form);
             configureJobsCalculation(form);
             configureWorkspacesCalculation(form);

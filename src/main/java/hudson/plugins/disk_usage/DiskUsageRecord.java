@@ -35,11 +35,21 @@ public class DiskUsageRecord {
         return diskUsageBuilds;
     }
 
+    @Deprecated(forRemoval = true)
     public Long getNonSlaveWorkspacesUsage() {
+        return getNonAgentWorkspacesUsage();
+    }
+
+    public Long getNonAgentWorkspacesUsage() {
         return diskUsageNonSlaveWorkspaces;
     }
 
+    @Deprecated(forRemoval = true)
     public Long getSlaveWorkspacesUsage() {
+        return getAgentWorkspacesUsage();
+    }
+
+    public Long getAgentWorkspacesUsage() {
         return diskUsageWorkspaces - diskUsageNonSlaveWorkspaces;
     }
 

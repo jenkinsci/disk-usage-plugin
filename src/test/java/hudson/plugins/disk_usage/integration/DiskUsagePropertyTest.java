@@ -5,7 +5,6 @@ import hudson.Functions;
 import hudson.tasks.BatchFile;
 import java.util.ConcurrentModificationException;
 import java.util.GregorianCalendar;
-import hudson.model.FreeStyleBuild;
 import hudson.util.XStream2;
 import hudson.model.AbstractBuild;
 import hudson.matrix.MatrixBuild;
@@ -87,12 +86,12 @@ public class DiskUsagePropertyTest {
         // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Slave slave1 = j.createOnlineSlave();
-        Slave slave2 = j.createOnlineSlave();
+        Slave agent1 = j.createOnlineSlave();
+        Slave agent2 = j.createOnlineSlave();
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
-        project.setAssignedLabel(slave1.getSelfLabel());
+        project.setAssignedLabel(agent1.getSelfLabel());
         j.buildAndAssertSuccess(project);
-        project.setAssignedLabel(slave2.getSelfLabel());
+        project.setAssignedLabel(agent2.getSelfLabel());
         j.buildAndAssertSuccess(project);
         project.getBuildByNumber(1).delete();
         DiskUsageProperty prop = project.getProperty(DiskUsageProperty.class);
@@ -101,26 +100,30 @@ public class DiskUsagePropertyTest {
             project.addProperty(prop);
         }
         prop.checkWorkspaces();
-        Set<String> nodes = prop.getSlaveWorkspaceUsage().keySet();
-        assertTrue("DiskUsage property should contains slave " + slave2.getDisplayName() + " in slaveWorkspaceUsage.", nodes.contains(slave2.getNodeName()));
-        assertFalse("DiskUsage property should not contains slave " + slave1.getDisplayName() + " in slaveWorkspaceUsage when detection of user workspace withour reference from project is not set.", nodes.contains(slave1.getNodeName()));
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnSlave(true);
+        Set<String> nodes = prop.getAgentWorkspaceUsage().keySet();
+        assertTrue("DiskUsage property should contains agent " + agent2.getDisplayName() + " in agentWorkspaceUsage.", nodes.contains(
+            agent2.getNodeName()));
+        assertFalse("DiskUsage property should not contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace withour reference from project is not set.", nodes.contains(
+            agent1.getNodeName()));
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnAgent(true);
         prop.checkWorkspaces();
-        assertTrue("DiskUsage property should contains slave " + slave2.getDisplayName() + " in slaveWorkspaceUsage.", nodes.contains(slave2.getNodeName()));
-        assertTrue("DiskUsage property should contains slave " + slave1.getDisplayName() + " in slaveWorkspaceUsage when detection of user workspace withour reference from project is set.", nodes.contains(slave1.getNodeName()));
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnSlave(false);
+        assertTrue("DiskUsage property should contains agent " + agent2.getDisplayName() + " in agentWorkspaceUsage.", nodes.contains(
+            agent2.getNodeName()));
+        assertTrue("DiskUsage property should contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace withour reference from project is set.", nodes.contains(
+            agent1.getNodeName()));
+        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnAgent(false);
     }
 
     @Test
     public void getWorkspaceSizeTest() throws Exception {
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Slave slave1 = DiskUsageTestUtil.createSlave("slave1", new File(j.jenkins.getRootDir(), "workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
-        Slave slave2 = DiskUsageTestUtil.createSlave("slave2", new File(j.jenkins.getRootDir(), "workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(), "workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave agent2 = DiskUsageTestUtil.createAgent("agent2", new File(j.jenkins.getRootDir(), "workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
-        project.setAssignedLabel(slave1.getSelfLabel());
+        project.setAssignedLabel(agent1.getSelfLabel());
         j.buildAndAssertSuccess(project);
-        project.setAssignedLabel(slave2.getSelfLabel());
+        project.setAssignedLabel(agent2.getSelfLabel());
         j.buildAndAssertSuccess(project);
         project.setCustomWorkspace(j.jenkins.getRootDir().getAbsolutePath() + "/project-custom-workspace");
         j.buildAndAssertSuccess(project);
@@ -131,36 +134,37 @@ public class DiskUsagePropertyTest {
         }
         prop.checkWorkspaces();
         Long workspaceSize = 7509L;
-        Map<String, Map<String, Long>> diskUsage = prop.getSlaveWorkspaceUsage();
+        Map<String, Map<String, Long>> diskUsage = prop.getAgentWorkspaceUsage();
         for(String name: diskUsage.keySet()) {
-            Map<String, Long> slaveInfo = diskUsage.get(name);
-            for(String path: slaveInfo.keySet()) {
-                slaveInfo.put(path, workspaceSize);
+            Map<String, Long> agentInfo = diskUsage.get(name);
+            for(String path: agentInfo.keySet()) {
+                agentInfo.put(path, workspaceSize);
             }
         }
-        assertEquals("DiskUsage workspaces which is configured as slave workspace is wrong.", workspaceSize * 2, prop.getWorkspaceSize(true), 0);
-        assertEquals("DiskUsage workspaces which is not configured as slave workspace is wrong.", workspaceSize, prop.getWorkspaceSize(false), 0);
+        assertEquals("DiskUsage workspaces which is configured as agent workspace is wrong.", workspaceSize * 2, prop.getWorkspaceSize(true), 0);
+        assertEquals("DiskUsage workspaces which is not configured as agent workspace is wrong.", workspaceSize, prop.getWorkspaceSize(false), 0);
     }
 
     @Test
-    public void testchcekWorkspacesIfSlaveIsDeleted() throws Exception {
+    public void testcheckWorkspacesIfAgentIsDeleted() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         DiskUsageProperty property = new DiskUsageProperty();
         project.addProperty(property);
-        Slave slave1 = j.createOnlineSlave();
-        Slave slave2 = j.createOnlineSlave();
-        slave1.getWorkspaceRoot().mkdirs();
-        slave2.getWorkspaceRoot().mkdirs();
+        Slave agent1 = j.createOnlineSlave();
+        Slave agent2 = j.createOnlineSlave();
+        agent1.getWorkspaceRoot().mkdirs();
+        agent2.getWorkspaceRoot().mkdirs();
         FilePath path = j.jenkins.getWorkspaceFor(project);
         path.mkdirs();
-        property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
-        property.putSlaveWorkspaceSize(slave1, slave1.getRemoteFS(), 5670l);
-        property.putSlaveWorkspaceSize(slave2, slave2.getRemoteFS(), 7987l);
-        j.jenkins.removeNode(slave2);
+        property.putAgentWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
+        property.putAgentWorkspaceSize(agent1, agent1.getRemoteFS(), 5670l);
+        property.putAgentWorkspaceSize(agent2, agent2.getRemoteFS(), 7987l);
+        j.jenkins.removeNode(agent2);
         property.checkWorkspaces();
-        assertFalse("Disk usage property should not contains slave which does not exist.", property.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
-        assertTrue("Disk usage property should contains slave1.", property.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
-        assertTrue("Disk usage property should contains jenkins master.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
+        assertFalse("Disk usage property should not contains agent which does not exist.", property.getAgentWorkspaceUsage().containsKey(
+            agent2.getNodeName()));
+        assertTrue("Disk usage property should contains agent1.", property.getAgentWorkspaceUsage().containsKey(agent1.getNodeName()));
+        assertTrue("Disk usage property should contains jenkins master.", property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
     }
 
     @Test
@@ -168,85 +172,86 @@ public class DiskUsagePropertyTest {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         DiskUsageProperty property = new DiskUsageProperty();
         project.addProperty(property);
-        Slave slave1 = j.createOnlineSlave();
-        Slave slave2 = j.createOnlineSlave();
-        slave1.getWorkspaceRoot().mkdirs();
-        slave2.getWorkspaceRoot().mkdirs();
+        Slave agent1 = j.createOnlineSlave();
+        Slave agent2 = j.createOnlineSlave();
+        agent1.getWorkspaceRoot().mkdirs();
+        agent2.getWorkspaceRoot().mkdirs();
         FilePath path = j.jenkins.getWorkspaceFor(project);
         path.mkdirs();
-        property.putSlaveWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
-        property.putSlaveWorkspaceSize(slave1, slave1.getRemoteFS() + "/project", 5670l);
-        property.putSlaveWorkspaceSize(slave2, slave2.getRemoteFS(), 7987l);
+        property.putAgentWorkspaceSize(j.jenkins, path.getRemote(), 10495l);
+        property.putAgentWorkspaceSize(agent1, agent1.getRemoteFS() + "/project", 5670l);
+        property.putAgentWorkspaceSize(agent2, agent2.getRemoteFS(), 7987l);
         property.checkWorkspaces();
-        assertFalse("Disk usage property should not contains slave which does not have any workspace for its project.", property.getSlaveWorkspaceUsage().containsKey(slave1.getNodeName()));
-        assertTrue("Disk usage property should contains slave2.", property.getSlaveWorkspaceUsage().containsKey(slave2.getNodeName()));
-        assertTrue("Disk usage property should contains jenkins master.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
+        assertFalse("Disk usage property should not contains agent which does not have any workspace for its project.", property.getAgentWorkspaceUsage().containsKey(
+            agent1.getNodeName()));
+        assertTrue("Disk usage property should contains agent2.", property.getAgentWorkspaceUsage().containsKey(agent2.getNodeName()));
+        assertTrue("Disk usage property should contains jenkins master.", property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
         path.delete();
         property.checkWorkspaces();
-        assertFalse("Disk usage property should contains jenkins master, because workspace for its project was deleted.", property.getSlaveWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
+        assertFalse("Disk usage property should contains jenkins master, because workspace for its project was deleted.", property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
 
     }
 
     @Test
-    public void testGetAllNonSlaveOrCustomWorkspaceSizeWithOnlySlaves() throws Exception {
+    public void testGetAllNonAgentOrCustomWorkspaceSizeWithOnlyAgents() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         if(Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo hello > log"));
         } else {
             project.getBuildersList().add(new Shell("echo hello > log"));
         }
-        Slave slave3 = DiskUsageTestUtil.createSlave("slave3", new File(j.jenkins.getRootDir(), "SlaveWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
-        Slave slave1 = j.createOnlineSlave();
-        Slave slave2 = j.createOnlineSlave();
+        Slave agent3 = DiskUsageTestUtil.createAgent("agent3", new File(j.jenkins.getRootDir(), "AgentWorkspace").getPath(), j.jenkins, j.createComputerLauncher(null));
+        Slave agent1 = j.createOnlineSlave();
+        Slave agent2 = j.createOnlineSlave();
 
-        File workspaceSlave1 = new File(slave3.getRemoteFS(), project.getName() + "/log");
-        File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
-        File customWorkspaceSlave1 = new File(j.jenkins.getRootDir(), "custom2/log");
-        File customWorkspaceSlave2 = new File(j.jenkins.getRootDir(), "custom1/log");
+        File workspaceAgent1 = new File(agent3.getRemoteFS(), project.getName() + "/log");
+        File workspaceAgent2 = new File(agent1.getRemoteFS(), project.getName() + "/log");
+        File customWorkspaceAgent1 = new File(j.jenkins.getRootDir(), "custom2/log");
+        File customWorkspaceAgent2 = new File(j.jenkins.getRootDir(), "custom1/log");
 
-        project.setAssignedLabel(slave3.getSelfLabel());
+        project.setAssignedLabel(agent3.getSelfLabel());
         j.buildAndAssertSuccess(project);
-        project.setCustomWorkspace(customWorkspaceSlave1.getParentFile().getAbsolutePath());
+        project.setCustomWorkspace(customWorkspaceAgent1.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
         project.setCustomWorkspace(null);
-        project.setAssignedLabel(slave2.getSelfLabel());
+        project.setAssignedLabel(agent2.getSelfLabel());
         j.buildAndAssertSuccess(project);
-        project.setCustomWorkspace(customWorkspaceSlave2.getParentFile().getAbsolutePath());
+        project.setCustomWorkspace(customWorkspaceAgent2.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
-        Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
-        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
-        // take one slave offline
-        slave1.toComputer().disconnect(new OfflineCause.ByCLI("test disconnection"));
-        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
+        Long customWorkspaceAgentSize = customWorkspaceAgent1.length() + customWorkspaceAgent2.length() + customWorkspaceAgent1.getParentFile().length() + customWorkspaceAgent2.getParentFile().length();
+        assertEquals("", customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0);
+        // take one agent offline
+        agent1.toComputer().disconnect(new OfflineCause.ByCLI("test disconnection"));
+        assertEquals("", customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0);
     }
 
     @Test
-    public void testGetAllNonSlaveOrCustomWorkspaceSizeWithMaster() throws Exception {
+    public void testGetAllNonAgentOrCustomWorkspaceSizeWithMaster() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         if(Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo hello > log"));
         } else {
             project.getBuildersList().add(new Shell("echo hello > log"));
         }
-        Slave slave1 = j.createOnlineSlave();
-        File workspaceSlave2 = new File(slave1.getRemoteFS(), project.getName() + "/log");
-        File customWorkspaceSlave1 = new File(j.jenkins.getRootDir(), "custom2/log");
-        File customWorkspaceSlave2 = new File(j.jenkins.getRootDir(), "custom1/log");
+        Slave agent1 = j.createOnlineSlave();
+        File workspaceAgent2 = new File(agent1.getRemoteFS(), project.getName() + "/log");
+        File customWorkspaceAgent1 = new File(j.jenkins.getRootDir(), "custom2/log");
+        File customWorkspaceAgent2 = new File(j.jenkins.getRootDir(), "custom1/log");
         j.jenkins.setNumExecutors(1);
         project.setAssignedLabel(j.jenkins.getSelfLabel());
         j.buildAndAssertSuccess(project);
-        project.setCustomWorkspace(customWorkspaceSlave1.getParentFile().getAbsolutePath());
+        project.setCustomWorkspace(customWorkspaceAgent1.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
         project.setCustomWorkspace(null);
-        project.setAssignedLabel(slave1.getSelfLabel());
+        project.setAssignedLabel(agent1.getSelfLabel());
         j.buildAndAssertSuccess(project);
-        project.setCustomWorkspace(customWorkspaceSlave2.getParentFile().getAbsolutePath());
+        project.setCustomWorkspace(customWorkspaceAgent2.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
-        Long customWorkspaceSlaveSize = customWorkspaceSlave1.length() + customWorkspaceSlave2.length() + customWorkspaceSlave1.getParentFile().length() + customWorkspaceSlave2.getParentFile().length();
-        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
-        // take one slave offline
+        Long customWorkspaceAgentSize = customWorkspaceAgent1.length() + customWorkspaceAgent2.length() + customWorkspaceAgent1.getParentFile().length() + customWorkspaceAgent2.getParentFile().length();
+        assertEquals("", customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0);
+        // take one agent offline
         j.jenkins.setNumExecutors(0);
-        assertEquals("", customWorkspaceSlaveSize, project.getProperty(DiskUsageProperty.class).getAllNonSlaveOrCustomWorkspaceSize(), 0);
+        assertEquals("", customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0);
     }
 
     @Test
@@ -275,7 +280,7 @@ public class DiskUsagePropertyTest {
         property.getDiskUsage().loadAllBuilds();
         assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
         assertEquals("Size of workspaces should be loaded from previous configuration.", 4096L, property.getAllWorkspaceSize(), 0);
-        assertTrue("Path of workspace shoudl be loaded form previous configuration.", property.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
+        assertTrue("Path of workspace shoudl be loaded form previous configuration.", property.getAgentWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
     }
 
     @Test
@@ -352,8 +357,8 @@ public class DiskUsagePropertyTest {
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         DiskUsageProperty property2 = (DiskUsageProperty) project2.getProperty(DiskUsageProperty.class);
         property2.getDiskUsage().loadAllBuilds();
-        assertTrue("Project should contains workspace with path {JENKINS_HOME}/jobs/project1/workspace", property.getSlaveWorkspaceUsage().get("").containsKey("${JENKINS_HOME}/jobs/project1/workspace"));
-        assertTrue("Project should contains workspace with path {JENKINS_HOME}/workspace", property2.getSlaveWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
+        assertTrue("Project should contains workspace with path {JENKINS_HOME}/jobs/project1/workspace", property.getAgentWorkspaceUsage().get("").containsKey("${JENKINS_HOME}/jobs/project1/workspace"));
+        assertTrue("Project should contains workspace with path {JENKINS_HOME}/workspace", property2.getAgentWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
 
         assertEquals("Builds should be loaded.", 2, project2._getRuns().getLoadedBuilds().size(), 0);
     }
