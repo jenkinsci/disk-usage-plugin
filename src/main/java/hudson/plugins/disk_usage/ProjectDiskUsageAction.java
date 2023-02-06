@@ -57,15 +57,25 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return property.getAllWorkspaceSize();
     }
 
+    @Deprecated(forRemoval = true)
     public Long getAllSlaveWorkspaces() {
-        return getAllDiskUsageWorkspace() - getAllCustomOrNonSlaveWorkspaces();
+        return getAllAgentWorkspaces();
     }
 
+    public Long getAllAgentWorkspaces() {
+        return getAllDiskUsageWorkspace() - getAllCustomOrNonAgentWorkspaces();
+    }
+
+    @Deprecated(forRemoval = true)
     public Long getAllCustomOrNonSlaveWorkspaces() {
+        return getAllCustomOrNonAgentWorkspaces();
+    }
+
+    public Long getAllCustomOrNonAgentWorkspaces() {
         Long diskUsage = 0L;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property != null) {
-            diskUsage += property.getAllNonSlaveOrCustomWorkspaceSize();
+            diskUsage += property.getAllNonAgentOrCustomWorkspaceSize();
         }
         if(project instanceof ItemGroup) {
             ItemGroup group = (ItemGroup) project;
@@ -74,7 +84,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
                     AbstractProject p = (AbstractProject) i;
                     DiskUsageProperty prop = (DiskUsageProperty) p.getProperty(DiskUsageProperty.class);
                     if(prop != null) {
-                        diskUsage += prop.getAllNonSlaveOrCustomWorkspaceSize();
+                        diskUsage += prop.getAllNonAgentOrCustomWorkspaceSize();
                     }
                 }
             }
@@ -288,7 +298,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         long maxValue = 0;
         long maxValueWorkspace = 0;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        maxValueWorkspace = Math.max(getAllCustomOrNonSlaveWorkspaces(), getAllSlaveWorkspaces());
+        maxValueWorkspace = Math.max(getAllCustomOrNonAgentWorkspaces(), getAllAgentWorkspaces());
         Long jobRootDirDiskUsage = getJobRootDirDiskUsage();
         maxValue = jobRootDirDiskUsage;
         // First iteration just to get scale of the y-axis
@@ -298,7 +308,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         for(int i = builds.size() - 1; i >= 0; i--) {
             DiskUsageBuildInformation build = builds.get(i);
             Long diskUsage = property.getDiskUsageOfBuild(build.getId());
-            usages.add(new Object[]{build.getNumber(), getJobRootDirDiskUsage(), diskUsage, getAllSlaveWorkspaces(), getAllCustomOrNonSlaveWorkspaces()});
+            usages.add(new Object[]{build.getNumber(), getJobRootDirDiskUsage(), diskUsage, getAllAgentWorkspaces(), getAllCustomOrNonAgentWorkspaces()});
             maxValue = Math.max(maxValue, diskUsage);
         }
 
@@ -317,9 +327,9 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
             dataset.addValue(((Long) usage[2]) / base,
                 Messages.DiskUsage_Graph_BuildDirectory(), label);
             dataset2.addValue(((Long) usage[3]) / workspaceBase,
-                Messages.DiskUsage_Graph_SlaveWorkspaces(), label);
+                Messages.DiskUsage_Graph_AgentWorkspaces(), label);
             dataset2.addValue(((Long) usage[4]) / workspaceBase,
-                Messages.DiskUsage_Graph_NonSlaveWorkspaces(), label);
+                Messages.DiskUsage_Graph_NonAgentWorkspaces(), label);
         }
         return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);
     }

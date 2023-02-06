@@ -94,13 +94,13 @@
          <f:entry title="${%Length of global disk usage history}">
           <input name="historyLength" value="${descriptor.getHistoryLength()}" />
          </f:entry>
-         <f:entry title="${%Time out for calculation of slave workspace in minutes}">
+         <f:entry title="${%Time out for calculation of agent workspace in minutes}">
           <input name="timeoutWorkspace" value="${descriptor.getTimeoutWorkspace()}" />
          </f:entry>
         <!-- </f:section>-->
         <!--  <f:section title="General settings">-->
-         <f:entry title="${%Control workspace from slave side too}">
-          <f:checkbox name="checkWorkspaceOnSlave" checked="${descriptor.getCheckWorkspaceOnSlave()}" />
+         <f:entry title="${%Control workspace from agent side too}">
+          <f:checkbox name="checkWorkspaceOnAgent" checked="${descriptor.getCheckWorkspaceOnAgent()}" />
           </f:entry>
           <f:entry title="${%Jobs excluded for disk usage calculation}">
             <f:textarea name="excludedJobs" value="${descriptor.getExcludedJobsInString()}" />

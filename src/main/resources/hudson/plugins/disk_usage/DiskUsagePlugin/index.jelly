@@ -27,7 +27,7 @@
       <li><b>${%Builds}:</b><st:nbsp/>${it.getDiskUsageInString(it.getCashedGlobalBuildsDiskUsage())}</li>
       <li><b>${%Locked builds}:</b><st:nbsp/>${it.getDiskUsageInString(it.getCashedGlobalLockedBuildsDiskUsage())}</li>
       <li><b>${%All workspace}:</b><st:nbsp/>${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())}</li>
-      <li><b>${%Not current workspace}:</b><st:nbsp/>${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}</li>
+      <li><b>${%Not current workspace}:</b><st:nbsp/>${it.getDiskUsageInString(it.getCashedNonAgentDiskUsageWorkspace())}</li>
     </ul>
 
     <!-- project table -->
@@ -64,7 +64,7 @@
         <th>${%Builds all}</th>
         <th>${%Builds locked}</th>
         <th>${%All workspace}</th>
-        <th>${%Not current slave workspace}</th>
+        <th>${%Not current agent workspace}</th>
       </thead>
       <tbody>
         <j:set var="buildsAll" value="0"/>
@@ -80,7 +80,7 @@
             <td data="${buildDiskUsage.get('all')}">${it.getDiskUsageInString(buildDiskUsage.get('all'))}</td>
             <td data="${buildDiskUsage.get('locked')}">${it.getDiskUsageInString(buildDiskUsage.get('locked'))}</td>
             <td data="${diskUsage.getAllDiskUsageWorkspace()}">${it.getDiskUsageInString(diskUsage.getAllDiskUsageWorkspace())}</td>
-            <td data="${diskUsage.getAllCustomOrNonSlaveWorkspaces()}">${it.getDiskUsageInString(diskUsage.getAllCustomOrNonSlaveWorkspaces())}</td>
+            <td data="${diskUsage.getAllCustomOrNonAgentWorkspaces()}">${it.getDiskUsageInString(diskUsage.getAllCustomOrNonAgentWorkspaces())}</td>
           </tr>
         </j:forEach>
       </tbody>
@@ -92,7 +92,7 @@
           <td data="${buildsAll}">${it.getDiskUsageInString(buildsAll)}</td>
           <td data="${buildsLocked}">${it.getDiskUsageInString(buildsLocked)}</td>
           <td data="${it.getCashedGlobalWorkspacesDiskUsage()}">${it.getDiskUsageInString(it.getCashedGlobalWorkspacesDiskUsage())}</td>
-          <td data="${it.getCashedNonSlaveDiskUsageWorkspace()}">${it.getDiskUsageInString(it.getCashedNonSlaveDiskUsageWorkspace())}</td>
+          <td data="${it.getCashedNonAgentDiskUsageWorkspace()}">${it.getDiskUsageInString(it.getCashedNonAgentDiskUsageWorkspace())}</td>
         </tr>
       </tfoot>
     </table>

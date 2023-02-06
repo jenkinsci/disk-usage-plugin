@@ -28,13 +28,13 @@
                     </tr>
                     <tr>
                         <td><l:icon class="icon-folder icon-sm" /></td>
-                        <td>${%Slave workspaces}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getAllSlaveWorkspaces())}</td>
+                        <td>${%Agent workspaces}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getAllAgentWorkspaces())}</td>
                     </tr>
                     <tr>
                         <td><l:icon class="icon-folder icon-sm" /></td>
-                        <td>${%Non-slave workspaces}</td>
-                        <td class="fileSize">${from.getSizeInString(from.getAllCustomOrNonSlaveWorkspaces())}</td>
+                        <td>${%Non-agent workspaces}</td>
+                        <td class="fileSize">${from.getSizeInString(from.getAllCustomOrNonAgentWorkspaces())}</td>
                     </tr>
                 </table>
             </t:summary>

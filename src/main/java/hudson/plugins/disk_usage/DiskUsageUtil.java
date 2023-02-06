@@ -8,7 +8,6 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Node;
@@ -17,10 +16,6 @@ import hudson.remoting.Callable;
 import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -39,7 +34,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import jenkins.model.Jenkins;
-import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 
 /**
@@ -188,13 +182,13 @@ public class DiskUsageUtil {
             builder.append("Workspaces of Job " + project.getDisplayName() + " have size " + size + ".");
             builder.append("\n");
             builder.append("List of workspaces:");
-            for(String slaveName: property.getSlaveWorkspaceUsage().keySet()) {
+            for(String agentName : property.getAgentWorkspaceUsage().keySet()) {
                 Long s = 0L;
-                for(Long l:property.getSlaveWorkspaceUsage().get(slaveName).values()) {
+                for(Long l:property.getAgentWorkspaceUsage().get(agentName).values()) {
                     s += l;
                 }
                 builder.append("\n");
-                builder.append("Slave " + slaveName + " has workspace of job " + project.getDisplayName() + " with size " + getSizeString(s));
+                builder.append("Agent " + agentName + " has workspace of job " + project.getDisplayName() + " with size " + getSizeString(s));
             }
             try {
                 sendEmail("Workspaces of Job " + project.getDisplayName() + " exceed size", builder.toString());
@@ -313,7 +307,7 @@ public class DiskUsageUtil {
                             p.addProperty(prop);
                         }
                         prop.checkWorkspaces();
-                        Map<String, Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
+                        Map<String, Long> paths = prop.getAgentWorkspaceUsage().get(node.getNodeName());
                         if(paths != null && !paths.isEmpty()) {
                             for(String path: paths.keySet()) {
                                 exceededFiles.add(new FilePath(node.getChannel(), path));
@@ -326,7 +320,7 @@ public class DiskUsageUtil {
                 Long startTimeOfWorkspaceCalculation = System.currentTimeMillis();
                 Long size = DiskUsageUtil.calculateWorkspaceDiskUsageForPath(build.getWorkspace(), exceededFiles);
                 listener.getLogger().println("Finished Calculation of disk usage of workspace in " + DiskUsageUtil.formatTimeInMilisec(System.currentTimeMillis() - startTimeOfWorkspaceCalculation));
-                property.putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
+                property.putAgentWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), size);
                 property.saveDiskUsage();
                 DiskUsageUtil.controlWorkspaceExceedSize(project);
                 property.saveDiskUsage();
@@ -483,7 +477,7 @@ public class DiskUsageUtil {
         }
 
         property.checkWorkspaces();
-        for(String nodeName: property.getSlaveWorkspaceUsage().keySet()) {
+        for(String nodeName: property.getAgentWorkspaceUsage().keySet()) {
             Node node = null;
             if(nodeName.isEmpty()) {
                 node = Jenkins.getInstance();
@@ -497,12 +491,12 @@ public class DiskUsageUtil {
             }
 
             if(node.toComputer() != null && node.toComputer().getChannel() != null) {
-                Iterator<String> iterator = property.getSlaveWorkspaceUsage().get(nodeName).keySet().iterator();
+                Iterator<String> iterator = property.getAgentWorkspaceUsage().get(nodeName).keySet().iterator();
                 while(iterator.hasNext()) {
                     String projectWorkspace = iterator.next();
                     FilePath workspace = new FilePath(node.toComputer().getChannel(), projectWorkspace);
                     if(workspace.exists()) {
-                        Long diskUsage = property.getSlaveWorkspaceUsage().get(node.getNodeName()).get(workspace.getRemote());
+                        Long diskUsage = property.getAgentWorkspaceUsage().get(node.getNodeName()).get(workspace.getRemote());
                         ArrayList<FilePath> exceededFiles = new ArrayList<>();
                         if(project instanceof ItemGroup) {
                             List<AbstractProject> projects = getAllProjects((ItemGroup) project);
@@ -513,7 +507,7 @@ public class DiskUsageUtil {
                                     p.addProperty(prop);
                                 }
                                 prop.checkWorkspaces();
-                                Map<String, Long> paths = prop.getSlaveWorkspaceUsage().get(node.getNodeName());
+                                Map<String, Long> paths = prop.getAgentWorkspaceUsage().get(node.getNodeName());
                                 if(paths != null && !paths.isEmpty()) {
                                     for(String path: paths.keySet()) {
                                         exceededFiles.add(new FilePath(node.getChannel(), path));
@@ -523,7 +517,7 @@ public class DiskUsageUtil {
                         }
                         diskUsage = calculateWorkspaceDiskUsageForPath(workspace, exceededFiles);
                         if(diskUsage != null && diskUsage > 0) {
-                            property.putSlaveWorkspaceSize(node, workspace.getRemote(), diskUsage);
+                            property.putAgentWorkspaceSize(node, workspace.getRemote(), diskUsage);
                         }
                         controlWorkspaceExceedSize(project);
                     }

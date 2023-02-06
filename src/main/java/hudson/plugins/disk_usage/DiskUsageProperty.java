@@ -13,7 +13,6 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +51,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
 
     public void remove(Node node, String path) {
-        Map<String, Long> workspacesInfo = getSlaveWorkspaceUsage().get(node.getNodeName());
+        Map<String, Long> workspacesInfo = getAgentWorkspaceUsage().get(node.getNodeName());
         workspacesInfo.remove(path);
         if(workspacesInfo.isEmpty()) {
-            getSlaveWorkspaceUsage().remove(node.getNodeName());
+            getAgentWorkspaceUsage().remove(node.getNodeName());
         }
         saveDiskUsage();
     }
@@ -157,38 +156,53 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         }
     }
 
+    @Deprecated(forRemoval = true)
     public void putSlaveWorkspace(Node node, String path) {
-        Map<String, Long> workspacesInfo = getSlaveWorkspaceUsage().get(node.getNodeName());
+        putAgentWorkspace(node, path);
+    }
+
+    public void putAgentWorkspace(Node node, String path) {
+        Map<String, Long> workspacesInfo = getAgentWorkspaceUsage().get(node.getNodeName());
         if(workspacesInfo == null) {
             workspacesInfo = new ConcurrentHashMap<>();
         }
         if(!workspacesInfo.containsKey(path)) {
             workspacesInfo.put(path, 0l);
         }
-        getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
+        getAgentWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
         saveDiskUsage();
     }
 
+    @Deprecated(forRemoval = true)
     public Map<String, Map<String, Long>> getSlaveWorkspaceUsage() {
+        return getAgentWorkspaceUsage();
+    }
+
+    public Map<String, Map<String, Long>> getAgentWorkspaceUsage() {
         if(diskUsage.slaveWorkspacesUsage == null) {
             checkWorkspaces();
         }
         return diskUsage.slaveWorkspacesUsage;
     }
 
+    @Deprecated(forRemoval = true)
     public void putSlaveWorkspaceSize(Node node, String path, Long size) {
-        Map<String, Long> workspacesInfo = getSlaveWorkspaceUsage().get(node.getNodeName());
+        putAgentWorkspaceSize(node, path, size);
+    }
+
+    public void putAgentWorkspaceSize(Node node, String path, Long size) {
+        Map<String, Long> workspacesInfo = getAgentWorkspaceUsage().get(node.getNodeName());
         if(workspacesInfo == null) {
             workspacesInfo = new ConcurrentHashMap<>();
         }
         workspacesInfo.put(path, size);
-        getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
+        getAgentWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
         saveDiskUsage();
     }
 
     public Long getWorkspaceSize(Boolean containdedInWorkspace) {
         Long size = 0L;
-        for(String nodeName: getSlaveWorkspaceUsage().keySet()) {
+        for(String nodeName: getAgentWorkspaceUsage().keySet()) {
             Node node = Jenkins.getInstance().getNode(nodeName);
             String workspacePath = null;
             if(node instanceof Jenkins) {
@@ -200,7 +214,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             if(workspacePath == null) {
                 continue;
             }
-            Map<String, Long> paths = getSlaveWorkspaceUsage().get(nodeName);
+            Map<String, Long> paths = getAgentWorkspaceUsage().get(nodeName);
             for(String path: paths.keySet()) {
                 if(containdedInWorkspace.equals(path.startsWith(workspacePath))) {
                     size += paths.get(path);
@@ -229,7 +243,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                         workspacesInfo.put(path.getRemote(), 0L);
                     }
                 }
-                getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
+                getAgentWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
             }
         }
     }
@@ -255,7 +269,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                             workspacesInfo.put(path.getRemote(), 0L);
                         }
                     }
-                    getSlaveWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
+                    getAgentWorkspaceUsage().put(node.getNodeName(), workspacesInfo);
                 }
             }
         }
@@ -273,14 +287,14 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             checkLoadedBuilds();
         }
         // only if it is wanted - can cost a quite long time to do it for all
-        if(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCheckWorkspaceOnSlave() && owner instanceof TopLevelItem) {
+        if(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCheckWorkspaceOnAgent() && owner instanceof TopLevelItem) {
             for(Node node: Jenkins.getInstance().getNodes()) {
                 if(node.toComputer() != null && node.toComputer().isOnline()) {
                     FilePath path = null;
                     try {
                         path = node.getWorkspaceFor((TopLevelItem) owner);
                         if(path != null && path.exists() && (diskUsage.slaveWorkspacesUsage.get(node.getNodeName()) == null || !diskUsage.slaveWorkspacesUsage.get(node.getNodeName()).containsKey(path.getRemote()))) {
-                            putSlaveWorkspace(node, path.getRemote());
+                            putAgentWorkspace(node, path.getRemote());
                         }
                     }
                     catch (Exception e) {
@@ -297,7 +311,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             if(node == null && nodeName.isEmpty()) {
                 node = Jenkins.getInstance();
             }
-            // delete name of slaves which do not exist
+            // delete name of agents which do not exist
             if(node == null) {// Jenkins master has empty name
                 iterator.remove();
             }
@@ -327,9 +341,14 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         saveDiskUsage();
     }
 
+    @Deprecated(forRemoval = true)
     public Long getAllNonSlaveOrCustomWorkspaceSize() {
+        return getAllNonAgentOrCustomWorkspaceSize();
+    }
+
+    public Long getAllNonAgentOrCustomWorkspaceSize() {
         Long size = 0L;
-        for(String nodeName: getSlaveWorkspaceUsage().keySet()) {
+        for(String nodeName: getAgentWorkspaceUsage().keySet()) {
             Node node = null;
             if(nodeName.isEmpty()) {
                 node = Jenkins.getInstance();
@@ -337,10 +356,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             else {
                 node = Jenkins.getInstance().getNode(nodeName);
             }
-            if(node == null) { // slave does not exist
+            if(node == null) { // agent does not exist
                 continue;
             }
-            Map<String, Long> paths = getSlaveWorkspaceUsage().get(nodeName);
+            Map<String, Long> paths = getAgentWorkspaceUsage().get(nodeName);
             for(String path: paths.keySet()) {
                 TopLevelItem item = null;
                 if(owner instanceof TopLevelItem) {
@@ -364,8 +383,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
     private boolean isContainedInWorkspace(TopLevelItem item, Node node, String path) {
         if(node instanceof Slave) {
-            Slave slave = (Slave) node;
-            return path.contains(slave.getRemoteFS());
+            Slave agent = (Slave) node;
+            return path.contains(agent.getRemoteFS());
         }
         else {
             if(node instanceof Jenkins) {
@@ -385,12 +404,12 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
     public Long getAllWorkspaceSize() {
         Long size = 0L;
-        for(String nodeName: getSlaveWorkspaceUsage().keySet()) {
-            Node slave = Jenkins.getInstance().getNode(nodeName);
-            if(slave == null && !nodeName.isEmpty() && !(slave instanceof Jenkins)) {// slave does not exist
+        for(String nodeName: getAgentWorkspaceUsage().keySet()) {
+            Node agent = Jenkins.getInstance().getNode(nodeName);
+            if(agent == null && !nodeName.isEmpty() && !(agent instanceof Jenkins)) {// agent does not exist
                 continue;
             }
-            Map<String, Long> paths = getSlaveWorkspaceUsage().get(nodeName);
+            Map<String, Long> paths = getAgentWorkspaceUsage().get(nodeName);
             for(String path: paths.keySet()) {
                 size += paths.get(path);
             }

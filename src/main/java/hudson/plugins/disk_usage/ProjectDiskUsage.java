@@ -42,7 +42,12 @@ public class ProjectDiskUsage implements Saveable {
     private boolean allBuildsLoaded;
 
 
+    @Deprecated(forRemoval = true)
     public Map<String, Map<String, Long>> getSlaveWorkspacesUsage() {
+        return getAgentWorkspacesUsage();
+    }
+
+    public Map<String, Map<String, Long>> getAgentWorkspacesUsage() {
         return Maps.newHashMap(slaveWorkspacesUsage);
     }
 
@@ -103,7 +108,12 @@ public class ProjectDiskUsage implements Saveable {
         return count;
     }
 
+    @Deprecated(forRemoval = true)
     public void putSlaveWorkspaceSize(Node node, String path, Long size) {
+        putAgentWorkspaceSize(node, path, size);
+    }
+
+    public void putAgentWorkspaceSize(Node node, String path, Long size) {
         Map<String, Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
         if(workspacesInfo == null) {
             workspacesInfo = new ConcurrentHashMap<>();
@@ -153,7 +163,7 @@ public class ProjectDiskUsage implements Saveable {
                     build.getActions().remove(toRemove);
                 }
                 if(build.getWorkspace() != null) {
-                    putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
+                    putAgentWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
                 }
                 DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
                 addBuildInformation(information, build);
@@ -224,7 +234,7 @@ public class ProjectDiskUsage implements Saveable {
         if(!containsBuildWithId(info.getId())) {
             buildDiskUsage.add(info);
             if(build != null && build.getWorkspace() != null) {
-                putSlaveWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
+                putAgentWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
             }
         }
     }

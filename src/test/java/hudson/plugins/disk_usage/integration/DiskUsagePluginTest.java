@@ -47,7 +47,7 @@ public class DiskUsagePluginTest {
             project.addProperty(property);
         }
         property.setDiskUsageWithoutBuilds(jobUsage);
-        property.putSlaveWorkspaceSize(j.jenkins, j.jenkins.getWorkspaceFor((TopLevelItem) project).getRemote(), workspaceUsage);
+        property.putAgentWorkspaceSize(j.jenkins, j.jenkins.getWorkspaceFor((TopLevelItem) project).getRemote(), workspaceUsage);
         plugin.refreshGlobalInformation();
         assertEquals("Global build diskUsage should be refreshed.", sizeofBuild1 + sizeofBuild2 + sizeofBuild3, plugin.getCashedGlobalBuildsDiskUsage(), 0);
         assertEquals("Global job diskUsage should be refreshed.", jobUsage, plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), 0);

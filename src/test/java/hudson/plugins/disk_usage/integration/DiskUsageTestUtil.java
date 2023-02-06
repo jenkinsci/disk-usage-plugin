@@ -51,15 +51,15 @@ public class DiskUsageTestUtil {
         return lenght;
     }
 
-    protected static Slave createSlave(String name, String remoteFS, Jenkins jenkins, ComputerLauncher launcher) throws Exception {
-        DumbSlave slave = new DumbSlave(name, "dummy",
-        remoteFS, "2", Mode.NORMAL, "", launcher,
-        RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
-        jenkins.addNode(slave);
-        while(slave.toComputer() == null || !slave.toComputer().isOnline()) {
+    protected static Slave createAgent(String name, String remoteFS, Jenkins jenkins, ComputerLauncher launcher) throws Exception {
+        DumbSlave agent = new DumbSlave(name, "dummy",
+                                        remoteFS, "2", Mode.NORMAL, "", launcher,
+                                        RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
+        jenkins.addNode(agent);
+        while(agent.toComputer() == null || !agent.toComputer().isOnline()) {
             Thread.sleep(100);
         }
-        return slave;
+        return agent;
     }
 
     protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild build) {
