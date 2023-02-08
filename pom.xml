@@ -27,10 +27,6 @@
     <tag>HEAD</tag>
   </scm>
 
-  <properties>
-    <java.level>11</java.level>
-  </properties>
-
   <dependencies>
     <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
