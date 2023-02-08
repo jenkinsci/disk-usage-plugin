@@ -185,12 +185,6 @@ public class ProjectDiskUsage implements Saveable {
         }
         try {
             file.unmarshal(this);
-            if(buildDiskUsage instanceof HashSet) {
-                // saved collection is not serialized in previous versions.
-                Set<DiskUsageBuildInformation> informations = new CopyOnWriteArraySet<>();
-                informations.addAll(buildDiskUsage);
-                buildDiskUsage = informations;
-            }
         } catch (IOException e) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load " + file, e);
         }

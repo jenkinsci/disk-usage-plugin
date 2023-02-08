@@ -1,5 +1,6 @@
 package hudson.plugins.disk_usage;
 
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -40,11 +41,11 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
     }
 
     public String getDisplayName() {
-        return Messages.DisplayName();
+        return Messages.displayName();
     }
 
     public String getUrlName() {
-        return Messages.UrlName();
+        return Messages.urlName();
     }
 
     public void setDiskUsage(Long size) throws IOException {
@@ -123,9 +124,12 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
             Node node = build.getBuiltOn();
             if(node != null && diskUsage.wsUsage != null && diskUsage.wsUsage > 0) {
                 DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-                AbstractProject project = build.getProject().getRootProject();
+                AbstractProject<?,?> project = build.getProject().getRootProject();
                 if(property != null && (project instanceof TopLevelItem)) {
-                    property.putAgentWorkspaceSize(node, node.getWorkspaceFor((TopLevelItem) project).getRemote(), diskUsage.wsUsage);
+                    final var workspaceFor = node.getWorkspaceFor((TopLevelItem) project);
+                    if (workspaceFor!=null){
+                        property.putAgentWorkspaceSize(node, workspaceFor.getRemote(), diskUsage.wsUsage);
+                    }
                 }
             }
             diskUsage = null;

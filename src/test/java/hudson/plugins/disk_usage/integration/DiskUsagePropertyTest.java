@@ -12,6 +12,7 @@ import hudson.model.TopLevelItem;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.annotation.Annotation;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRecipe;
 import hudson.XmlFile;
 import java.util.logging.Level;
@@ -529,7 +530,7 @@ public class DiskUsagePropertyTest {
         fail("Checking of thread safety caused Exception which is not connected with thread safety problem.");
     }
 
-    // JENKINS-29143
+    @Issue("JENKINS-29143")
     @Test
     public void testThreadSaveOperationUnderSetOfDiskUsageBuildInformation() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();

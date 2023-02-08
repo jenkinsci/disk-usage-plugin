@@ -43,11 +43,11 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     }
 
     public String getDisplayName() {
-        return Messages.DisplayName();
+        return Messages.displayName();
     }
 
     public String getUrlName() {
-        return Messages.UrlName();
+        return Messages.urlName();
     }
 
     public Long getDiskUsageWorkspace() {
@@ -230,42 +230,42 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         Long buildsDiskUsage = 0L;
         Long locked = 0L;
         Long notLoaded = 0L;
-        if(project != null) {
-            if(project instanceof ItemGroup) {
-                ItemGroup group = (ItemGroup) project;
-                Map<String, Long> sizes = getBuildsDiskUsageAllSubItems(group, older, yonger);
-                buildsDiskUsage += sizes.get("all");
-                locked += sizes.get("locked");
-                notLoaded += sizes.get("notLoaded");
+
+        if(project instanceof ItemGroup) {
+            ItemGroup group = (ItemGroup) project;
+            Map<String, Long> sizes = getBuildsDiskUsageAllSubItems(group, older, yonger);
+            buildsDiskUsage += sizes.get("all");
+            locked += sizes.get("locked");
+            notLoaded += sizes.get("notLoaded");
+        }
+        Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
+        for(DiskUsageBuildInformation information: informations) {
+            Date date = new Date(information.getTimestamp());
+            if(older != null && !date.before(older)) {
+                continue;
             }
-            Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
-            for(DiskUsageBuildInformation information: informations) {
-                Date date = new Date(information.getTimestamp());
-                if(older != null && !date.before(older)) {
-                    continue;
+            if(yonger != null && !date.after(yonger)) {
+                continue;
+            }
+            Long size = information.getSize();
+            buildsDiskUsage += size;
+            Collection<AbstractBuild> loadedBuilds = (Collection<AbstractBuild>) project._getRuns().getLoadedBuilds().values();
+            AbstractBuild build = null;
+            for(AbstractBuild b: loadedBuilds) {
+                if(b.getId().equals(information.getId())) {
+                    build = b;
                 }
-                if(yonger != null && !date.after(yonger)) {
-                    continue;
+            }
+            if(build != null) {
+                if(build.isKeepLog()) {
+                    locked += size;
                 }
-                Long size = information.getSize();
-                buildsDiskUsage += size;
-                Collection<AbstractBuild> loadedBuilds = (Collection<AbstractBuild>) project._getRuns().getLoadedBuilds().values();
-                AbstractBuild build = null;
-                for(AbstractBuild b: loadedBuilds) {
-                    if(b.getId().equals(information.getId())) {
-                        build = b;
-                    }
-                }
-                if(build != null) {
-                    if(build.isKeepLog()) {
-                        locked += size;
-                    }
-                }
-                else {
-                    notLoaded += size;
-                }
+            }
+            else {
+                notLoaded += size;
             }
         }
+
         diskUsage.put("all", buildsDiskUsage);
         diskUsage.put("locked", locked);
         diskUsage.put("notLoaded", notLoaded);

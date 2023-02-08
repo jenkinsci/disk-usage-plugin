@@ -27,7 +27,7 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
     }
 
     public String getDisplayName() {
-        return Messages.DisplayName();
+        return Messages.displayName();
     }
 
     public String getUrlName() {
@@ -36,7 +36,7 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
 
     @Override
     public String getDescription() {
-        return Messages.Description();
+        return Messages.description();
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {

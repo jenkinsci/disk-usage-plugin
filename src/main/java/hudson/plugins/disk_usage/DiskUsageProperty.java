@@ -298,7 +298,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                         }
                     }
                     catch (Exception e) {
-                        LOGGER.warning("Can not check if file " + path.getRemote() + " exists on node " + node.getNodeName());
+                        if (path != null) {
+                            LOGGER.warning("Can not check if file " + path.getRemote() + " exists on node " + node.getNodeName());
+                        }
                     }
                 }
             }
@@ -405,8 +407,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     public Long getAllWorkspaceSize() {
         Long size = 0L;
         for(String nodeName: getAgentWorkspaceUsage().keySet()) {
-            Node agent = Jenkins.getInstance().getNode(nodeName);
-            if(agent == null && !nodeName.isEmpty() && !(agent instanceof Jenkins)) {// agent does not exist
+            Node agent = Jenkins.get().getNode(nodeName);
+            if(agent == null && !nodeName.isEmpty()) {// agent does not exist
                 continue;
             }
             Map<String, Long> paths = getAgentWorkspaceUsage().get(nodeName);
@@ -507,7 +509,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
         @Override
         public String getDisplayName() {
-            return Messages.DisplayName();
+            return Messages.displayName();
         }
 
         public boolean showGraph() {
