@@ -18,6 +18,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import jenkins.model.Jenkins;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -302,8 +304,10 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         Long jobRootDirDiskUsage = getJobRootDirDiskUsage();
         maxValue = jobRootDirDiskUsage;
         // First iteration just to get scale of the y-axis
-        ArrayList<DiskUsageBuildInformation> builds = new ArrayList<>();
-        builds.addAll(property.getDiskUsageOfBuilds());
+        final var builds = property.getDiskUsageOfBuilds()
+                                   .stream()
+                                   .sorted((a, b) -> b.getNumber() - a.getNumber())
+                                   .collect(Collectors.toList());
         // do it in reverse order
         for(int i = builds.size() - 1; i >= 0; i--) {
             DiskUsageBuildInformation build = builds.get(i);
@@ -320,16 +324,12 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         double workspaceBase = Math.pow(1024, workspaceFloor);
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         DefaultCategoryDataset dataset2 = new DefaultCategoryDataset();
-        for(Object[] usage: usages) {
-            Integer label = (Integer) usage[0];
-            dataset.addValue(((Long) usage[1]) / base,
-                Messages.DiskUsage_Graph_JobDirectory(), label);
-            dataset.addValue(((Long) usage[2]) / base,
-                Messages.DiskUsage_Graph_BuildDirectory(), label);
-            dataset2.addValue(((Long) usage[3]) / workspaceBase,
-                Messages.DiskUsage_Graph_AgentWorkspaces(), label);
-            dataset2.addValue(((Long) usage[4]) / workspaceBase,
-                Messages.DiskUsage_Graph_NonAgentWorkspaces(), label);
+        for (Object[] usage : usages) {
+            String label = "#" + (Integer) usage[0];
+            dataset.addValue(((Long) usage[1]) / base, Messages.DiskUsage_Graph_JobDirectory(), label);
+            dataset.addValue(((Long) usage[2]) / base, Messages.DiskUsage_Graph_BuildDirectory(), label);
+            dataset2.addValue(((Long) usage[3]) / workspaceBase, Messages.DiskUsage_Graph_AgentWorkspaces(), label);
+            dataset2.addValue(((Long) usage[4]) / workspaceBase, Messages.DiskUsage_Graph_NonAgentWorkspaces(), label);
         }
         return new DiskUsageGraph(dataset, unit, dataset2, workspaceUnit);
     }
