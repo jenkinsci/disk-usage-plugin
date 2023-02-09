@@ -320,7 +320,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
             else {
                 // delete path which does not exists
-                if(node != null && node.toComputer() != null && node.getChannel() != null) {
+                if(node.toComputer() != null && node.getChannel() != null) {
                     Map<String, Long> workspaces = diskUsage.slaveWorkspacesUsage.get(nodeName);
                     Iterator<String> pathIterator = workspaces.keySet().iterator();
                     while(pathIterator.hasNext()) {
