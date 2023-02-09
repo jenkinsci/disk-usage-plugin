@@ -18,6 +18,7 @@
 - [JENKINS-64375 Disk Usage Plugin uses the deprecated "slave" terminology](https://github.com/jenkinsci/disk-usage-plugin/pull/67)
 - [Adds README.md](https://github.com/jenkinsci/disk-usage-plugin/pull/68)
 - [Improve readme](https://github.com/jenkinsci/disk-usage-plugin/pull/69)
+- [Removes deprecated maven property java.level](https://github.com/jenkinsci/disk-usage-plugin/pull/71)
 
 ### Release 0.28 (Oct 01, 2015)
 
