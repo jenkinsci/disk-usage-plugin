@@ -19,6 +19,7 @@
 - [Removes deprecated maven property java.level](https://github.com/jenkinsci/disk-usage-plugin/pull/71)
 - [Order builds by build number for graph show in project page](https://github.com/jenkinsci/disk-usage-plugin/pull/70)
 - [Removes unused DiskUsageRecord](https://github.com/jenkinsci/disk-usage-plugin/pull/72)
+- [Fix spotbugs issues](https://github.com/jenkinsci/disk-usage-plugin/pull/73)
 
 ### Release 0.28 (Oct 01, 2015)
 
