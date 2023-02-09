@@ -5,5 +5,5 @@ buildPlugin(
     [platform: 'linux', jdk: 17],
     [platform: 'windows', jdk: 11],
   ],
-  spotbugs: [ignoreQualityGate: true],
+  spotbugs: [ignoreQualityGate: true, ignoreFailedBuilds: false],
 )
