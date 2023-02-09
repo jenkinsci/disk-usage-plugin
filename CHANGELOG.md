@@ -2,8 +2,6 @@
 
 ### Upcoming changes
 
-### Release 0.29 (Coming soon)
-
 - [Upgrades latest parent pom 4.53 and to Jenkins 2.361](https://github.com/jenkinsci/disk-usage-plugin/pull/55)
 - [Openrewrite code cleanup](https://github.com/jenkinsci/disk-usage-plugin/pull/57)
 - [Clean code using openrewrite CommonStaticAnalysis recipe](https://github.com/jenkinsci/disk-usage-plugin/pull/58)
@@ -19,6 +17,8 @@
 - [Adds README.md](https://github.com/jenkinsci/disk-usage-plugin/pull/68)
 - [Improve readme](https://github.com/jenkinsci/disk-usage-plugin/pull/69)
 - [Removes deprecated maven property java.level](https://github.com/jenkinsci/disk-usage-plugin/pull/71)
+- [Order builds by build number for graph show in project page](https://github.com/jenkinsci/disk-usage-plugin/pull/70)
+- [Removes unused DiskUsageRecord](https://github.com/jenkinsci/disk-usage-plugin/pull/72)
 
 ### Release 0.28 (Oct 01, 2015)
 
