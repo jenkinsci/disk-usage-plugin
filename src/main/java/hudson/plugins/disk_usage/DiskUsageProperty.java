@@ -8,6 +8,7 @@ import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map.Entry;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -215,9 +216,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 continue;
             }
             Map<String, Long> paths = getAgentWorkspaceUsage().get(nodeName);
-            for(String path: paths.keySet()) {
-                if(containdedInWorkspace.equals(path.startsWith(workspacePath))) {
-                    size += paths.get(path);
+            for(Entry<String, Long> entry : paths.entrySet()) {
+                if(containdedInWorkspace.equals(entry.getKey().startsWith(workspacePath))) {
+                    size += entry.getValue();
                 }
             }
         }
@@ -297,8 +298,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                             putAgentWorkspace(node, path.getRemote());
                         }
                     }
-                    catch (Exception e) {
-                        LOGGER.warning("Can not check if file " + path.getRemote() + " exists on node " + node.getNodeName());
+                    catch (IOException|InterruptedException e) {
+                        if (path != null) {
+                            LOGGER.warning("Can not check if file " + path.getRemote() + " exists on node " + node.getNodeName());
+                        }
                     }
                 }
             }
@@ -317,7 +320,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
             else {
                 // delete path which does not exists
-                if(node != null && node.toComputer() != null && node.getChannel() != null) {
+                if(node.toComputer() != null && node.getChannel() != null) {
                     Map<String, Long> workspaces = diskUsage.slaveWorkspacesUsage.get(nodeName);
                     Iterator<String> pathIterator = workspaces.keySet().iterator();
                     while(pathIterator.hasNext()) {
@@ -360,7 +363,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                 continue;
             }
             Map<String, Long> paths = getAgentWorkspaceUsage().get(nodeName);
-            for(String path: paths.keySet()) {
+            for(Entry<String, Long> entry : paths.entrySet()) {
                 TopLevelItem item = null;
                 if(owner instanceof TopLevelItem) {
                     item = (TopLevelItem) owner;
@@ -369,8 +372,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                     item = (TopLevelItem) owner.getParent();
                 }
                 try {
-                    if(!isContainedInWorkspace(item, node, path)) {
-                        size += paths.get(path);
+                    if(!isContainedInWorkspace(item, node, entry.getKey())) {
+                        size += entry.getValue();
                     }
                 }
                 catch (Exception e) {
@@ -405,13 +408,13 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     public Long getAllWorkspaceSize() {
         Long size = 0L;
         for(String nodeName: getAgentWorkspaceUsage().keySet()) {
-            Node agent = Jenkins.getInstance().getNode(nodeName);
-            if(agent == null && !nodeName.isEmpty() && !(agent instanceof Jenkins)) {// agent does not exist
+            Node agent = Jenkins.get().getNode(nodeName);
+            if(agent == null && !nodeName.isEmpty()) {// agent does not exist
                 continue;
             }
             Map<String, Long> paths = getAgentWorkspaceUsage().get(nodeName);
-            for(String path: paths.keySet()) {
-                size += paths.get(path);
+            for(Entry<String, Long> entry : paths.entrySet()) {
+                size += entry.getValue();
             }
         }
         return size;
@@ -474,7 +477,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     }
 
     public void loadDiskUsage() {
-        AbstractProject job = (AbstractProject) owner;
         diskUsage.load();
         // ensure that build was not removed without calling listener - badly removed, or badly saved (without build.xml)
         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(false)) {
@@ -507,7 +509,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
 
         @Override
         public String getDisplayName() {
-            return Messages.DisplayName();
+            return Messages.displayName();
         }
 
         public boolean showGraph() {

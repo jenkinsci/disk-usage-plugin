@@ -326,7 +326,7 @@ public class DiskUsageUtil {
                 property.saveDiskUsage();
             }
         }
-        catch (Exception ex) {
+        catch (IOException | InterruptedException ex) {
             listener.getLogger().println("Disk usage plugin fails during calculation disk usage of this build.");
             Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin fails during build calculation disk space of job " + build.getParent().getDisplayName(), ex);
         }

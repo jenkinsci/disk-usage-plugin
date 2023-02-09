@@ -8,12 +8,13 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Objects;
 
 /**
  *
  * @author Lucie Votypkova
  */
-public class DiskUsageBuildInformation implements Serializable, Comparable {
+public class DiskUsageBuildInformation implements Serializable, Comparable<DiskUsageBuildInformation> {
 
     private static final long serialVersionUID = 1;
 
@@ -71,9 +72,15 @@ public class DiskUsageBuildInformation implements Serializable, Comparable {
         return false;
     }
 
-    public int compareTo(Object o) {
-        if(o instanceof DiskUsageBuildInformation) {
-            return id.compareTo(((DiskUsageBuildInformation) o).getId());
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
+    @Override
+    public int compareTo(DiskUsageBuildInformation o) {
+        if(o != null) {
+            return id.compareTo(o.getId());
         }
         throw new IllegalArgumentException("Can not compare with different type");
     }

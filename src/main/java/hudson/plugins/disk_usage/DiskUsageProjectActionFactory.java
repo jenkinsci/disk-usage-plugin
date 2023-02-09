@@ -280,7 +280,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
         @Override
         public String getDisplayName() {
-            return Messages.DisplayName();
+            return Messages.displayName();
         }
 
 
