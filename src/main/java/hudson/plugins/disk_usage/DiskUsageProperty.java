@@ -298,7 +298,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                             putAgentWorkspace(node, path.getRemote());
                         }
                     }
-                    catch (Exception e) {
+                    catch (IOException|InterruptedException e) {
                         if (path != null) {
                             LOGGER.warning("Can not check if file " + path.getRemote() + " exists on node " + node.getNodeName());
                         }
