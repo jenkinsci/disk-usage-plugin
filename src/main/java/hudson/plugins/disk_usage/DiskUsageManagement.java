@@ -4,6 +4,7 @@
  */
 package hudson.plugins.disk_usage;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.RootAction;
@@ -37,6 +38,12 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
     @Override
     public String getDescription() {
         return Messages.description();
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.STATUS;
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
