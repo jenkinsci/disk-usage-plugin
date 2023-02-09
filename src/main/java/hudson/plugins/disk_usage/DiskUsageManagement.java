@@ -40,7 +40,6 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
         res.sendRedirect(Jenkins.getInstance().getRootUrlFromRequest() + "plugin/disk-usage");
     }
 

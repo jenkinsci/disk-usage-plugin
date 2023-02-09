@@ -65,7 +65,6 @@ public class ProjectDiskUsage implements Saveable {
 
     public Set<DiskUsageBuildInformation> getBuildDiskUsage(boolean needAll) {
         Set<DiskUsageBuildInformation> information = new HashSet<>();
-        AbstractProject p = (AbstractProject) job;
         if(needAll && !allBuildsLoaded) {
             try {
                 loadAllBuilds();
