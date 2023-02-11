@@ -21,6 +21,7 @@
 - [Removes unused DiskUsageRecord](https://github.com/jenkinsci/disk-usage-plugin/pull/72)
 - [Fix spotbugs issues](https://github.com/jenkinsci/disk-usage-plugin/pull/73)
 - [Adds Status category to DiskUsageManagement](https://github.com/jenkinsci/disk-usage-plugin/pull/74)
+- [Upgrade from javax.mail to jakarta.mail](https://github.com/jenkinsci/disk-usage-plugin/pull/76)
 
 ### Release 0.28 (Oct 01, 2015)
 
