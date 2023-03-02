@@ -2,6 +2,11 @@ package hudson.plugins.disk_usage.integration;
 
 
 import hudson.Functions;
+import hudson.model.FreeStyleBuild;
+import hudson.model.Project;
+import hudson.plugins.promoted_builds.JobPropertyImpl;
+import hudson.plugins.promoted_builds.PromotionProcess;
+import hudson.plugins.promoted_builds.conditions.SelfPromotionCondition;
 import hudson.tasks.BatchFile;
 import java.util.ConcurrentModificationException;
 import java.util.GregorianCalendar;
@@ -51,6 +56,20 @@ public class DiskUsagePropertyTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    @Issue("JENKINS-40728")
+    @Test
+    public void testCalculationWorkspaceForItemInNonTopLeverGroupItem() throws Exception {
+        final var project = j.createFreeStyleProject("some-project");
+        JobPropertyImpl property = new JobPropertyImpl(project);
+        project.addProperty(property);
+        PromotionProcess process = property.addProcess("Simple-process");
+        process.conditions.add(new SelfPromotionCondition(true));
+        process.getBuildSteps().add(new Shell("echo hello > log.log"));
+        j.buildAndAssertSuccess(project);
+        DiskUsageProperty p = process.getProperty(DiskUsageProperty.class);
+        Thread.sleep(1000);
+        p.getAllNonSlaveOrCustomWorkspaceSize();
+    }
 
     @Test
     public void testGetAllDiskUsageWithoutBuilds() throws Exception {
