@@ -364,12 +364,14 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             }
             Map<String, Long> paths = getAgentWorkspaceUsage().get(nodeName);
             for(Entry<String, Long> entry : paths.entrySet()) {
-                TopLevelItem item = null;
+                Item item = null;
                 if(owner instanceof TopLevelItem) {
-                    item = (TopLevelItem) owner;
+                    item = owner;
                 }
                 else {
-                    item = (TopLevelItem) owner.getParent();
+                    if (owner.getParent() instanceof TopLevelItem){
+                        item = (TopLevelItem) owner.getParent();
+                    }
                 }
                 try {
                     if(!isContainedInWorkspace(item, node, entry.getKey())) {
@@ -384,24 +386,33 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         return size;
     }
 
-    private boolean isContainedInWorkspace(TopLevelItem item, Node node, String path) {
+    private boolean isContainedInWorkspace(Item item, Node node, String path) {
         if(node instanceof Slave) {
             Slave agent = (Slave) node;
             return path.contains(agent.getRemoteFS());
         }
         else {
-            if(node instanceof Jenkins) {
-                FilePath file = Jenkins.getInstance().getWorkspaceFor(item);
-                return path.contains(file.getRemote());
-            }
-            else {
-                try {
-                    return path.contains(node.getWorkspaceFor(item).getRemote());
+            if (item instanceof TopLevelItem){
+                TopLevelItem topLevelItem = (TopLevelItem) item;
+                if(node instanceof Jenkins) {
+                    FilePath file = Jenkins.getInstance().getWorkspaceFor(topLevelItem);
+                    if (file != null){
+                        return path.contains(file.getRemote());
+                    }
                 }
-                catch (Exception e) {
-                    return false;
+                else {
+                    try {
+                        final var file = node.getWorkspaceFor(topLevelItem);
+                        if (file != null){
+                            return path.contains(file.getRemote());
+                        }
+                    }
+                    catch (Exception e) {
+                        return false;
+                    }
                 }
             }
+            return false;
         }
     }
 
