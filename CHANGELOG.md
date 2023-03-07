@@ -23,6 +23,7 @@
 - [Adds Status category to DiskUsageManagement](https://github.com/jenkinsci/disk-usage-plugin/pull/74)
 - [Upgrade from javax.mail to jakarta.mail](https://github.com/jenkinsci/disk-usage-plugin/pull/76)
 - [Fixes class cast exception with promoted builds plugin](https://github.com/jenkinsci/disk-usage-plugin/pull/77)
+- [Removes deprecated fields from BuildDiskUsageAction](https://github.com/jenkinsci/disk-usage-plugin/pull/79)
 
 ### Release 0.28 (Oct 01, 2015)
 
