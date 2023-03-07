@@ -1,21 +1,15 @@
 package hudson.plugins.disk_usage;
 
-import hudson.FilePath;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.BuildBadgeAction;
-import hudson.model.ItemGroup;
-import hudson.model.Node;
-import hudson.model.ProminentProjectAction;
-import hudson.model.Run;
-import hudson.model.TopLevelItem;
 import java.io.IOException;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildBadgeAction;
+import hudson.model.ItemGroup;
+import hudson.model.ProminentProjectAction;
+import hudson.model.Run;
 import jenkins.model.RunAction2;
-import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -26,11 +20,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean(defaultVisibility = 1)
 public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction, RunAction2 {
 
-    @Deprecated
-    Long buildDiskUsage;
     AbstractBuild build;
-    @Deprecated
-    DiskUsage diskUsage;
 
     public BuildDiskUsageAction(AbstractBuild build) {
         this.build = build;
@@ -117,26 +107,6 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         return buildsDiskUsage;
     }
 
-    public Object readResolve() {
-        // for keeping backward compatibility
-        if(diskUsage != null) {
-            buildDiskUsage = diskUsage.buildUsage;
-            Node node = build.getBuiltOn();
-            if(node != null && diskUsage.wsUsage != null && diskUsage.wsUsage > 0) {
-                DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
-                AbstractProject<?,?> project = build.getProject().getRootProject();
-                if(property != null && (project instanceof TopLevelItem)) {
-                    final var workspaceFor = node.getWorkspaceFor((TopLevelItem) project);
-                    if (workspaceFor!=null){
-                        property.putAgentWorkspaceSize(node, workspaceFor.getRemote(), diskUsage.wsUsage);
-                    }
-                }
-            }
-            diskUsage = null;
-        }
-        return this;
-    }
-
     @Override
     public void onAttached(Run<?, ?> r) {
         // no action is needed
@@ -149,25 +119,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         if(property == null) {
             return;
         }
-        // backward compatibility
-        BuildDiskUsageAction action = null;
-        for(Action a: build.getActions()) {
-            if(a instanceof BuildDiskUsageAction) {
-                action = (BuildDiskUsageAction) a;
-                if(action.buildDiskUsage != null) {
-                    size = action.buildDiskUsage;
-                }
-            }
-        }
-        if(action != null) {
-            // remove old action, now it is added by transition action factory
-            build.getActions().remove(action);
-            try {
-                build.save();
-            } catch (IOException ex) {
-                Logger.getLogger(BuildDiskUsageAction.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+
         // Transient actions can be created even during deletion of job
         if(property.getDiskUsageBuildInformation(build.getNumber()) == null && build.getRootDir().exists()) {
             property.getDiskUsage().addBuildInformation(new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.getNumber(), size), build);

@@ -4,17 +4,6 @@
  */
 package hudson.plugins.disk_usage;
 
-import com.google.common.collect.Maps;
-import hudson.BulkChange;
-import hudson.XmlFile;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Job;
-import hudson.model.Node;
-import hudson.model.Run;
-import hudson.model.Saveable;
-import hudson.model.listeners.SaveableListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -26,6 +15,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.google.common.collect.Maps;
+import hudson.BulkChange;
+import hudson.XmlFile;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.Saveable;
+import hudson.model.listeners.SaveableListener;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 
@@ -149,26 +149,11 @@ public class ProjectDiskUsage implements Saveable {
                     continue;
                 }
                 AbstractBuild build = (AbstractBuild) run;
-                BuildDiskUsageAction toRemove = null;
-                long buildOldDiskUsage = 0L;
-                // if not present, add
-                for(Action action: build.getActions()) {
-                    if(action instanceof BuildDiskUsageAction) {
-                        toRemove = (BuildDiskUsageAction) action;
-                        buildOldDiskUsage = toRemove.buildDiskUsage;
-                    }
-                }
-                if(toRemove != null) {
-                    build.getActions().remove(toRemove);
-                }
                 if(build.getWorkspace() != null) {
                     putAgentWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
                 }
                 DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
                 addBuildInformation(information, build);
-                if(information.getSize() == 0l) {
-                    information.setSize(buildOldDiskUsage);
-                }
             }
         }
         allBuildsLoaded = true;
@@ -187,31 +172,6 @@ public class ProjectDiskUsage implements Saveable {
         } catch (IOException e) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to load " + file, e);
         }
-    }
-
-    /**
-     * IT is only for backward compatibility to load old data. It breaks lazy loading. 
-     * Should be used only one times - updating of plugin
-     * 
-     * @deprecated
-     * 
-     */
-    public void loadOldData() {
-        buildDiskUsage = new CopyOnWriteArraySet<>();
-        List<Run> list = job.getBuilds();
-        for(Run run: list) {
-            if(run instanceof AbstractBuild) {
-                AbstractBuild build = (AbstractBuild) run;
-                BuildDiskUsageAction usage = run.getAction(BuildDiskUsageAction.class);
-                DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
-                addBuildInformation(information, build);
-                if(usage != null) {
-                    information.setSize(usage.buildDiskUsage);
-                    run.getAllActions().remove(usage);
-                }
-            }
-        }
-        save();
     }
 
     public DiskUsageBuildInformation getDiskUsageBuildInformation(int number) {

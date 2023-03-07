@@ -275,20 +275,6 @@ public class DiskUsagePropertyTest {
     }
 
     @Test
-    @LocalData
-    public void testBackwadrCompatibility1() throws IOException {
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableBuildsDiskUsageCalculation();
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableJobsDiskUsageCalculation();
-        j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableWorkspacesDiskUsageCalculation();
-        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        property.getDiskUsage().loadAllBuilds();
-        assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
-        assertEquals("Size of build 2 should be loaded from previous configuration.", 23932L, property.getDiskUsageOfBuild(2), 0);
-    }
-
-
-    @Test
     @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml")
     @LocalData
     public void testBackwadrCompatibility2() throws IOException {
