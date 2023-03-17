@@ -1,22 +1,21 @@
 package hudson.plugins.disk_usage.integration;
 
-import hudson.XmlFile;
-import hudson.model.AbstractProject;
-import hudson.plugins.disk_usage.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
-import java.util.TreeMap;
-import java.util.Map;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.FreeStyleBuild;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.plugins.disk_usage.BuildDiskUsageCalculationThread;
+import hudson.plugins.disk_usage.DiskUsageBuildListener;
+import hudson.plugins.disk_usage.DiskUsageProjectActionFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,10 +24,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.*;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
@@ -65,7 +68,7 @@ public class BuildDiskUsageCalculationThreadTest {
     }
 
     private Long getSize(List<File> files) {
-        Long lenght = 0L;
+        long lenght = 0L;
         for(File file: files) {
             lenght += file.length();
         }
@@ -76,17 +79,17 @@ public class BuildDiskUsageCalculationThreadTest {
     @LocalData
     public void testExecute() throws IOException, InterruptedException {
         // turn off run listener
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Map<AbstractBuild, Long> buildSizesProject1 = new TreeMap<>();
-        Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<>();
+        Map<AbstractBuild<?,?>, Long> buildSizesProject1 = new TreeMap<>();
+        Map<AbstractBuild<?,?>, Long> buildSizesProject2 = new TreeMap<>();
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
-        for(AbstractBuild build: project.getBuilds()) {
+        for(AbstractBuild<?,?> build: project.getBuilds()) {
             File file = new File(build.getRootDir(), "fileList");
             buildSizesProject1.put(build, getSize(readFileList(file)) + build.getRootDir().length());
         }
-        for(AbstractBuild build: project2.getBuilds()) {
+        for(AbstractBuild<?,?> build: project2.getBuilds()) {
             File file = new File(build.getRootDir(), "fileList");
             buildSizesProject2.put(build, getSize(readFileList(file)) + build.getRootDir().length());
         }
@@ -96,11 +99,11 @@ public class BuildDiskUsageCalculationThreadTest {
         }
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        for(AbstractBuild build: buildSizesProject1.keySet()) {
+        for(AbstractBuild<?,?> build: buildSizesProject1.keySet()) {
             Long size = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject1.get(build), size, 0);
         }
-        for(AbstractBuild build: buildSizesProject2.keySet()) {
+        for(AbstractBuild<?,?> build: buildSizesProject2.keySet()) {
             Long size = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject2.get(build), size, 0);
         }
@@ -111,20 +114,20 @@ public class BuildDiskUsageCalculationThreadTest {
     @LocalData
     public void testExecuteMatrixProject() throws IOException, InterruptedException {
         // turn off run listener
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
-        Map<AbstractBuild, Long> buildSizesProject2 = new TreeMap<>();
+        Map<AbstractBuild<?,?>, Long> buildSizesProject2 = new TreeMap<>();
         Map<String, Long> matrixConfigurationBuildsSize = new TreeMap<>();
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         FreeStyleProject project2 = (FreeStyleProject) j.jenkins.getItem("project2");
-        AbstractBuild matrixBuild = project.getBuildByNumber(1);
-        Long matrixProjectBuildSize = getSize(readFileList(new File(matrixBuild.getRootDir(), "fileList"))) + matrixBuild.getRootDir().length();
-        for(AbstractBuild build: project2.getBuilds()) {
+        AbstractBuild<?,?> matrixBuild = project.getBuildByNumber(1);
+        long matrixProjectBuildSize = getSize(readFileList(new File(matrixBuild.getRootDir(), "fileList"))) + matrixBuild.getRootDir().length();
+        for(AbstractBuild<?,?> build: project2.getBuilds()) {
             File file = new File(build.getRootDir(), "fileList");
             buildSizesProject2.put(build, getSize(readFileList(file)) + build.getRootDir().length());
         }
         for(MatrixConfiguration c: project.getActiveConfigurations()) {
-            AbstractBuild build = c.getBuildByNumber(1);
+            AbstractBuild<?,?> build = c.getBuildByNumber(1);
             File file = new File(build.getRootDir(), "fileList");
             matrixConfigurationBuildsSize.put(c.getDisplayName(), getSize(readFileList(file)) + build.getRootDir().length());
         }
@@ -136,12 +139,12 @@ public class BuildDiskUsageCalculationThreadTest {
         waitUntilThreadEnds(calculation);
         Long size = DiskUsageTestUtil.getBuildDiskUsageAction(project.getBuildByNumber(1)).getDiskUsage();
         assertEquals("Build " + project.getBuildByNumber(1).getNumber() + " of project " + project.getDisplayName() + " has wrong build size.", matrixProjectBuildSize, size, 0);
-        for(AbstractBuild build: buildSizesProject2.keySet()) {
+        for(AbstractBuild<?,?> build: buildSizesProject2.keySet()) {
             Long sizeFreeStyle = DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage();
             assertEquals("Build " + build.getNumber() + " of project " + build.getProject().getDisplayName() + " has wrong build size.", buildSizesProject2.get(build), sizeFreeStyle, 0);
         }
         for(MatrixConfiguration conf: project.getActiveConfigurations()) {
-            AbstractBuild build = conf.getBuildByNumber(1);
+            AbstractBuild<?,?> build = conf.getBuildByNumber(1);
             assertEquals("Configuration " + conf.getDisplayName() + " has wrong build size for build 1.", matrixConfigurationBuildsSize.get(conf.getDisplayName()), DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage(), 0);
         }
 
@@ -170,9 +173,7 @@ public class BuildDiskUsageCalculationThreadTest {
             public void run() {
                 try {
                     testCalculation.execute(TaskListener.NULL);
-                } catch (IOException ex) {
-                    Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InterruptedException ex) {
+                } catch (IOException | InterruptedException ex) {
                     Logger.getLogger(JobDiskUsageCalculationThreadTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -184,7 +185,7 @@ public class BuildDiskUsageCalculationThreadTest {
         t.interrupt();
     }
 
-    public class TestFreeStyleProject extends FreeStyleProject {
+    public static class TestFreeStyleProject extends FreeStyleProject {
 
         public TestFreeStyleProject(ItemGroup group, String name) {
             super(group, name);
@@ -232,7 +233,7 @@ public class BuildDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testDoNotBreakLazyLoading() throws IOException, InterruptedException {
-        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
 
         // method isBuilding() is used for determining disk usage and its calling load some builds
         project.isBuilding();

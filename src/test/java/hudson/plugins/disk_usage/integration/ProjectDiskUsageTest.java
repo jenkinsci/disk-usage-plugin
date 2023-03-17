@@ -4,9 +4,12 @@
  */
 package hudson.plugins.disk_usage.integration;
 
-import hudson.plugins.disk_usage.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.AbstractProject;
 import hudson.plugins.disk_usage.DiskUsageBuildInformation;
+import hudson.plugins.disk_usage.DiskUsageProperty;
 import hudson.plugins.disk_usage.ProjectDiskUsageAction;
 import java.io.IOException;
 import java.util.Set;
@@ -14,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -29,7 +31,7 @@ public class ProjectDiskUsageTest {
     @Test
     @LocalData
     public void testAllInfoLoaded() throws IOException {
-        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         Set<DiskUsageBuildInformation> informations = project.getAction(ProjectDiskUsageAction.class).getBuildsInformation();
@@ -41,16 +43,17 @@ public class ProjectDiskUsageTest {
     @Test
     @LocalData
     public void testFirstLoad() throws IOException {
-        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
-        Set<DiskUsageBuildInformation> informations = ((DiskUsageProperty) project.getProperty(DiskUsageProperty.class)).getDiskUsage().getBuildDiskUsage(false);
+        AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
+        Set<DiskUsageBuildInformation> informations = project.getProperty(DiskUsageProperty.class)
+                                                             .getDiskUsage().getBuildDiskUsage(false);
         assertEquals("Set of DisUsageBuildInformation should not contain information about builds because they are not loaded.", 0, informations.size());
     }
 
     @Test
     @LocalData
     public void testLoadingAllBuildInformationFromPreviousVersion() {
-        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         assertEquals("Builds information should be loaded.", 8, property.getDiskUsage().getBuildDiskUsage(true).size(), 0);
     }
 }

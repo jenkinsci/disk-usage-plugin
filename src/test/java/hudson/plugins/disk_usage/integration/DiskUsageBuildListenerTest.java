@@ -4,18 +4,18 @@
  */
 package hudson.plugins.disk_usage.integration;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Functions;
+import hudson.model.FreeStyleProject;
+import hudson.plugins.disk_usage.DiskUsageProperty;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import java.io.File;
-import hudson.FilePath;
-import hudson.plugins.disk_usage.DiskUsageProperty;
-import hudson.model.AbstractProject;
-import org.junit.Test;
-import hudson.model.FreeStyleProject;
-import org.jvnet.hudson.test.JenkinsRule;
 import org.junit.Rule;
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  *

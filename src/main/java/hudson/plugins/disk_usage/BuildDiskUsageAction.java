@@ -1,14 +1,13 @@
 package hudson.plugins.disk_usage;
 
-import java.io.IOException;
-import java.util.Set;
-
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildBadgeAction;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
+import java.io.IOException;
+import java.util.Set;
 import jenkins.model.RunAction2;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -20,30 +19,33 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean(defaultVisibility = 1)
 public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeAction, RunAction2 {
 
-    AbstractBuild build;
+    AbstractBuild<?,?> build;
 
-    public BuildDiskUsageAction(AbstractBuild build) {
+    public BuildDiskUsageAction(AbstractBuild<?,?> build) {
         this.build = build;
     }
 
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.displayName();
     }
 
+    @Override
     public String getUrlName() {
         return Messages.urlName();
     }
 
     public void setDiskUsage(Long size) throws IOException {
-        AbstractProject project = build.getProject();
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        AbstractProject<?,?> project = build.getProject();
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property == null) {
             DiskUsageUtil.addProperty(project);
-            property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+            property = project.getProperty(DiskUsageProperty.class);
         }
         DiskUsageBuildInformation information = property.getDiskUsageBuildInformation(build.getId());
         if(information != null) {
@@ -59,20 +61,20 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
      * @return Disk usage of the build (included child builds)
      */
     public Long getDiskUsage() {
-        AbstractProject project = build.getProject();
-        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+        AbstractProject<?,?> project = build.getProject();
+        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         if(property == null) {
             DiskUsageUtil.addProperty(project);
-            property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+            property = project.getProperty(DiskUsageProperty.class);
         }
         return property.getDiskUsageOfBuild(build.getId());
     }
 
     public Long getAllDiskUsage() {
         Long buildsDiskUsage = getDiskUsage();
-        AbstractProject project = build.getProject();
+        AbstractProject<?,?> project = build.getProject();
         if(project instanceof ItemGroup) {
-            buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup) project);
+            buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup<?>) project);
         }
         return buildsDiskUsage;
     }
@@ -81,19 +83,19 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
         return DiskUsageUtil.getSizeString(getAllDiskUsage());
     }
 
-    private Long getBuildsDiskUsageAllSubItems(ItemGroup group) {
+    private Long getBuildsDiskUsageAllSubItems(ItemGroup<?> group) {
         Long buildsDiskUsage = 0L;
         for(Object item: group.getItems()) {
             if(item instanceof ItemGroup) {
-                buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup) item);
+                buildsDiskUsage += getBuildsDiskUsageAllSubItems((ItemGroup<?>) item);
             }
             else {
                 if(item instanceof AbstractProject) {
-                    AbstractProject project = (AbstractProject) item;
-                    DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                    AbstractProject<?,?> project = (AbstractProject<?,?>) item;
+                    DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
                     if(property == null) {
                         DiskUsageUtil.addProperty(project);
-                        property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                        property = project.getProperty(DiskUsageProperty.class);
                     }
                     Set<DiskUsageBuildInformation> informations = property.getDiskUsageOfBuilds();
                     for(DiskUsageBuildInformation information:  informations) {
@@ -114,7 +116,7 @@ public class BuildDiskUsageAction implements ProminentProjectAction, BuildBadgeA
 
     @Override
     public void onLoad(Run<?, ?> r) {
-        DiskUsageProperty property = (DiskUsageProperty) build.getProject().getProperty(DiskUsageProperty.class);
+        DiskUsageProperty property = build.getProject().getProperty(DiskUsageProperty.class);
         long size = 0L;
         if(property == null) {
             return;

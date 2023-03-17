@@ -21,7 +21,7 @@ public class DiskUsageItemListener extends ItemListener {
     @Override
     public void onDeleted(Item item) {
         if(item instanceof AbstractProject) {
-            DiskUsageProjectActionFactory.DESCRIPTOR.onDeleteJob((AbstractProject) item);
+            DiskUsageProjectActionFactory.DESCRIPTOR.onDeleteJob((AbstractProject<?,?>) item);
         }
     }
 
@@ -45,7 +45,7 @@ public class DiskUsageItemListener extends ItemListener {
 
     @Override
     public void onLoaded() {
-        for(Item item: Jenkins.getInstance().getItems()) {
+        for(Item item: Jenkins.get().getItems()) {
             DiskUsageUtil.addProperty(item);
         }
     }

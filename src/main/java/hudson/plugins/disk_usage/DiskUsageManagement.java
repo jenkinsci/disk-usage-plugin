@@ -23,14 +23,17 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
 
     public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace", "JobDirectory (without builds)"};
 
+    @Override
     public String getIconFileName() {
         return "/plugin/disk-usage/icons/disk-usage.svg";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.displayName();
     }
 
+    @Override
     public String getUrlName() {
         return "disk-usage";
     }
@@ -47,7 +50,7 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
-        res.sendRedirect(Jenkins.getInstance().getRootUrlFromRequest() + "plugin/disk-usage");
+        res.sendRedirect(Jenkins.get().getRootUrlFromRequest() + "plugin/disk-usage");
     }
 
 }

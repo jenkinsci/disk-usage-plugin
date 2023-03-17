@@ -9,6 +9,7 @@ import hudson.model.PeriodicWork;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import jenkins.model.Jenkins;
 
 /**
@@ -25,9 +26,9 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 
     @Override
     protected void doRun() throws Exception {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         plugin.refreshGlobalInformation();
-        File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
+        File jobsDir = new File(Jenkins.get().getRootDir(), "jobs");
         Long freeJobsDirSpace = jobsDir.getTotalSpace();
 
         DiskUsageProjectActionFactory.DESCRIPTOR.addHistory(new DiskUsageOvearallGraphGenerator.DiskUsageRecord(plugin.getCashedGlobalBuildsDiskUsage(), plugin.getGlobalAgentDiskUsageWorkspace(), plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), freeJobsDirSpace, plugin.getCashedNonAgentDiskUsageWorkspace()));
@@ -35,7 +36,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
     }
 
     public static class DiskUsageRecord extends DiskUsage {
-        private static SimpleDateFormat sdf = new SimpleDateFormat("d/M");
+        private static final SimpleDateFormat sdf = new SimpleDateFormat("d/M");
         Date date;
         private Long jobsWithoutBuildsUsage = 0L;
         private Long allSpace = 0L;
@@ -62,10 +63,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
         }
 
         public Long getNonAgentWorkspacesUsage() {
-            if(diskUsageNonAgentWorkspaces == null) {
-                return 0l;
-            }
-            return diskUsageNonAgentWorkspaces;
+            return Objects.requireNonNullElse(diskUsageNonAgentWorkspaces, 0L);
         }
 
         @Deprecated(forRemoval = true)
@@ -81,10 +79,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
         }
 
         public Long getBuildsDiskUsage() {
-            if(buildUsage == null) {
-                return 0l;
-            }
-            return buildUsage;
+            return Objects.requireNonNullElse(buildUsage, 0L);
         }
 
         public Long getJobsDiskUsage() {
@@ -96,14 +91,14 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
 
         public Long getAllSpace() {
             if(allSpace == null) {
-                return 0l;
+                return 0L;
             }
             return allSpace;
         }
 
         public Long getWorkspacesDiskUsage() {
             if(wsUsage == null) {
-                return 0l;
+                return 0L;
             }
             return wsUsage;
         }

@@ -7,6 +7,7 @@ import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.RunMap;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 
 
@@ -37,22 +37,22 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     public void execute(TaskListener listener) throws IOException, InterruptedException {
         if(!isCancelled() && startExecution()) {
             try {
-                List<Item> items = new ArrayList<>();
-                ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
-                items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
+                ItemGroup<? extends Item> itemGroup = Jenkins.get();
+                List<Item> items = new ArrayList<>(DiskUsageUtil.getAllProjects(itemGroup));
 
                 for(Object item: items) {
                     if(item instanceof AbstractProject) {
-                        AbstractProject project = (AbstractProject) item;
-                        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                        AbstractProject<?,?> project = (AbstractProject<?,?>) item;
+                        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
                         if(property == null) {
                             property = new DiskUsageProperty();
                             project.addProperty(property);
                         }
                         ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
                         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)) {
-                            Map<Integer, AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
-                            AbstractBuild build = loadedBuilds.get(information.getNumber());
+                            final RunMap<?> runMap = project._getRuns();
+                            Map<Integer, ?> loadedBuilds = runMap.getLoadedBuilds();
+                            AbstractBuild<?,?> build = (AbstractBuild<?, ?>) loadedBuilds.get(information.getNumber());
                             // do not calculat builds in progress
                             if(build != null && build.isBuilding()) {
                                 continue;
@@ -71,7 +71,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
             }
         }
         else {
-            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+            DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
             if(plugin.getConfiguration().isCalculationBuildsEnabled()) {
                 logger.log(Level.FINER, "Calculation of builds is already in progress.");
             }
@@ -81,8 +81,9 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
         }
     }
 
+    @Override
     public CronTab getCronTab() throws ANTLRException {
-        String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
+        String cron = Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
         return new CronTab(cron);
     }
 
@@ -104,7 +105,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     }
 
     private boolean startExecution() {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         if(!plugin.getConfiguration().isCalculationBuildsEnabled()) {
             return false;
         }

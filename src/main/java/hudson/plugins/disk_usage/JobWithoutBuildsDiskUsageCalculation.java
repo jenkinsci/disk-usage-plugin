@@ -35,16 +35,15 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
 
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         if(!isCancelled() && startExecution()) {
             try {
-                List<Item> items = new ArrayList<>();
-                ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
-                items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
+                ItemGroup<? extends Item> itemGroup = Jenkins.get();
+                List<Item> items = new ArrayList<>(DiskUsageUtil.getAllProjects(itemGroup));
 
                 for(Object item: items) {
                     if(item instanceof AbstractProject) {
-                        AbstractProject project = (AbstractProject) item;
+                        AbstractProject<?,?> project = (AbstractProject<?,?>) item;
                         // do not count building project
                         if(project.isBuilding()) {
                             continue;
@@ -88,7 +87,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
 
     @Override
     public CronTab getCronTab() throws ANTLRException {
-        String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForJobs();
+        String cron = Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForJobs();
         return new CronTab(cron);
     }
 
@@ -98,7 +97,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
     }
 
     private boolean startExecution() {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         if(!plugin.getConfiguration().isCalculationJobsEnabled()) {
             return false;
         }

@@ -1,7 +1,13 @@
 package hudson.plugins.disk_usage;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.AperiodicWork;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.TransientProjectActionFactory;
 import hudson.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +36,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
+    @Override
     public Descriptor<DiskUsageProjectActionFactory> getDescriptor() {
         return DESCRIPTOR;
     }
@@ -278,6 +285,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         }
 
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.displayName();
@@ -285,14 +293,14 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
 
         @Override
-        public DiskUsageProjectActionFactory newInstance(StaplerRequest req, JSONObject formData) {
+        public DiskUsageProjectActionFactory newInstance(StaplerRequest req, @NonNull JSONObject formData) {
             return new DiskUsageProjectActionFactory();
         }
 
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) {
-            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
+            Jenkins.get().checkPermission(Permission.CONFIGURE);
             JSONObject form;
             try {
                 form = req.getSubmittedForm();
@@ -335,14 +343,12 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
             }
         }
 
-        public void onDeleteJob(AbstractProject project) {
+        public void onDeleteJob(AbstractProject<?,?> project) {
             String name = project.getName();
-            if(excludedJobs.contains(name)) {
-                excludedJobs.remove(name);
-            }
+            excludedJobs.remove(name);
         }
 
-        public boolean isExcluded(AbstractProject project) {
+        public boolean isExcluded(AbstractProject<?,?> project) {
             return excludedJobs.contains(project.getName());
         }
 

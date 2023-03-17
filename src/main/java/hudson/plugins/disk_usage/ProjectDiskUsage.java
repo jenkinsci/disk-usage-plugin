@@ -4,6 +4,16 @@
  */
 package hudson.plugins.disk_usage;
 
+import com.google.common.collect.Maps;
+import hudson.BulkChange;
+import hudson.XmlFile;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.Saveable;
+import hudson.model.listeners.SaveableListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -15,17 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.google.common.collect.Maps;
-import hudson.BulkChange;
-import hudson.XmlFile;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Job;
-import hudson.model.Node;
-import hudson.model.Run;
-import hudson.model.Saveable;
-import hudson.model.listeners.SaveableListener;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 
@@ -197,7 +196,7 @@ public class ProjectDiskUsage implements Saveable {
         Iterator<DiskUsageBuildInformation> iterator = buildDiskUsage.iterator();
         while(iterator.hasNext()) {
             DiskUsageBuildInformation information = iterator.next();
-            File buildDir = new File(Jenkins.getInstance().getBuildDirFor(job), information.getId());
+            File buildDir = new File(Jenkins.get().getBuildDirFor(job), information.getId());
             if(!buildDir.exists()) {
                 buildDiskUsage.remove(information);
             }

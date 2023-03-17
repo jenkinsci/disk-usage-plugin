@@ -7,8 +7,6 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import hudson.model.Run;
-import hudson.model.TransientBuildActionFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

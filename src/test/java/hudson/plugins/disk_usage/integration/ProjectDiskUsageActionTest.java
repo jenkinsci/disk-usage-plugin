@@ -1,31 +1,32 @@
 package hudson.plugins.disk_usage.integration;
 
-import hudson.model.AbstractProject;
-import org.jvnet.hudson.test.recipes.LocalData;
-import hudson.plugins.disk_usage.*;
-import hudson.model.TopLevelItem;
-import hudson.model.Project;
-import hudson.model.Build;
-import hudson.model.TopLevelItemDescriptor;
-import java.util.Map;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Calendar;
-import java.io.File;
-import java.io.IOException;
-import hudson.model.ItemGroup;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Build;
 import hudson.model.FreeStyleProject;
+import hudson.model.ItemGroup;
+import hudson.model.Project;
+import hudson.model.TopLevelItem;
+import hudson.model.TopLevelItemDescriptor;
 import hudson.model.listeners.ItemListener;
+import hudson.plugins.disk_usage.ProjectDiskUsageAction;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Map;
+import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.junit.Rule;
-import static org.junit.Assert.*;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
@@ -47,7 +48,7 @@ public class ProjectDiskUsageActionTest {
         list.add(axis2);
         matrixProject.setAxes(list);
         j.buildAndAssertSuccess(project);
-        AbstractBuild build = project.getLastBuild();
+        AbstractBuild<?,?> build = project.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild1 = matrixProject.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
@@ -61,13 +62,13 @@ public class ProjectDiskUsageActionTest {
         long size1 = 5390;
         long size2 = 2390;
         int count = 1;
-        Long matrixBuild1TotalSize = sizeOfMatrixBuild1;
-        Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
+        long matrixBuild1TotalSize = sizeOfMatrixBuild1;
+        long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()) {
-            AbstractBuild configurationBuild = c.getBuildByNumber(1);
+            AbstractBuild<?,?> configurationBuild = c.getBuildByNumber(1);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
             matrixBuild1TotalSize += count * size1;
-            AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
+            AbstractBuild<?,?> configurationBuild2 = c.getBuildByNumber(2);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
             matrixBuild2TotalSize += count * size2;
             count++;
@@ -89,27 +90,27 @@ public class ProjectDiskUsageActionTest {
         list.add(axis2);
         matrixProject.setAxes(list);
         j.buildAndAssertSuccess(project);
-        AbstractBuild build = project.getLastBuild();
+        AbstractBuild<?,?> build = project.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild1 = matrixProject.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild2 = matrixProject.getLastBuild();
         Long sizeofBuild = 7546L;
         Long sizeOfMatrixBuild1 = 6800L;
-        Long sizeOfMatrixBuild2 = 14032L;
+        long sizeOfMatrixBuild2 = 14032L;
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
         long size1 = 5390;
         long size2 = 2390;
         int count = 1;
-        Long matrixBuild1TotalSize = sizeOfMatrixBuild1;
-        Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
+        long matrixBuild1TotalSize = sizeOfMatrixBuild1;
+        long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()) {
-            AbstractBuild configurationBuild = c.getBuildByNumber(1);
+            AbstractBuild<?,?> configurationBuild = c.getBuildByNumber(1);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
             matrixBuild1TotalSize += count * size1;
-            AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
+            AbstractBuild<?,?> configurationBuild2 = c.getBuildByNumber(2);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
             matrixBuild2TotalSize += count * size2;
             count++;
@@ -144,7 +145,7 @@ public class ProjectDiskUsageActionTest {
         Date olderThan5months = filterCalendar.getTime();
         filterCalendar.set(2013, 8, 19);
         Date olderThan3weeks = filterCalendar.getTime();
-        Long sizeofBuild1 = 7546L;
+        long sizeofBuild1 = 7546L;
         Long sizeofBuild2 = 9546L;
         Long sizeofBuild3 = 15546L;
         DiskUsageTestUtil.getBuildDiskUsageAction(build1).setDiskUsage(sizeofBuild1);
@@ -170,7 +171,7 @@ public class ProjectDiskUsageActionTest {
     @Test
     @LocalData
     public void testNotToBreakLazyLoading() throws IOException {
-        AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
+        AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         project.isBuilding();
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         assertTrue("This test does not have sense if there is loaded all builds", 8 > loadedBuilds);
@@ -206,6 +207,7 @@ public class ProjectDiskUsageActionTest {
             return build;
         }
 
+        @Override
         public TopLevelItemDescriptor getDescriptor() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -230,10 +232,6 @@ public class ProjectDiskUsageActionTest {
 
         public ProjectTestBuild(ProjectTest project, Calendar calendar) throws IOException {
             super(project, calendar);
-        }
-
-        public ProjectTestBuild(ProjectTest project, File buildDir) throws IOException {
-            super(project, buildDir);
         }
 
     }
