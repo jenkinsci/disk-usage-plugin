@@ -7,7 +7,6 @@ package hudson.plugins.disk_usage;
 import antlr.ANTLRException;
 import hudson.model.AsyncAperiodicWork;
 import hudson.scheduler.CronTab;
-import hudson.triggers.Trigger;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.concurrent.ScheduledExecutorService;
@@ -58,11 +57,9 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
 
     public long scheduledLastInstanceExecutionTime() {
         try {
-            CronTab tab = null;
             if(getLastTask() == null || getLastTask().isCancelled()) { // not scheduled
-                return 0l;
+                return 0L;
             }
-            tab = getLastTask().getCronTab();
             long time = getCronTab().ceil(new GregorianCalendar().getTimeInMillis()).getTimeInMillis();
             if(time < new GregorianCalendar().getTimeInMillis()) {
                 return 0;
@@ -115,7 +112,7 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis();
             if(nextExecution.getTimeInMillis() - now.getTimeInMillis() <= 60000) {
-                period = period + 60000l; // add one minute to not shedule it during one minute one than once
+                period = period + 60_000L; // add one minute to not shedule it during one minute one than once
             }
             return period;
         } catch (Exception ex) {

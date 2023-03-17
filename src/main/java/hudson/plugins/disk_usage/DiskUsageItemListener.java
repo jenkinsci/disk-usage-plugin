@@ -21,7 +21,7 @@ public class DiskUsageItemListener extends ItemListener {
     @Override
     public void onDeleted(Item item) {
         if(item instanceof AbstractProject) {
-            DiskUsageProjectActionFactory.DESCRIPTOR.onDeleteJob((AbstractProject) item);
+            DiskUsageProjectActionFactory.DESCRIPTOR.onDeleteJob((AbstractProject<?,?>) item);
         }
     }
 

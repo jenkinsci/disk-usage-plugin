@@ -3,13 +3,17 @@ package hudson.plugins.disk_usage.integration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import hudson.plugins.disk_usage.*;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.model.AperiodicWork;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.plugins.disk_usage.DiskUsageBuildListener;
+import hudson.plugins.disk_usage.DiskUsageProjectActionFactory;
+import hudson.plugins.disk_usage.DiskUsageProperty;
+import hudson.plugins.disk_usage.JobWithoutBuildsDiskUsageCalculation;
+import hudson.plugins.disk_usage.ProjectDiskUsageAction;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,7 +59,7 @@ public class JobDiskUsageCalculationThreadTest {
     }
 
     private Long getSize(List<File> files) {
-        Long length = 0L;
+        long length = 0L;
         for(File file: files) {
             length += file.length();
         }
@@ -66,7 +70,7 @@ public class JobDiskUsageCalculationThreadTest {
     @LocalData
     public void testExecute() throws IOException, InterruptedException {
         // turn off run listener
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
@@ -75,9 +79,9 @@ public class JobDiskUsageCalculationThreadTest {
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         File file = new File(project.getRootDir(), "fileList");
-        Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
+        long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
         file = new File(project2.getRootDir(), "fileList");
-        Long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
+        long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
         projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         project2Size += project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
@@ -95,7 +99,7 @@ public class JobDiskUsageCalculationThreadTest {
     public void testMatrixProject() throws IOException, InterruptedException {
         // turn off run listener
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Map<String, Long> matrixConfigurationsSize = new TreeMap<>();
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
@@ -104,15 +108,15 @@ public class JobDiskUsageCalculationThreadTest {
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         project2.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
         File file = new File(project.getRootDir(), "fileList");
-        Long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
+        long projectSize = getSize(readFileList(file)) + project.getRootDir().length();
         file = new File(project2.getRootDir(), "fileList");
-        Long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
+        long project2Size = getSize(readFileList(file)) + project2.getRootDir().length();
         projectSize += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         project2Size += project2.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         for(MatrixConfiguration config: project.getItems()) {
             config.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
             File f = new File(config.getRootDir(), "fileList");
-            Long size = getSize(readFileList(f)) + config.getRootDir().length();
+            long size = getSize(readFileList(f)) + config.getRootDir().length();
             long diskUsageXML = config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
             matrixConfigurationsSize.put(config.getDisplayName(), size + diskUsageXML);
         }

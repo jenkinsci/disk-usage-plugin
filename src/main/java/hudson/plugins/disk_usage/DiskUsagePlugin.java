@@ -2,9 +2,11 @@ package hudson.plugins.disk_usage;
 
 import hudson.Extension;
 import hudson.Plugin;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.AperiodicWork;
+import hudson.model.Item;
+import hudson.model.Job;
 import hudson.util.Graph;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -18,10 +20,9 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * Entry point of the the plugin.
+ * Entry point of the plugin.
  *
  * @author dvrzalik
- * @plugin
  */
 @Extension
 public class DiskUsagePlugin extends Plugin {
@@ -36,14 +37,14 @@ public class DiskUsagePlugin extends Plugin {
     }
 
     public void refreshGlobalInformation() throws IOException {
-        diskUsageBuilds = 0l;
-        diskUsageWorkspaces = 0l;
-        diskUsageJobsWithoutBuilds = 0l;
-        diskUsageLockedBuilds = 0l;
-        diskUsageNonAgentWorkspaces = 0l;
+        diskUsageBuilds = 0L;
+        diskUsageWorkspaces = 0L;
+        diskUsageJobsWithoutBuilds = 0L;
+        diskUsageLockedBuilds = 0L;
+        diskUsageNonAgentWorkspaces = 0L;
         for(Item item: Jenkins.getInstance().getItems()) {
             if(item instanceof AbstractProject) {
-                AbstractProject project = (AbstractProject) item;
+                AbstractProject<?,?> project = (AbstractProject<?,?>) item;
                 ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
                 diskUsageBuilds += action.getBuildsDiskUsage().get("all");
                 diskUsageWorkspaces += action.getAllDiskUsageWorkspace();
@@ -147,7 +148,7 @@ public class DiskUsagePlugin extends Plugin {
     /**
      * @return DiskUsage for given project (shortcut for the view). Never null.
      */
-    public ProjectDiskUsageAction getDiskUsage(Job project) {
+    public ProjectDiskUsageAction getDiskUsage(Job<?,?> project) {
         return project.getAction(ProjectDiskUsageAction.class);
     }
 
@@ -158,28 +159,26 @@ public class DiskUsagePlugin extends Plugin {
     /**
      * @return Project list sorted by occupied disk space
      */
-    public List getProjectList() throws IOException {
+    public List<?> getProjectList() throws IOException {
         refreshGlobalInformation();
-        Comparator<AbstractProject> comparator = new Comparator<AbstractProject>() {
+        Comparator<AbstractProject> comparator = (o1, o2) -> {
 
-            public int compare(AbstractProject o1, AbstractProject o2) {
+            ProjectDiskUsageAction dua1 = getDiskUsage(o1);
+            ProjectDiskUsageAction dua2 = getDiskUsage(o2);
+            long result = dua2.getJobRootDirDiskUsage() + dua2.getAllDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() -
+                dua1.getAllDiskUsageWorkspace();
 
-                ProjectDiskUsageAction dua1 = getDiskUsage(o1);
-                ProjectDiskUsageAction dua2 = getDiskUsage(o2);
-                long result = dua2.getJobRootDirDiskUsage() + dua2.getAllDiskUsageWorkspace() - dua1.getJobRootDirDiskUsage() - dua1.getAllDiskUsageWorkspace();
-
-                if(result > 0) {
-                    return 1;
-                }
-                if(result < 0) {
-                    return -1;
-                }
-                return 0;
+            if (result > 0) {
+                return 1;
             }
+            if (result < 0) {
+                return -1;
+            }
+            return 0;
         };
 
         List<AbstractProject> projectList = Jenkins.getInstance().getAllItems(AbstractProject.class);
-        Collections.sort(projectList, comparator);
+        projectList.sort(comparator);
 
         return projectList;
     }
@@ -226,22 +225,22 @@ public class DiskUsagePlugin extends Plugin {
         for(DiskUsageOvearallGraphGenerator.DiskUsageRecord usage: record) {
             Date label = usage.getDate();
             if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
-                dataset.addValue(((Long) usage.getAllSpace()) / base, "space for jobs directory", label);
+                dataset.addValue(usage.getAllSpace() / base, "space for jobs directory", label);
             }
-            dataset.addValue(((Long) usage.getJobsDiskUsage()) / base, "all jobs", label);
-            dataset.addValue(((Long) usage.getBuildsDiskUsage()) / base, "all builds", label);
-            datasetW.addValue(((Long) usage.getAgentWorkspacesUsage()) / baseWorkspace, "agent workspaces", label);
-            datasetW.addValue(((Long) usage.getNonAgentWorkspacesUsage()) / baseWorkspace, "non agent workspaces", label);
+            dataset.addValue(usage.getJobsDiskUsage() / base, "all jobs", label);
+            dataset.addValue(usage.getBuildsDiskUsage() / base, "all builds", label);
+            datasetW.addValue(usage.getAgentWorkspacesUsage() / baseWorkspace, "agent workspaces", label);
+            datasetW.addValue(usage.getNonAgentWorkspacesUsage() / baseWorkspace, "non agent workspaces", label);
         }
 
         // add current state
         if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
-            dataset.addValue(((Long) jobsDir.getTotalSpace()) / base, "space for jobs directory", "current");
+            dataset.addValue(jobsDir.getTotalSpace() / base, "space for jobs directory", "current");
         }
-        dataset.addValue(((Long) getCashedGlobalJobsDiskUsage()) / base, "all jobs", "current");
-        dataset.addValue(((Long) getCashedGlobalBuildsDiskUsage()) / base, "all builds", "current");
-        datasetW.addValue(((Long) getCashedAgentDiskUsageWorkspace()) / baseWorkspace, "agent workspaces", "current");
-        datasetW.addValue(((Long) getCashedNonAgentDiskUsageWorkspace()) / baseWorkspace, "non agent workspaces", "current");
+        dataset.addValue(getCashedGlobalJobsDiskUsage() / base, "all jobs", "current");
+        dataset.addValue(getCashedGlobalBuildsDiskUsage() / base, "all builds", "current");
+        datasetW.addValue(getCashedAgentDiskUsageWorkspace() / baseWorkspace, "agent workspaces", "current");
+        datasetW.addValue(getCashedNonAgentDiskUsageWorkspace() / baseWorkspace, "non agent workspaces", "current");
         return  new DiskUsageGraph(dataset, unit, datasetW, unitWorkspace);
     }
 

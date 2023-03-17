@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +43,7 @@ public class DiskUsageTestUtil {
     }
 
     protected static Long getSize(List<File> files) {
-        Long lenght = 0L;
+        long lenght = 0L;
         for(File file: files) {
             lenght += file.length();
         }
@@ -62,7 +61,7 @@ public class DiskUsageTestUtil {
         return agent;
     }
 
-    protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild build) {
+    protected static BuildDiskUsageAction getBuildDiskUsageAction(AbstractBuild<?,?> build) {
         for(Action a: build.getAllActions()) {
             if(a instanceof BuildDiskUsageAction) {
                 return (BuildDiskUsageAction) a;
@@ -80,10 +79,4 @@ public class DiskUsageTestUtil {
         }
     }
 
-    protected static void createFileWithContent(File file) throws FileNotFoundException {
-        file.getParentFile().mkdirs();
-        PrintStream stream = new PrintStream(file);
-        stream.println("hello");
-        stream.close();
-    }
 }

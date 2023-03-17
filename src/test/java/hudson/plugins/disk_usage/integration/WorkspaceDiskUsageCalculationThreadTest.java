@@ -9,7 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Functions;
-import hudson.plugins.disk_usage.*;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
@@ -22,6 +21,12 @@ import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.plugins.disk_usage.BuildDiskUsageCalculationThread;
+import hudson.plugins.disk_usage.DiskUsageBuildListener;
+import hudson.plugins.disk_usage.DiskUsageProjectActionFactory;
+import hudson.plugins.disk_usage.DiskUsageProperty;
+import hudson.plugins.disk_usage.ProjectDiskUsageAction;
+import hudson.plugins.disk_usage.WorkspaceDiskUsageCalculationThread;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
@@ -81,7 +86,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     }
 
     private Long getSize(List<File> files) {
-        Long length = 0L;
+        long length = 0L;
         for(File file: files) {
 
             length += file.length();
@@ -104,7 +109,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     @LocalData
     public void testExecute() throws IOException, InterruptedException, Exception {
         // turn off run listener
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.getInstance().getExtensionList(RunListener.class).remove(listener);
         Slave agent1 = createAgent("agent1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
         Slave agent2 = createAgent("agent2", new File(j.getInstance().getRootDir(), "workspace2").getPath());
@@ -137,7 +142,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     @LocalData
     public void testExecuteMatrixProject() throws Exception {
         // turn off run listener
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.getInstance().getExtensionList(RunListener.class).remove(listener);
         j.getInstance().setNumExecutors(0);
         Slave agent1 = createAgent("agent1", new File(j.getInstance().getRootDir(), "workspace1").getPath());
@@ -252,7 +257,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     @Test
     @LocalData
     public void testDoNotBreakLazyLoading() throws Exception {
-        AbstractProject project = (AbstractProject) j.getInstance().getItem("project1");
+        AbstractProject<?,?> project = (AbstractProject<?,?>) j.getInstance().getItem("project1");
         project.isBuilding();
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         assertTrue("This test does not have sense if there is loaded all builds", 8 > loadedBuilds);
@@ -300,7 +305,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         j.buildAndAssertSuccess(job);
         j.buildAndAssertSuccess(job);
         File file = new File(agent1.getWorkspaceFor(job).getRemote(), "fileList");
-        Long size = getSize(readFileList(file)) + agent1.getWorkspaceFor(job).length();
+        long size = getSize(readFileList(file)) + agent1.getWorkspaceFor(job).length();
         WorkspaceDiskUsageCalculationThread calculation = AperiodicWork.all().get(WorkspaceDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
         assertFalse("Disk usage should be counted correctly even for one workspace.", size > job.getAction(ProjectDiskUsageAction.class).getAllAgentWorkspaces());

@@ -4,9 +4,7 @@ import antlr.ANTLRException;
 import hudson.model.AperiodicWork;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
-import hudson.triggers.Trigger;
 import java.util.List;
-import jenkins.util.Timer;
 
 /*
  * To change this template, choose Tools | Templates
@@ -23,17 +21,14 @@ public class TestDiskUsageCalculation extends BuildDiskUsageCalculationThread {
 
     public boolean executing;
 
-    private boolean sleep;
-
     private static List<TestDiskUsageCalculation> instancesHistory;
 
-    private static int maxInstances = 10;
+    private final static int maxInstances = 10;
 
     private static TestDiskUsageCalculation currentInstance;
 
-    public TestDiskUsageCalculation(String cron, boolean sleep) {
+    public TestDiskUsageCalculation(String cron) {
         this.cron = cron;
-        this.sleep = true;
     }
 
     public void setCron(String cron) {
@@ -56,19 +51,16 @@ public class TestDiskUsageCalculation extends BuildDiskUsageCalculationThread {
     @Override
     public void execute(TaskListener listener) {
         executing = true;
-        if(sleep) {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException ex) {
-                executing = false;
-            }
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ignored) {
         }
         executing = false;
     }
 
     @Override
     public AperiodicWork getNewInstance() {
-        TestDiskUsageCalculation c = new TestDiskUsageCalculation(cron, sleep);
+        TestDiskUsageCalculation c = new TestDiskUsageCalculation(cron);
         if(instancesHistory != null) {
             if(maxInstances <= instancesHistory.size()) {
                 instancesHistory.get(0).cancel();

@@ -1,26 +1,32 @@
 package hudson.plugins.disk_usage.integration;
 
-import hudson.plugins.disk_usage.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
-import org.junit.Assert;
-import org.jvnet.hudson.test.recipes.LocalData;
-import java.util.ArrayList;
 import hudson.model.AbstractBuild;
-import java.io.File;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
 import hudson.model.TopLevelItem;
 import hudson.model.listeners.RunListener;
+import hudson.plugins.disk_usage.DiskUsageBuildListener;
+import hudson.plugins.disk_usage.DiskUsagePlugin;
+import hudson.plugins.disk_usage.DiskUsageProperty;
+import hudson.plugins.disk_usage.DiskUsageUtil;
+import hudson.plugins.disk_usage.ProjectDiskUsageAction;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.*;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
@@ -35,7 +41,7 @@ public class DiskUsageUtilTest {
     @LocalData
     public void testCalculateDiskUsageForBuild() throws Exception {
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
-        AbstractBuild build = project.getBuildByNumber(2);
+        AbstractBuild<?,?> build = project.getBuildByNumber(2);
         File file = new File(build.getRootDir(), "fileList");
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + build.getRootDir().length();
         DiskUsageUtil.calculateDiskUsageForBuild(build.getId(), project);
@@ -46,12 +52,12 @@ public class DiskUsageUtilTest {
     @LocalData
     public void testCalculateDiskUsageForMatrixBuild() throws Exception {
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
-        AbstractBuild build = project.getBuildByNumber(1);
+        AbstractBuild<?,?> build = project.getBuildByNumber(1);
         File file = new File(build.getRootDir(), "fileList");
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + build.getRootDir().length();
         Long sizeAll = size;
         for(MatrixConfiguration config: project.getActiveConfigurations()) {
-            AbstractBuild b = config.getBuildByNumber(1);
+            AbstractBuild<?,?> b = config.getBuildByNumber(1);
             File f = new File(b.getRootDir(), "fileList");
             sizeAll += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(f)) + b.getRootDir().length();
         }
@@ -95,7 +101,7 @@ public class DiskUsageUtilTest {
         }
         DiskUsageUtil.calculateDiskUsageForProject(project);
         Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds());
-        for(AbstractProject p: project.getItems()) {
+        for(AbstractProject<?,?> p: project.getItems()) {
             DiskUsageUtil.calculateDiskUsageForProject(p);
         }
         Assert.assertEquals("Calculation of job disk usage does not return right size of job and its sub-jobs without builds.", sizeAll, project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds());
@@ -106,7 +112,7 @@ public class DiskUsageUtilTest {
     @LocalData
     public void testCalculateDiskUsageWorkspaceForProject() throws Exception {
         // turn off run listener
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Slave agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(), "workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
         Slave agent2 = DiskUsageTestUtil.createAgent("agent2", new File(j.jenkins.getRootDir(), "workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));
@@ -136,7 +142,7 @@ public class DiskUsageUtilTest {
     @LocalData
     public void testCalculateDiskUsageWorkspaceForMatrixProjectWithConfigurationInSameDirectory() throws Exception {
         // turn off run listener
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         j.jenkins.setNumExecutors(0);
         Slave agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(), "workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
@@ -215,7 +221,7 @@ public class DiskUsageUtilTest {
     @LocalData
     public void testCalculateDiskUsageWorkspaceWhenReferenceFromJobDoesNotExists() throws Exception {
         // turn off run listener
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         DiskUsagePlugin plugin = j.jenkins.getPlugin(DiskUsagePlugin.class);
         plugin.getConfiguration().setCheckWorkspaceOnAgent(true);
@@ -250,7 +256,7 @@ public class DiskUsageUtilTest {
 
     @Test
     public void testCalculateDiskUsageWorkspaceUpdateIformationIfSavedWorkspaceDoesNotExists() throws Exception {
-        RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
+        RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Slave agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(), "workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
         Slave agent2 = DiskUsageTestUtil.createAgent("agent2", new File(j.jenkins.getRootDir(), "workspace2").getPath(), j.jenkins, j.createComputerLauncher(null));

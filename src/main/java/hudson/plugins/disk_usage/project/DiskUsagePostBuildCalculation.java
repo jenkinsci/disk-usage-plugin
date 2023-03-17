@@ -4,6 +4,7 @@
  */
 package hudson.plugins.disk_usage.project;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
@@ -42,12 +43,14 @@ public class DiskUsagePostBuildCalculation extends Recorder {
 
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @NonNull
+        @Override
         public String getDisplayName() {
             return "Calcualete disk usage of build";
         }
 
         @Override
-        public DiskUsagePostBuildCalculation newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public DiskUsagePostBuildCalculation newInstance(StaplerRequest req, @NonNull JSONObject formData) throws FormException {
             return new DiskUsagePostBuildCalculation();
         }
 

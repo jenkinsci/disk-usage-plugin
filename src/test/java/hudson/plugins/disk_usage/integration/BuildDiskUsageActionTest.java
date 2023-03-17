@@ -1,19 +1,19 @@
 package hudson.plugins.disk_usage.integration;
 
-import hudson.model.Action;
-import java.util.List;
-import hudson.plugins.disk_usage.BuildDiskUsageAction;
-import org.junit.Test;
-import hudson.matrix.MatrixConfiguration;
-import hudson.matrix.MatrixBuild;
-import hudson.model.AbstractBuild;
+import static org.junit.Assert.assertEquals;
+
 import hudson.matrix.AxisList;
-import hudson.matrix.TextAxis;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
+import hudson.matrix.TextAxis;
+import hudson.model.AbstractBuild;
+import hudson.model.Action;
 import hudson.model.FreeStyleProject;
-import org.jvnet.hudson.test.JenkinsRule;
+import hudson.plugins.disk_usage.BuildDiskUsageAction;
 import org.junit.Rule;
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  *
@@ -35,7 +35,7 @@ public class BuildDiskUsageActionTest {
         list.add(axis2);
         matrixProject.setAxes(list);
         j.buildAndAssertSuccess(project);
-        AbstractBuild build = project.getLastBuild();
+        AbstractBuild<?,?> build = project.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
         MatrixBuild matrixBuild1 = matrixProject.getLastBuild();
         j.buildAndAssertSuccess(matrixProject);
@@ -52,10 +52,10 @@ public class BuildDiskUsageActionTest {
         Long matrixBuild1TotalSize = sizeOfMatrixBuild1;
         Long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()) {
-            AbstractBuild configurationBuild = c.getBuildByNumber(1);
+            AbstractBuild<?,?> configurationBuild = c.getBuildByNumber(1);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
             matrixBuild1TotalSize += count * size1;
-            AbstractBuild configurationBuild2 = c.getBuildByNumber(2);
+            AbstractBuild<?,?> configurationBuild2 = c.getBuildByNumber(2);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
             matrixBuild2TotalSize += count * size2;
             count++;
@@ -81,7 +81,7 @@ public class BuildDiskUsageActionTest {
         Long kiloBytes = 2048L;
         int count = 0;
         for(MatrixConfiguration c: matrixProject.getItems()) {
-            AbstractBuild configurationBuild = c.getBuildByNumber(1);
+            AbstractBuild<?,?> configurationBuild = c.getBuildByNumber(1);
             for(Action action: configurationBuild.getAllActions()) {
                 if(action instanceof BuildDiskUsageAction) {
                     BuildDiskUsageAction a = (BuildDiskUsageAction) action;
@@ -107,11 +107,11 @@ public class BuildDiskUsageActionTest {
     public void getBuildUsageStringFreeStyleProject() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         j.buildAndAssertSuccess(project);
-        AbstractBuild build = project.getLastBuild();
+        AbstractBuild<?,?> build = project.getLastBuild();
         Long bytes = 100L;
-        Long kiloBytes = 2048L;
-        Long megaBytes = kiloBytes * 1024;
-        Long gygaBytes = megaBytes * 1024;
+        long kiloBytes = 2048L;
+        long megaBytes = kiloBytes * 1024;
+        long gygaBytes = megaBytes * 1024;
         Long teraBytes = gygaBytes * 1024;
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(bytes);
         assertEquals("String representation of build disk usage is wrong which has 100 B is wrong.", "100 B", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());

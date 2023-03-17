@@ -1,14 +1,15 @@
 package hudson.plugins.disk_usage.project.integration;
 
+import static org.junit.Assert.assertTrue;
+
 import hudson.matrix.MatrixProject;
-import hudson.plugins.disk_usage.project.DiskUsagePostBuildCalculation;
-import hudson.plugins.disk_usage.BuildDiskUsageAction;
-import org.junit.Test;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
-import org.jvnet.hudson.test.JenkinsRule;
+import hudson.plugins.disk_usage.BuildDiskUsageAction;
+import hudson.plugins.disk_usage.project.DiskUsagePostBuildCalculation;
 import org.junit.Rule;
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  *
@@ -24,7 +25,7 @@ public class DiskUsagePostBuildCalculationTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.getPublishersList().add(new DiskUsagePostBuildCalculation());
         j.buildAndAssertSuccess(project);
-        AbstractBuild build = project.getLastBuild();
+        AbstractBuild<?,?> build = project.getLastBuild();
         assertTrue("Disk usage of build should be calculated.", build.getAction(BuildDiskUsageAction.class).getDiskUsage() > 0);
 
     }
@@ -34,7 +35,7 @@ public class DiskUsagePostBuildCalculationTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.getPublishersList().add(new DiskUsagePostBuildCalculation());
         j.buildAndAssertSuccess(project);
-        AbstractBuild build = project.getLastBuild();
+        AbstractBuild<?,?> build = project.getLastBuild();
         assertTrue("Disk usage called by listener should be skipped.", build.getLog(10).contains("Skipping calculation of disk usage, it was already done in post build step."));
     }
 
@@ -43,7 +44,7 @@ public class DiskUsagePostBuildCalculationTest {
         MatrixProject project = j.jenkins.createProject(MatrixProject.class, "project");
         project.getPublishersList().add(new DiskUsagePostBuildCalculation());
         j.buildAndAssertSuccess(project);
-        AbstractBuild build = project.getLastBuild();
+        AbstractBuild<?,?> build = project.getLastBuild();
         assertTrue("Disk usage of build should be calculated.", build.getAction(BuildDiskUsageAction.class).getDiskUsage() > 0);
     }
 

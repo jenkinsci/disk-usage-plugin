@@ -44,7 +44,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
 
                 for(Object item: items) {
                     if(item instanceof AbstractProject) {
-                        AbstractProject project = (AbstractProject) item;
+                        AbstractProject<?,?> project = (AbstractProject<?,?>) item;
                         // do not count building project
                         if(project.isBuilding()) {
                             continue;

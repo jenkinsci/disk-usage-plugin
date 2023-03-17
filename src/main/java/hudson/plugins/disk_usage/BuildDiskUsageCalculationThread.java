@@ -7,6 +7,7 @@ import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.RunMap;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 
 
@@ -43,7 +43,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
 
                 for(Object item: items) {
                     if(item instanceof AbstractProject) {
-                        AbstractProject project = (AbstractProject) item;
+                        AbstractProject<?,?> project = (AbstractProject<?,?>) item;
                         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
                         if(property == null) {
                             property = new DiskUsageProperty();
@@ -51,8 +51,9 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
                         }
                         ProjectDiskUsage diskUsage = property.getProjectDiskUsage();
                         for(DiskUsageBuildInformation information: diskUsage.getBuildDiskUsage(true)) {
-                            Map<Integer, AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds();
-                            AbstractBuild build = loadedBuilds.get(information.getNumber());
+                            final RunMap<?> runMap = project._getRuns();
+                            Map<Integer, ?> loadedBuilds = runMap.getLoadedBuilds();
+                            AbstractBuild<?,?> build = (AbstractBuild<?, ?>) loadedBuilds.get(information.getNumber());
                             // do not calculat builds in progress
                             if(build != null && build.isBuilding()) {
                                 continue;
@@ -81,6 +82,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
         }
     }
 
+    @Override
     public CronTab getCronTab() throws ANTLRException {
         String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
         return new CronTab(cron);

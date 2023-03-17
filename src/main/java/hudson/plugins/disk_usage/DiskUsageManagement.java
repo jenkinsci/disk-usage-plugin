@@ -23,14 +23,17 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
 
     public final String[] COLUMNS = new String[]{"Project name", "Builds", "Workspace", "JobDirectory (without builds)"};
 
+    @Override
     public String getIconFileName() {
         return "/plugin/disk-usage/icons/disk-usage.svg";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.displayName();
     }
 
+    @Override
     public String getUrlName() {
         return "disk-usage";
     }
