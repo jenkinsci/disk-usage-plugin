@@ -128,7 +128,7 @@ public class DiskUsageUtil {
 
     public static void sendEmail(String subject, String message) throws MessagingException {
 
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         String address = plugin.getConfiguration().getEmailAddress();
         if(address == null || address.isEmpty()) {
             Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "e-mail addres is not set for notification about exceed disk size. Please set it in global configuration.");
@@ -155,7 +155,7 @@ public class DiskUsageUtil {
     }
 
     public static void controlAllJobsExceedSize() throws IOException {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         plugin.refreshGlobalInformation();
         Long allJobsSize = plugin.getCashedGlobalJobsDiskUsage();
         Long exceedJobsSize = plugin.getConfiguration().getAllJobsExceedSize();
@@ -169,7 +169,7 @@ public class DiskUsageUtil {
     }
 
     public static void controlWorkspaceExceedSize(AbstractProject project) {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
 
         if(property == null) {
@@ -203,7 +203,7 @@ public class DiskUsageUtil {
         String[] jobNames = jobs.split(",");
         for(String name: jobNames) {
             name = name.trim();
-            Item item = Jenkins.getInstance().getItem(name);
+            Item item = Jenkins.get().getItem(name);
             if(item != null && item instanceof AbstractProject) {
                 list.add(name);
             }
@@ -284,7 +284,7 @@ public class DiskUsageUtil {
         try {
             // count build.xml too
             build.save();
-            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+            DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
             listener.getLogger().println("Started calculate disk usage of build");
             Long startTimeOfBuildCalculation = System.currentTimeMillis();
             DiskUsageUtil.calculateDiskUsageForBuild(build.getId(), build.getProject());
@@ -364,7 +364,7 @@ public class DiskUsageUtil {
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project)) {
             return;
         }
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         List<File> exceededFiles = new ArrayList<>();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         if(property == null) {
@@ -373,7 +373,7 @@ public class DiskUsageUtil {
         }
         Set<DiskUsageBuildInformation> informations = (Set<DiskUsageBuildInformation>) property.getDiskUsage().getBuildDiskUsage(true);
         for(DiskUsageBuildInformation information: informations) {
-            exceededFiles.add(new File(Jenkins.getInstance().getBuildDirFor(project), information.getId()));
+            exceededFiles.add(new File(Jenkins.get().getBuildDirFor(project), information.getId()));
         }
         if(project instanceof ItemGroup) {
             List<AbstractProject> projects = getAllProjects((ItemGroup) project);
@@ -406,10 +406,10 @@ public class DiskUsageUtil {
         if(DiskUsageProjectActionFactory.DESCRIPTOR.isExcluded(project)) {
             return;
         }
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         // Build disk usage has to be always recalculated to be kept up-to-date 
         // - artifacts might be kept only for the last build and users sometimes delete files manually as well.
-        long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.getInstance().getBuildDirFor(project), buildId), new ArrayList<>());
+        long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.get().getBuildDirFor(project), buildId), new ArrayList<>());
 
         Collection<AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds().values();
         AbstractBuild build = null;
@@ -457,7 +457,7 @@ public class DiskUsageUtil {
         Long diskUsage = 0L;
         if(workspace.exists()) {
             try {
-                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getTimeoutWorkspace(), TimeUnit.MINUTES);
+                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getTimeoutWorkspace(), TimeUnit.MINUTES);
             }
             catch (Exception e) {
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for file path " + workspace.getRemote() + " through channel " + workspace.getChannel(), e);
@@ -480,10 +480,10 @@ public class DiskUsageUtil {
         for(String nodeName: property.getAgentWorkspaceUsage().keySet()) {
             Node node = null;
             if(nodeName.isEmpty()) {
-                node = Jenkins.getInstance();
+                node = Jenkins.get();
             }
             else {
-                node = Jenkins.getInstance().getNode(nodeName);
+                node = Jenkins.get().getNode(nodeName);
             }
             if(node == null) {
                 // probably does not exists yet

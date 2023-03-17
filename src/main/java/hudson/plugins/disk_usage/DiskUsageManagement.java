@@ -50,7 +50,7 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
-        res.sendRedirect(Jenkins.getInstance().getRootUrlFromRequest() + "plugin/disk-usage");
+        res.sendRedirect(Jenkins.get().getRootUrlFromRequest() + "plugin/disk-usage");
     }
 
 }

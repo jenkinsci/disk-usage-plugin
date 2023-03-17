@@ -37,14 +37,13 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     public void execute(TaskListener listener) throws IOException, InterruptedException {
         if(!isCancelled() && startExecution()) {
             try {
-                List<Item> items = new ArrayList<>();
-                ItemGroup<? extends Item> itemGroup = Jenkins.getInstance();
-                items.addAll(DiskUsageUtil.getAllProjects(itemGroup));
+                ItemGroup<? extends Item> itemGroup = Jenkins.get();
+                List<Item> items = new ArrayList<>(DiskUsageUtil.getAllProjects(itemGroup));
 
                 for(Object item: items) {
                     if(item instanceof AbstractProject) {
                         AbstractProject<?,?> project = (AbstractProject<?,?>) item;
-                        DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
+                        DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
                         if(property == null) {
                             property = new DiskUsageProperty();
                             project.addProperty(property);
@@ -72,7 +71,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
             }
         }
         else {
-            DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+            DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
             if(plugin.getConfiguration().isCalculationBuildsEnabled()) {
                 logger.log(Level.FINER, "Calculation of builds is already in progress.");
             }
@@ -84,7 +83,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
 
     @Override
     public CronTab getCronTab() throws ANTLRException {
-        String cron = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
+        String cron = Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
         return new CronTab(cron);
     }
 
@@ -106,7 +105,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
     }
 
     private boolean startExecution() {
-        DiskUsagePlugin plugin = Jenkins.getInstance().getPlugin(DiskUsagePlugin.class);
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         if(!plugin.getConfiguration().isCalculationBuildsEnabled()) {
             return false;
         }

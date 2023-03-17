@@ -196,7 +196,7 @@ public class ProjectDiskUsage implements Saveable {
         Iterator<DiskUsageBuildInformation> iterator = buildDiskUsage.iterator();
         while(iterator.hasNext()) {
             DiskUsageBuildInformation information = iterator.next();
-            File buildDir = new File(Jenkins.getInstance().getBuildDirFor(job), information.getId());
+            File buildDir = new File(Jenkins.get().getBuildDirFor(job), information.getId());
             if(!buildDir.exists()) {
                 buildDiskUsage.remove(information);
             }

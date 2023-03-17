@@ -42,7 +42,7 @@ public class DiskUsagePlugin extends Plugin {
         diskUsageJobsWithoutBuilds = 0L;
         diskUsageLockedBuilds = 0L;
         diskUsageNonAgentWorkspaces = 0L;
-        for(Item item: Jenkins.getInstance().getItems()) {
+        for(Item item: Jenkins.get().getItems()) {
             if(item instanceof AbstractProject) {
                 AbstractProject<?,?> project = (AbstractProject<?,?>) item;
                 ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
@@ -177,7 +177,7 @@ public class DiskUsagePlugin extends Plugin {
             return 0;
         };
 
-        List<AbstractProject> projectList = Jenkins.getInstance().getAllItems(AbstractProject.class);
+        List<AbstractProject> projectList = Jenkins.get().getAllItems(AbstractProject.class);
         projectList.sort(comparator);
 
         return projectList;
@@ -198,7 +198,7 @@ public class DiskUsagePlugin extends Plugin {
     }
 
     public Graph getOverallGraph() {
-        File jobsDir = new File(Jenkins.getInstance().getRootDir(), "jobs");
+        File jobsDir = new File(Jenkins.get().getRootDir(), "jobs");
         long maxValue = getCashedGlobalJobsDiskUsage();
         if(getConfiguration().getShowFreeSpaceForJobDirectory()) {
             maxValue = jobsDir.getTotalSpace();
@@ -245,7 +245,7 @@ public class DiskUsagePlugin extends Plugin {
     }
 
     public void doRecordBuildDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationBuildsEnabled() && !getBuildsDiskUsageThread().isExecuting()) {
             getBuildsDiskUsageThread().doAperiodicRun();
         }
@@ -253,7 +253,7 @@ public class DiskUsagePlugin extends Plugin {
     }
 
     public void doRecordJobsDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationJobsEnabled() && !getJobsDiskUsageThread().isExecuting()) {
             getJobsDiskUsageThread().doAperiodicRun();
         }
@@ -261,7 +261,7 @@ public class DiskUsagePlugin extends Plugin {
     }
 
     public void doRecordWorkspaceDiskUsage(StaplerRequest req, StaplerResponse res) throws ServletException, IOException, Exception {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if(getConfiguration().isCalculationWorkspaceEnabled() && !getWorkspaceDiskUsageThread().isExecuting()) {
             getWorkspaceDiskUsageThread().doAperiodicRun();
         }
@@ -294,7 +294,7 @@ public class DiskUsagePlugin extends Plugin {
     }
 
     public boolean hasAdministrativePermission() {
-        return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
+        return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
     }
 
 }

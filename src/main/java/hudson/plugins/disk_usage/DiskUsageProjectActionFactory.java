@@ -300,7 +300,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) {
-            Jenkins.getInstance().checkPermission(Permission.CONFIGURE);
+            Jenkins.get().checkPermission(Permission.CONFIGURE);
             JSONObject form;
             try {
                 form = req.getSubmittedForm();

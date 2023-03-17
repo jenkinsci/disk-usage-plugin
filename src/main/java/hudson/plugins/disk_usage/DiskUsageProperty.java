@@ -214,10 +214,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     public Long getWorkspaceSize(Boolean containdedInWorkspace) {
         Long size = 0L;
         for(String nodeName: getAgentWorkspaceUsage().keySet()) {
-            Node node = Jenkins.getInstance().getNode(nodeName);
+            Node node = Jenkins.get().getNode(nodeName);
             String workspacePath = null;
             if(node instanceof Jenkins) {
-                workspacePath = Jenkins.getInstance().getRawWorkspaceDir();
+                workspacePath = Jenkins.get().getRawWorkspaceDir();
             }
             if(node instanceof Slave) {
                 workspacePath = ((Slave) node).getRemoteFS();
@@ -298,8 +298,8 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             checkLoadedBuilds();
         }
         // only if it is wanted - can cost a quite long time to do it for all
-        if(Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().getCheckWorkspaceOnAgent() && owner instanceof TopLevelItem) {
-            for(Node node: Jenkins.getInstance().getNodes()) {
+        if(Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCheckWorkspaceOnAgent() && owner instanceof TopLevelItem) {
+            for(Node node: Jenkins.get().getNodes()) {
                 if(node.toComputer() != null && node.toComputer().isOnline()) {
                     FilePath path = null;
                     try {
@@ -320,9 +320,9 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         Iterator<String> iterator = diskUsage.slaveWorkspacesUsage.keySet().iterator();
         while(iterator.hasNext()) {
             String nodeName = iterator.next();
-            Node node = Jenkins.getInstance().getNode(nodeName);
+            Node node = Jenkins.get().getNode(nodeName);
             if(node == null && nodeName.isEmpty()) {
-                node = Jenkins.getInstance();
+                node = Jenkins.get();
             }
             // delete name of agents which do not exist
             if(node == null) {// Jenkins master has empty name
@@ -364,10 +364,10 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         for(String nodeName: getAgentWorkspaceUsage().keySet()) {
             Node node = null;
             if(nodeName.isEmpty()) {
-                node = Jenkins.getInstance();
+                node = Jenkins.get();
             }
             else {
-                node = Jenkins.getInstance().getNode(nodeName);
+                node = Jenkins.get().getNode(nodeName);
             }
             if(node == null) { // agent does not exist
                 continue;
@@ -405,7 +405,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             if (item instanceof TopLevelItem){
                 TopLevelItem topLevelItem = (TopLevelItem) item;
                 if(node instanceof Jenkins) {
-                    FilePath file = Jenkins.getInstance().getWorkspaceFor(topLevelItem);
+                    FilePath file = Jenkins.get().getWorkspaceFor(topLevelItem);
                     if (file != null){
                         return path.contains(file.getRemote());
                     }

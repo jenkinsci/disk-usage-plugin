@@ -335,6 +335,6 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
 
     /** Shortcut for the jelly view */
     public boolean showGraph() {
-        return Jenkins.getInstance().getPlugin(DiskUsagePlugin.class).getConfiguration().isShowGraph();
+        return Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().isShowGraph();
     }
 }

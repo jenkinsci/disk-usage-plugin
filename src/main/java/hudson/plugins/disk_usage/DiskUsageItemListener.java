@@ -45,7 +45,7 @@ public class DiskUsageItemListener extends ItemListener {
 
     @Override
     public void onLoaded() {
-        for(Item item: Jenkins.getInstance().getItems()) {
+        for(Item item: Jenkins.get().getItems()) {
             DiskUsageUtil.addProperty(item);
         }
     }
