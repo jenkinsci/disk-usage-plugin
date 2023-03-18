@@ -35,16 +35,18 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
         DiskUsageProjectActionFactory.DESCRIPTOR.save();
     }
 
-    public static class DiskUsageRecord extends DiskUsage {
+    public static class DiskUsageRecord {
         private static final SimpleDateFormat sdf = new SimpleDateFormat("d/M");
         Date date;
         private Long jobsWithoutBuildsUsage = 0L;
         private Long allSpace = 0L;
         private Long diskUsageNonAgentWorkspaces = 0L;
-
+        private Long buildUsage;
+        private Long wsUsage;
 
         public DiskUsageRecord(Long diskUsageBuilds, Long diskUsageWorkspaces, Long diskUsageJobsWithoutBuilds, Long allSpace, Long diskUsageNonAgentWorkspaces) {
-            super(diskUsageBuilds, diskUsageWorkspaces);
+            this.buildUsage = diskUsageBuilds;
+            this.wsUsage = diskUsageWorkspaces;
             this.jobsWithoutBuildsUsage = diskUsageJobsWithoutBuilds;
             this.allSpace = allSpace;
             this.diskUsageNonAgentWorkspaces = diskUsageNonAgentWorkspaces;
