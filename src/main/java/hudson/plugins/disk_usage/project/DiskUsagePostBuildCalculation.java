@@ -7,6 +7,7 @@ package hudson.plugins.disk_usage.project;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -15,6 +16,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -24,16 +26,14 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class DiskUsagePostBuildCalculation extends Recorder {
 
-    public DiskUsagePostBuildCalculation() {
-    }
-
     @Override
-    public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener) {
+    public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener listener)
+        throws InterruptedException, IOException
+    {
         listener.getLogger().println("append disk usage");
         DiskUsageUtil.calculationDiskUsageOfBuild(build, listener);
         return true;
     }
-
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
