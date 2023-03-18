@@ -478,21 +478,6 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         return usage;
     }
 
-    @Initializer(after = InitMilestone.PLUGINS_STARTED)
-    public static void transitionAuth() throws IOException {
-        DiskUsageDescriptor that = (DiskUsageDescriptor) Hudson.getInstance().getDescriptor(DiskUsageProperty.class);
-        if(that == null) {
-            LOGGER.warning("Cannot convert DiskUsageProjectActions, DiskUsageDescripto is null, check log for previous DI error, e.g. Guice errors.");
-            return;
-        }
-        if(!that.converted) {
-            DiskUsageProjectActionFactory.DESCRIPTOR.setShowGraph(that.showGraph);
-            that.converted = true;
-            that.save();
-            DiskUsageProjectActionFactory.DESCRIPTOR.save();
-        }
-    }
-
     public void saveDiskUsage() {
         diskUsage.save();
     }
@@ -518,29 +503,11 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
     @Extension
     public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
 
-        @Deprecated
-        private boolean showGraph;
-
-        @Deprecated
-        private boolean converted;
-
-        public DiskUsageDescriptor() {
-            load();
-        }
-
         @Override
         public String getDisplayName() {
             return Messages.displayName();
         }
 
-        public boolean showGraph() {
-            return showGraph;
-        }
-
-        @Override
-        public boolean isApplicable(Class<? extends Job> jobType) {
-            return true;
-        }
     }
 
     public static final Logger LOGGER = Logger.getLogger(DiskUsageProperty.class.getName());
