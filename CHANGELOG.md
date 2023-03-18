@@ -25,6 +25,7 @@
 - [Fixes class cast exception with promoted builds plugin](https://github.com/jenkinsci/disk-usage-plugin/pull/77)
 - [Removes deprecated fields from BuildDiskUsageAction](https://github.com/jenkinsci/disk-usage-plugin/pull/79)
 - [Fix various warnings](https://github.com/jenkinsci/disk-usage-plugin/pull/80)
+- [Removes deprecated code in DiskUsageProperty](https://github.com/jenkinsci/disk-usage-plugin/pull/81)
 
 ### Release 0.28 (Oct 01, 2015)
 
