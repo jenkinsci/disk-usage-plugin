@@ -27,6 +27,7 @@
 - [Fix various warnings](https://github.com/jenkinsci/disk-usage-plugin/pull/80)
 - [Removes deprecated code in DiskUsageProperty](https://github.com/jenkinsci/disk-usage-plugin/pull/81)
 - [Replaces deprecated perform method in DiskUsagePostBuildCalculation](https://github.com/jenkinsci/disk-usage-plugin/pull/82)
+- [Removes deprecated DiskUsage and inline fields into child DiskUsageRecord](https://github.com/jenkinsci/disk-usage-plugin/pull/83)
 
 ### Release 0.28 (Oct 01, 2015)
 
