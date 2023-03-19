@@ -43,11 +43,11 @@ public class DiskUsageTestUtil {
     }
 
     protected static Long getSize(List<File> files) {
-        long lenght = 0L;
+        long length = 0L;
         for(File file: files) {
-            lenght += file.length();
+            length += file.length();
         }
-        return lenght;
+        return length;
     }
 
     protected static Slave createAgent(String name, String remoteFS, Jenkins jenkins, ComputerLauncher launcher) throws Exception {

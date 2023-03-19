@@ -76,10 +76,10 @@ tasks.
 -   Reverse build order in graph
 -   Make graph huger
 -   Make free space in job directory optional in global graph
--   Better sheduling automatic calculation
+-   Better scheduling automatic calculation
 -   Move information about project disk usage form config.xml of job
 -   Fixing typo direcotory -\> directory
--   Display next execution time and add buttom for builds, jobs and
+-   Display next execution time and add bottom for builds, jobs and
     workspaces
 -   Fix link in menu on main page
 
@@ -93,7 +93,7 @@ tasks.
 -   Fix test
 -   Display all workspaces
 -   Save history
--   Fix backward compatibility, fix concurent modification exception and
+-   Fix backward compatibility, fix concurrent modification exception and
     make timeout workspace configurable
 -   Replace Util.isSymlink
 -   Fix backward compatibility
@@ -106,7 +106,7 @@ tasks.
 -   Correct information about author
 -   Add tests for case the slave is deleted or workspace of project was
     deleted
--   Fix problems with claculation threads and removing workspaces form
+-   Fix problems with calculation threads and removing workspaces form
     diskUsage set if do not exist or its slave does not exists
 -   Add tests
 -   Fix problems with symlinks
@@ -159,7 +159,7 @@ tasks.
 
 ### Release 0.17 (May 24, 2012)
 
--   Added support for hierachical job model ([pull
+-   Added support for hierarchical job model ([pull
     \#6](https://github.com/jenkinsci/disk-usage-plugin/pull/6))
 -   Fixed broken showGraph ([pull
     \#7](https://github.com/jenkinsci/disk-usage-plugin/pull/7)) 

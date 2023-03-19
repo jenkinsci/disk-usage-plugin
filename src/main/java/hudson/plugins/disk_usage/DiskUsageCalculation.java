@@ -112,7 +112,7 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
             Calendar nextExecution = tab.ceil(now.getTimeInMillis());
             long period = nextExecution.getTimeInMillis() - now.getTimeInMillis();
             if(nextExecution.getTimeInMillis() - now.getTimeInMillis() <= 60000) {
-                period = period + 60_000L; // add one minute to not shedule it during one minute one than once
+                period = period + 60_000L; // add one minute to not schedule it during one minute one than once
             }
             return period;
         } catch (Exception ex) {
