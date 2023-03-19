@@ -68,11 +68,11 @@ public class BuildDiskUsageCalculationThreadTest {
     }
 
     private Long getSize(List<File> files) {
-        long lenght = 0L;
+        long length = 0L;
         for(File file: files) {
-            lenght += file.length();
+            length += file.length();
         }
-        return lenght;
+        return length;
     }
 
     @Test
@@ -215,17 +215,18 @@ public class BuildDiskUsageCalculationThreadTest {
 
     @Test
     public void testDoNotCalculateExcludedJobs() throws Exception {
-        FreeStyleProject exludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
-        FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "incudedJob");
+        FreeStyleProject excludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
+        FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "includedJob");
         List<String> excludes = new ArrayList<>();
-        excludes.add(exludedJob.getName());
+        excludes.add(excludedJob.getName());
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
-        j.buildAndAssertSuccess(exludedJob);
+        j.buildAndAssertSuccess(excludedJob);
         j.buildAndAssertSuccess(includedJob);
         BuildDiskUsageCalculationThread calculation = AperiodicWork.all().get(BuildDiskUsageCalculationThread.class);
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        assertEquals("Disk usage for excluded project should not be counted.", 0l, DiskUsageTestUtil.getBuildDiskUsageAction(exludedJob.getLastBuild()).getAllDiskUsage(), 0);
+        assertEquals("Disk usage for excluded project should not be counted.", 0l, DiskUsageTestUtil.getBuildDiskUsageAction(
+            excludedJob.getLastBuild()).getAllDiskUsage(), 0);
         assertTrue("Disk usage for excluded project should not be counted.", DiskUsageTestUtil.getBuildDiskUsageAction(includedJob.getLastBuild()).getAllDiskUsage() > 0);
         excludes.clear();
     }

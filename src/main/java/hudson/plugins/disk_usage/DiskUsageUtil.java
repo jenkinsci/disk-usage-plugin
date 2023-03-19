@@ -108,22 +108,22 @@ public class DiskUsageUtil {
         }
         long inMinutes = time / 60000;
         long hours = inMinutes / 60;
-        String formatedTime = "";
+        String formattedTime = "";
         if(hours > 0) {
             String unit = hours > 1 ? "hours" : "hour";
-            formatedTime = hours + " " + unit;
+            formattedTime = hours + " " + unit;
         }
         long minutes = inMinutes - hours * 60;
         if(minutes > 0) {
             String unit = minutes > 1 ? "minutes" : "minute";
-            formatedTime = formatedTime + " " + minutes + " " + unit;
+            formattedTime = formattedTime + " " + minutes + " " + unit;
         }
         long seconds = (time / 1000) - minutes * 60 - hours * 60 * 60;
         if(seconds > 0) {
             String unit = minutes > 1 ? "seconds" : "second";
-            formatedTime = formatedTime + " " + seconds + " " + unit;
+            formattedTime = formattedTime + " " + seconds + " " + unit;
         }
-        return formatedTime;
+        return formattedTime;
     }
 
     public static void sendEmail(String subject, String message) throws MessagingException {
@@ -131,7 +131,7 @@ public class DiskUsageUtil {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         String address = plugin.getConfiguration().getEmailAddress();
         if(address == null || address.isEmpty()) {
-            Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "e-mail addres is not set for notification about exceed disk size. Please set it in global configuration.");
+            Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "e-mail address is not set for notification about exceed disk size. Please set it in global configuration.");
             return;
         }
         MimeMessage msg = new MimeMessage(Mailer.descriptor().createSession());
@@ -161,7 +161,7 @@ public class DiskUsageUtil {
         Long exceedJobsSize = plugin.getConfiguration().getAllJobsExceedSize();
         if(allJobsSize > exceedJobsSize) {
             try {
-                sendEmail("Jobs exeed size", "Jobs exceed size " + getSizeString(exceedJobsSize) + ". Their size is now " + getSizeString(allJobsSize));
+                sendEmail("Jobs exceed size", "Jobs exceed size " + getSizeString(exceedJobsSize) + ". Their size is now " + getSizeString(allJobsSize));
             } catch (MessagingException ex) {
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage plugin can not send notification about exceeting build size.", ex);
             }

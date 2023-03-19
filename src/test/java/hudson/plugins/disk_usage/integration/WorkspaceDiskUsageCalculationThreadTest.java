@@ -275,7 +275,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         DiskUsageProjectActionFactory.DESCRIPTOR.enableWorkspacesDiskUsageCalculation();
         FreeStyleProject excludedJob = j.getInstance().createProject(FreeStyleProject.class, "excludedJob");
-        FreeStyleProject includedJob = j.getInstance().createProject(FreeStyleProject.class, "incudedJob");
+        FreeStyleProject includedJob = j.getInstance().createProject(FreeStyleProject.class, "includedJob");
         if(Functions.isWindows()) {
             excludedJob.getBuildersList().add(new BatchFile("echo ahoj > log.log"));
             includedJob.getBuildersList().add(new BatchFile("echo ahoj > log.log"));

@@ -128,13 +128,13 @@ public class DiskUsagePropertyTest {
         Set<String> nodes = prop.getAgentWorkspaceUsage().keySet();
         assertTrue("DiskUsage property should contains agent " + agent2.getDisplayName() + " in agentWorkspaceUsage.", nodes.contains(
             agent2.getNodeName()));
-        assertFalse("DiskUsage property should not contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace withour reference from project is not set.", nodes.contains(
+        assertFalse("DiskUsage property should not contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace without reference from project is not set.", nodes.contains(
             agent1.getNodeName()));
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnAgent(true);
         prop.checkWorkspaces();
         assertTrue("DiskUsage property should contains agent " + agent2.getDisplayName() + " in agentWorkspaceUsage.", nodes.contains(
             agent2.getNodeName()));
-        assertTrue("DiskUsage property should contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace withour reference from project is set.", nodes.contains(
+        assertTrue("DiskUsage property should contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace without reference from project is set.", nodes.contains(
             agent1.getNodeName()));
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnAgent(false);
     }
@@ -193,7 +193,7 @@ public class DiskUsagePropertyTest {
     }
 
     @Test
-    public void testchcekWorkspacesIfDoesNotExistsIsDeleted() throws Exception {
+    public void testCheckWorkspacesIfDoesNotExistsIsDeleted() throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         DiskUsageProperty property = new DiskUsageProperty();
         project.addProperty(property);
@@ -291,7 +291,7 @@ public class DiskUsagePropertyTest {
         property.getDiskUsage().loadAllBuilds();
         assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
         assertEquals("Size of workspaces should be loaded from previous configuration.", 4096L, property.getAllWorkspaceSize(), 0);
-        assertTrue("Path of workspace shoudl be loaded form previous configuration.", property.getAgentWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
+        assertTrue("Path of workspace should be loaded form previous configuration.", property.getAgentWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
     }
 
     @Test

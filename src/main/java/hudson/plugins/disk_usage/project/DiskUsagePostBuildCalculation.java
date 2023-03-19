@@ -46,7 +46,7 @@ public class DiskUsagePostBuildCalculation extends Recorder {
         @NonNull
         @Override
         public String getDisplayName() {
-            return "Calcualete disk usage of build";
+            return "Calculate disk usage of build";
         }
 
         @Override

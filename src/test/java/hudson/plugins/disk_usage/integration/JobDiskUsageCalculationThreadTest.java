@@ -133,10 +133,11 @@ public class JobDiskUsageCalculationThreadTest {
         }
     }
 
+    @Test
     public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception {
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
         DiskUsageTestUtil.cancelCalculation(calculation);
-        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, j.contextPath);
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "freestyle1");
         final JobWithoutBuildsDiskUsageCalculation testCalculation = new JobWithoutBuildsDiskUsageCalculation();
         Thread t = new Thread(testCalculation.getThreadName()){
             @Override
@@ -155,6 +156,7 @@ public class JobDiskUsageCalculationThreadTest {
         t.interrupt();
     }
 
+    @Test
     public void testDoNotCalculateUnenabledDiskUsage() throws Exception {
         FreeStyleProject projectWithoutDiskUsage = j.jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
         DiskUsageProjectActionFactory.DESCRIPTOR.disableJobsDiskUsageCalculation();
@@ -170,13 +172,13 @@ public class JobDiskUsageCalculationThreadTest {
         if(calculation.isExecuting()) {
             DiskUsageTestUtil.cancelCalculation(calculation);
         }
-        FreeStyleProject exludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
-        FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "incudedJob");
+        FreeStyleProject excludedJob = j.jenkins.createProject(FreeStyleProject.class, "excludedJob");
+        FreeStyleProject includedJob = j.jenkins.createProject(FreeStyleProject.class, "includedJob");
         List<String> excludes = new ArrayList<>();
-        excludes.add(exludedJob.getName());
+        excludes.add(excludedJob.getName());
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         calculation.execute(TaskListener.NULL);
-        assertEquals("Disk usage for excluded project should not be counted.", 0, exludedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), 0);
+        assertEquals("Disk usage for excluded project should not be counted.", 0, excludedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), 0);
         assertTrue("Disk usage for included project should be not be counted.", includedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds() > 0);
         excludes.clear();
     }

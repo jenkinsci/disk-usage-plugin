@@ -22,6 +22,6 @@ More detailed information can be seen on the project page, where you can find di
   
 ![](docs/images/du-project.png)
 
-You can configurate the plugin in `Manage Jenkins` -> `Configure System`
+You can configure the plugin in `Manage Jenkins` -> `Configure System`
 
 ![](docs/images/du-configuration.png)

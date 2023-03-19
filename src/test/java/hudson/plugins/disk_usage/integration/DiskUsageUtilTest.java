@@ -181,7 +181,7 @@ public class DiskUsageUtilTest {
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
 
 
-        // next build - configuration are builded on next agent
+        // next build - configuration are built on next agent
         // test if not active configuration are find and right counted
         // test if works with more complex configurations
         j.buildAndAssertSuccess(project1);
@@ -207,7 +207,7 @@ public class DiskUsageUtilTest {
         Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
 
 
-        // matrix project is builded on the next agent
+        // matrix project is built on the next agent
         // test if new folder on agent2 is counted too
         project1.setAssignedNode(agent2);
         j.buildAndAssertSuccess(project1);

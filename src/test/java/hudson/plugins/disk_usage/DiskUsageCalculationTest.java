@@ -23,7 +23,7 @@ import org.junit.Test;
 public class DiskUsageCalculationTest {
 
     /**
-     * Depends on test testReschedule() - if testReshedule fails this test probably will fail too.
+     * Depends on test testReschedule() - if testReschedule fails this test probably will fail too.
      * 
      * see @testReschedule()
      */
@@ -32,7 +32,7 @@ public class DiskUsageCalculationTest {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.add(Calendar.MINUTE, 10);
         int minute = calendar.get(Calendar.MINUTE);
-        //  attribut currentTask should have value calculation
+        //  attribute currentTask should have value calculation
         TestDiskUsageCalculation calculation = new TestDiskUsageCalculation(minute + " * * * *");
         if(calculation.getLastTask() != null) {
             // should not be any, but if cancel;
@@ -76,7 +76,7 @@ public class DiskUsageCalculationTest {
         calculation = new TestDiskUsageCalculation("0 " + hour + " * * *");
         period = calculation.getRecurrencePeriod();
         expectedPeriod = calendar.getTimeInMillis() - System.currentTimeMillis();
-        assertEquals("Disk usage calculaion should be executed accurately in 2 hours.", expectedPeriod, period, 60000);
+        assertEquals("Disk usage calculation should be executed accurately in 2 hours.", expectedPeriod, period, 60000);
 
         // for days
         calendar = new GregorianCalendar();
@@ -85,7 +85,7 @@ public class DiskUsageCalculationTest {
         calculation = new TestDiskUsageCalculation(calendar.get(Calendar.MINUTE) + " " + calendar.get(Calendar.HOUR_OF_DAY) + " " + day + " * *");
         period = calculation.getRecurrencePeriod();
         expectedPeriod = calendar.getTimeInMillis() - System.currentTimeMillis();
-        assertEquals("Disk usage calculaion should be executed accurately in 2 days.", expectedPeriod, period, 60000);
+        assertEquals("Disk usage calculation should be executed accurately in 2 days.", expectedPeriod, period, 60000);
 
         // for months
         calendar = new GregorianCalendar();
@@ -95,7 +95,7 @@ public class DiskUsageCalculationTest {
         period = calculation.getRecurrencePeriod();
         expectedPeriod = calendar.getTimeInMillis() - System.currentTimeMillis();
         calendar.setTimeInMillis(System.currentTimeMillis() + period);
-        assertEquals("Disk usage calculaion should be executed accurately in 2 months.", expectedPeriod, period, 60000);
+        assertEquals("Disk usage calculation should be executed accurately in 2 months.", expectedPeriod, period, 60000);
 
         // day of week
         calendar = new GregorianCalendar();
@@ -105,13 +105,13 @@ public class DiskUsageCalculationTest {
         period = calculation.getRecurrencePeriod();
         expectedPeriod = calendar.getTimeInMillis() - System.currentTimeMillis();
         calendar.setTimeInMillis(System.currentTimeMillis() + period);
-        assertEquals("Disk usage calculaion should be executed accurately in 2 months.", expectedPeriod, period, 60000);
+        assertEquals("Disk usage calculation should be executed accurately in 2 months.", expectedPeriod, period, 60000);
 
     }
 
 
     /**
-     * Depends on test testScheduledExecutionTime() - if testReshedule fails this test probably will fail too.
+     * Depends on test testScheduledExecutionTime() - if testReschedule fails this test probably will fail too.
      * <p>
      * see @testScheduledExecutionTime()
      */
@@ -120,7 +120,7 @@ public class DiskUsageCalculationTest {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.add(Calendar.MINUTE, 10);
         int minute = calendar.get(Calendar.MINUTE);
-        //  attribut currentTask should have value calculation
+        //  attribute currentTask should have value calculation
         TestDiskUsageCalculation calculation = (TestDiskUsageCalculation) new TestDiskUsageCalculation(minute + " * * * *").getNewInstance();
         Timer.get().schedule(calculation, calculation.getRecurrencePeriod(), TimeUnit.MILLISECONDS); // schedule it;
         calendar.add(Calendar.MINUTE, 10);
@@ -134,7 +134,7 @@ public class DiskUsageCalculationTest {
 
     @Test
     public void testTaskIsScheduledOnlyOneTimesPerMinute() throws Exception {
-        //  attribut currentTask should have value calculation
+        //  attribute currentTask should have value calculation
         List<TestDiskUsageCalculation> scheduledInstances = new ArrayList<>();
         TestDiskUsageCalculation calculation = (TestDiskUsageCalculation) new TestDiskUsageCalculation("* * * * *").getNewInstance();
         TestDiskUsageCalculation.startLoadInstancesHistory(scheduledInstances);
