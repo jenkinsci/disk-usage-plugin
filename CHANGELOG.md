@@ -29,6 +29,7 @@
 - [Replaces deprecated perform method in DiskUsagePostBuildCalculation](https://github.com/jenkinsci/disk-usage-plugin/pull/82)
 - [Removes deprecated DiskUsage and inline fields into child DiskUsageRecord](https://github.com/jenkinsci/disk-usage-plugin/pull/83)
 - [Removes unused class ProjectConfigListener](https://github.com/jenkinsci/disk-usage-plugin/pull/84)
+- [Fix spelling errors](https://github.com/jenkinsci/disk-usage-plugin/pull/85)
 
 ### Release 0.28 (Oct 01, 2015)
 
