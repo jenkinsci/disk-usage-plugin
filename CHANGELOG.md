@@ -2,6 +2,8 @@
 
 ### Upcoming changes
 
+ - [Fixes javadoc errors with java 18](https://github.com/jenkinsci/disk-usage-plugin/pull/87)
+ 
 ### Release 1.0 (2023-06-04)
 
 - [Upgrades latest parent pom 4.53 and to Jenkins 2.361](https://github.com/jenkinsci/disk-usage-plugin/pull/55)
