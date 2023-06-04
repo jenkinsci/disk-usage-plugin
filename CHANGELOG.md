@@ -2,6 +2,8 @@
 
 ### Upcoming changes
 
+### Release 1.0 (2023-06-04)
+
 - [Upgrades latest parent pom 4.53 and to Jenkins 2.361](https://github.com/jenkinsci/disk-usage-plugin/pull/55)
 - [Openrewrite code cleanup](https://github.com/jenkinsci/disk-usage-plugin/pull/57)
 - [Clean code using openrewrite CommonStaticAnalysis recipe](https://github.com/jenkinsci/disk-usage-plugin/pull/58)
