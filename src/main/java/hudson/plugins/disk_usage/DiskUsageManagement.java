@@ -25,7 +25,7 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
 
     @Override
     public String getIconFileName() {
-        return "/plugin/disk-usage/icons/disk-usage.svg";
+        return "symbol-disk-usage plugin-disk-usage";
     }
 
     @Override
@@ -52,5 +52,4 @@ public class DiskUsageManagement extends ManagementLink implements RootAction {
     public void doIndex(StaplerRequest req, StaplerResponse res) throws ServletException, IOException {
         res.sendRedirect(Jenkins.get().getRootUrlFromRequest() + "plugin/disk-usage");
     }
-
 }
