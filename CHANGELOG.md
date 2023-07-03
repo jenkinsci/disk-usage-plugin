@@ -2,6 +2,8 @@
 
 ### Upcoming changes
 
+### Release 1.1 (2023-07-03)
+
  - [Fixes javadoc errors with java 18](https://github.com/jenkinsci/disk-usage-plugin/pull/87)
  - [update styling](https://github.com/jenkinsci/disk-usage-plugin/pull/88)
  
