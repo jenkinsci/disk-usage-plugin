@@ -3,6 +3,7 @@
 ### Upcoming changes
 
  - [Fixes javadoc errors with java 18](https://github.com/jenkinsci/disk-usage-plugin/pull/87)
+ - [update styling](https://github.com/jenkinsci/disk-usage-plugin/pull/88)
  
 ### Release 1.0 (2023-06-04)
 
