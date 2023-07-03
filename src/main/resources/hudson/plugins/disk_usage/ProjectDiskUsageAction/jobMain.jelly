@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:t="/lib/hudson" xmlns:l="/lib/layout">
     <j:if test="${(from.getAllDiskUsageWorkspace() > 0) || (from.getJobRootDirDiskUsage() > 0) || (from.getAllBuildsDiskUsage() > 0)}">
         <table style="margin-left:1em;">
-            <t:summary icon="/plugin/disk-usage/icons/disk-usage.svg">
+            <t:summary icon="symbol-disk-usage plugin-disk-usage">
                 ${it.displayName}
 
                 <table class="fileList">

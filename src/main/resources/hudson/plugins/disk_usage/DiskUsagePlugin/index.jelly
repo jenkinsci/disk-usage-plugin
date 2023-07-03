@@ -1,14 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-<l:layout title="${%Disk Usage}">
-
-  <l:side-panel>
-    <l:tasks>
-      <l:task icon="icon-up icon-md" href="${rootURL}/" title="${%Back to Dashboard}"/>
-    </l:tasks>
-  </l:side-panel>
-
+<l:layout title="${%Disk Usage}" type="one-column">
+  <l:breadcrumb title="Disk Usage"/>
   <l:main-panel>
+    <st:adjunct includes="hudson.plugins.disk_usage.styles"/>
     <j:set var="projects" value="${it.getProjectList()}" />
 
     <div style="width:auto; float:right; margin:12px;">
@@ -20,7 +15,7 @@
       </div>
     </div>
 
-    <h1><img src="${resURL}/plugin/disk-usage/icons/disk-usage.svg" /> ${%Disk usage} </h1>
+    <h1><l:icon src="symbol-disk-usage plugin-disk-usage" class="icon-xlg"/> ${%Disk usage} </h1>
 
     <ul>
       <li><b>${%Jobs}:</b><st:nbsp/>${it.getDiskUsageInString(it.getCashedGlobalJobsDiskUsage())}</li>
@@ -33,27 +28,32 @@
     <!-- project table -->
     <j:new var="calendar" className="java.util.GregorianCalendar" />
     <j:new var="string" className="java.lang.String" />
-    <f:form name="filter" action="filter" method="post">
-      <div>
-        ${%Builds older than }<input type="text" name="older" value="${request.getParameter('older')}"/>
+    <f:form name="filter" action="filter" method="post" class="jenkins-!-margin-bottom-3">
+      <div class="dup-filter">
+        <div class="dup-filter__label">${%Builds older than }</div>
+        <f:number name="older" value="${request.getParameter('older')}"/>
         <j:set var="olderUnit" value="${request.getParameter('olderUnit')}" />
-        <select name="olderUnit">
-          <f:option value="${calendar.DAY_OF_YEAR}" selected="${olderUnit==null || string.valueOf(calendar.DAY_OF_YEAR).equals(olderUnit)}">day ago</f:option>
-          <f:option value="${calendar.WEEK_OF_YEAR}" selected="${olderUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week ago</f:option>
-          <f:option value="${calendar.MONTH}" selected="${olderUnit.equals(string.valueOf(calendar.MONTH))}">month ago</f:option>
-        </select>
-      </div>
-      <div>
-        ${%Builds younger than }<input type="text" name="younger" value="${request.getParameter('younger')}"/>
+        <div class="jenkins-select">
+          <select name="olderUnit" class="jenkins-select__input">
+            <f:option value="${calendar.DAY_OF_YEAR}" selected="${olderUnit==null || string.valueOf(calendar.DAY_OF_YEAR).equals(olderUnit)}">day(s) ago</f:option>
+            <f:option value="${calendar.WEEK_OF_YEAR}" selected="${olderUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week(s) ago</f:option>
+            <f:option value="${calendar.MONTH}" selected="${olderUnit.equals(string.valueOf(calendar.MONTH))}">month(s) ago</f:option>
+          </select>
+        </div>
+        <div class="dup-filter__break"/>
+        <div class="dup-filter__label">${%Builds younger than }</div>
+        <f:number name="younger" value="${request.getParameter('younger')}"/>
         <j:set var="youngerUnit" value="${request.getParameter('youngerUnit')}" />
-        <select name="youngerUnit">
-          <f:option value="${calendar.DAY_OF_YEAR}" selected="${youngerUnit==null || youngerUnit.equals(string.valueOf(calendar.DAY_OF_YEAR))}">day ago</f:option>
-          <f:option value="${calendar.WEEK_OF_YEAR}" selected="${youngerUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week ago</f:option>
-          <f:option value="${calendar.MONTH}" selected="${youngerUnit.equals(string.valueOf(calendar.MONTH))}">month ago</f:option>
-        </select>
+        <div class="jenkins-select">
+          <select name="youngerUnit" class="jenkins-select__input">
+            <f:option value="${calendar.DAY_OF_YEAR}" selected="${youngerUnit==null || youngerUnit.equals(string.valueOf(calendar.DAY_OF_YEAR))}">day(s) ago</f:option>
+            <f:option value="${calendar.WEEK_OF_YEAR}" selected="${youngerUnit.equals(string.valueOf(calendar.WEEK_OF_YEAR))}">week(s) ago</f:option>
+            <f:option value="${calendar.MONTH}" selected="${youngerUnit.equals(string.valueOf(calendar.MONTH))}">month(s) ago</f:option>
+          </select>
+        </div>
       </div>
       <div>
-        <input name="submit" type="submit" value="Filter"/>
+        <button class="jenkins-button" name="submit" type="submit">Filter</button>
       </div>
     </f:form>
 
