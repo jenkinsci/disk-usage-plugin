@@ -39,7 +39,7 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
     }
 
     public static class DiskUsageRecord {
-        private static final SimpleDateFormat sdf = new SimpleDateFormat("d/M");
+        private static final String PATTERN = "d/M";
         Date date;
         private Long jobsWithoutBuildsUsage = 0L;
         private Long allSpace = 0L;
@@ -54,10 +54,10 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
             this.allSpace = allSpace;
             this.diskUsageNonAgentWorkspaces = diskUsageNonAgentWorkspaces;
             date = new Date(){
-                private static final long serialVersionUID = 1L;
+                private static final long serialVersionUID = 679659655161606365L;
                 @Override
                 public String toString() {
-                    return sdf.format(this);
+                    return new SimpleDateFormat(PATTERN).format(this);
                 }
             };
         }

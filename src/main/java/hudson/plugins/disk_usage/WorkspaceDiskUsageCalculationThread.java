@@ -5,6 +5,7 @@
 package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
@@ -70,6 +71,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
     }
 
     @Override
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public AperiodicWork getNewInstance() {
         if(currentTask != null) {
             currentTask.cancel();
