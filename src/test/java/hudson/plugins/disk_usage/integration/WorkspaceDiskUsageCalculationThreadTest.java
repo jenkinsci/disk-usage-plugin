@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -316,7 +317,7 @@ public class WorkspaceDiskUsageCalculationThreadTest {
     public static class TestDiskUsageProperty extends DiskUsageProperty {
 
         @Override
-        public void putAgentWorkspaceSize(Node node, String path, Long size) {
+        public void putAgentWorkspaceSize(@NonNull Node node, String path, Long size) {
             LOGGER.fine("workspace size " + size);
             try {
                 Thread.sleep(10000); // make this operation longer

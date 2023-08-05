@@ -83,7 +83,11 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
 
     @Override
     public CronTab getCronTab() throws ANTLRException {
-        String cron = Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForWorkspaces();
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return null;
+        }
+        String cron = plugin.getConfiguration().getCountIntervalForWorkspaces();
         return new CronTab(cron);
     }
 
@@ -94,7 +98,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
 
     private boolean startExecution() {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationWorkspaceEnabled()) {
+        if(plugin == null || !plugin.getConfiguration().isCalculationWorkspaceEnabled()) {
             return false;
         }
         return !isExecutingMoreThenOneTimes();

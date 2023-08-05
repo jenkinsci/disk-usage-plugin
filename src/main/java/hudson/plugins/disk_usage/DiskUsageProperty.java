@@ -1,5 +1,6 @@
 package hudson.plugins.disk_usage;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.init.InitMilestone;
@@ -7,6 +8,7 @@ import hudson.init.Initializer;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -201,7 +203,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
         putAgentWorkspaceSize(node, path, size);
     }
 
-    public void putAgentWorkspaceSize(Node node, String path, Long size) {
+    public void putAgentWorkspaceSize(@NonNull Node node, String path, Long size) {
         Map<String, Long> workspacesInfo = getAgentWorkspaceUsage().get(node.getNodeName());
         if(workspacesInfo == null) {
             workspacesInfo = new ConcurrentHashMap<>();
@@ -298,9 +300,14 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
             checkLoadedBuilds();
         }
         // only if it is wanted - can cost a quite long time to do it for all
-        if(Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCheckWorkspaceOnAgent() && owner instanceof TopLevelItem) {
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return;
+        }
+        if(plugin.getConfiguration().getCheckWorkspaceOnAgent() && owner instanceof TopLevelItem) {
             for(Node node: Jenkins.get().getNodes()) {
-                if(node.toComputer() != null && node.toComputer().isOnline()) {
+                Computer computer = node.toComputer();
+                if(computer != null && computer.isOnline()) {
                     FilePath path = null;
                     try {
                         path = node.getWorkspaceFor((TopLevelItem) owner);
@@ -337,7 +344,7 @@ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
                         String path = pathIterator.next();
                         try {
                             FilePath workspace = node.createPath(path);
-                            if(!workspace.exists()) {
+                            if(workspace != null && !workspace.exists()) {
                                 pathIterator.remove();
                             }
                         }

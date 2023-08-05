@@ -5,7 +5,10 @@
 package hudson.plugins.disk_usage;
 
 import com.google.common.collect.Maps;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.BulkChange;
+import hudson.FilePath;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -97,7 +100,11 @@ public class ProjectDiskUsage implements Saveable {
         File file = job.getBuildDir();
         int count = 0;
         if(file != null && file.exists() && file.isDirectory()) {
-            for(File f: file.listFiles()) {
+            File[] files = file.listFiles();
+            if (files == null) {
+                return count;
+            }
+            for(File f: files) {
                 if(!FileUtils.isSymlink(f) && !f.isDirectory()) {
                     count++;
                 }
@@ -111,7 +118,7 @@ public class ProjectDiskUsage implements Saveable {
         putAgentWorkspaceSize(node, path, size);
     }
 
-    public void putAgentWorkspaceSize(Node node, String path, Long size) {
+    public void putAgentWorkspaceSize(@NonNull Node node, String path, Long size) {
         Map<String, Long> workspacesInfo = slaveWorkspacesUsage.get(node.getNodeName());
         if(workspacesInfo == null) {
             workspacesInfo = new ConcurrentHashMap<>();
@@ -148,8 +155,10 @@ public class ProjectDiskUsage implements Saveable {
                     continue;
                 }
                 AbstractBuild build = (AbstractBuild) run;
-                if(build.getWorkspace() != null) {
-                    putAgentWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
+                FilePath workspace = build.getWorkspace();
+                Node node = build.getBuiltOn();
+                if(workspace != null && node != null) {
+                    putAgentWorkspaceSize(node, workspace.getRemote(), 0l);
                 }
                 DiskUsageBuildInformation information = new DiskUsageBuildInformation(build.getId(), build.getTimeInMillis(), build.number, 0l);
                 addBuildInformation(information, build);
@@ -182,11 +191,16 @@ public class ProjectDiskUsage implements Saveable {
         return null;
     }
 
-    public void addBuildInformation(DiskUsageBuildInformation info, AbstractBuild build) {
+    public void addBuildInformation(DiskUsageBuildInformation info, @Nullable AbstractBuild build) {
         if(!containsBuildWithId(info.getId())) {
             buildDiskUsage.add(info);
-            if(build != null && build.getWorkspace() != null) {
-                putAgentWorkspaceSize(build.getBuiltOn(), build.getWorkspace().getRemote(), 0l);
+            if (build == null) {
+                return;
+            }
+            FilePath workspace = build.getWorkspace();
+            Node node = build.getBuiltOn();
+            if(workspace != null && node != null) {
+                putAgentWorkspaceSize(node, workspace.getRemote(), 0l);
             }
         }
     }

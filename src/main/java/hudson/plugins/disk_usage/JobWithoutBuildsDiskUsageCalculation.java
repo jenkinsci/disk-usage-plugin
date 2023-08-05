@@ -36,6 +36,9 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return;
+        }
         if(!isCancelled() && startExecution()) {
             try {
                 ItemGroup<? extends Item> itemGroup = Jenkins.get();
@@ -87,7 +90,11 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
 
     @Override
     public CronTab getCronTab() throws ANTLRException {
-        String cron = Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForJobs();
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return null;
+        }
+        String cron = plugin.getConfiguration().getCountIntervalForJobs();
         return new CronTab(cron);
     }
 
@@ -98,7 +105,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
 
     private boolean startExecution() {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationJobsEnabled()) {
+        if(plugin == null || !plugin.getConfiguration().isCalculationJobsEnabled()) {
             return false;
         }
         return !isExecutingMoreThenOneTimes();

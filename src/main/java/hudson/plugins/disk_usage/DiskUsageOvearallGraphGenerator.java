@@ -27,6 +27,9 @@ public class DiskUsageOvearallGraphGenerator extends PeriodicWork {
     @Override
     protected void doRun() throws Exception {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return;
+        }
         plugin.refreshGlobalInformation();
         File jobsDir = new File(Jenkins.get().getRootDir(), "jobs");
         Long freeJobsDirSpace = jobsDir.getTotalSpace();

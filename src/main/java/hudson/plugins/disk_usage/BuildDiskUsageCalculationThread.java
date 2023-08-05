@@ -72,6 +72,9 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
         }
         else {
             DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+            if (plugin == null) {
+                return;
+            }
             if(plugin.getConfiguration().isCalculationBuildsEnabled()) {
                 logger.log(Level.FINER, "Calculation of builds is already in progress.");
             }
@@ -83,7 +86,11 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
 
     @Override
     public CronTab getCronTab() throws ANTLRException {
-        String cron = Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForBuilds();
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return null;
+        }
+        String cron = plugin.getConfiguration().getCountIntervalForBuilds();
         return new CronTab(cron);
     }
 
@@ -106,7 +113,7 @@ public class BuildDiskUsageCalculationThread extends DiskUsageCalculation {
 
     private boolean startExecution() {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationBuildsEnabled()) {
+        if(plugin == null || !plugin.getConfiguration().isCalculationBuildsEnabled()) {
             return false;
         }
         return !isExecutingMoreThenOneTimes();
