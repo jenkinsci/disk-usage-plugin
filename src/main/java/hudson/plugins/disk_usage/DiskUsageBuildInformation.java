@@ -5,7 +5,6 @@
 package hudson.plugins.disk_usage;
 
 import java.io.Serializable;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
@@ -16,9 +15,9 @@ import java.util.Objects;
  */
 public class DiskUsageBuildInformation implements Serializable, Comparable<DiskUsageBuildInformation> {
 
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 8936406908101796594L;
 
-    private static final DateFormat LEGACY_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    private static final String PATTERN = "yyyy-MM-dd_HH-mm-ss";
 
     private String id;
     private long timestamp;
@@ -36,7 +35,7 @@ public class DiskUsageBuildInformation implements Serializable, Comparable<DiskU
     private Object readResolve() {
         if(timestamp == 0) {
             try {
-                timestamp = LEGACY_ID_FORMATTER.parse(id).getTime();
+                timestamp = new SimpleDateFormat(PATTERN).parse(id).getTime();
             } catch (ParseException x) {
                 // never mind
             }

@@ -5,6 +5,7 @@
 package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
@@ -70,6 +71,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
     }
 
     @Override
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public AperiodicWork getNewInstance() {
         if(currentTask != null) {
             currentTask.cancel();
@@ -83,7 +85,11 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
 
     @Override
     public CronTab getCronTab() throws ANTLRException {
-        String cron = Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForWorkspaces();
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return null;
+        }
+        String cron = plugin.getConfiguration().getCountIntervalForWorkspaces();
         return new CronTab(cron);
     }
 
@@ -94,7 +100,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
 
     private boolean startExecution() {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationWorkspaceEnabled()) {
+        if(plugin == null || !plugin.getConfiguration().isCalculationWorkspaceEnabled()) {
             return false;
         }
         return !isExecutingMoreThenOneTimes();

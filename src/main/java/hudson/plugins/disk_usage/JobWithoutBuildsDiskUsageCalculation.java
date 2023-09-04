@@ -5,6 +5,7 @@
 package hudson.plugins.disk_usage;
 
 import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.AperiodicWork;
@@ -36,6 +37,9 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
     @Override
     public void execute(TaskListener listener) throws IOException, InterruptedException {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return;
+        }
         if(!isCancelled() && startExecution()) {
             try {
                 ItemGroup<? extends Item> itemGroup = Jenkins.get();
@@ -74,6 +78,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
     }
 
     @Override
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public AperiodicWork getNewInstance() {
         if(currentTask != null) {
             currentTask.cancel();
@@ -87,7 +92,11 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
 
     @Override
     public CronTab getCronTab() throws ANTLRException {
-        String cron = Jenkins.get().getPlugin(DiskUsagePlugin.class).getConfiguration().getCountIntervalForJobs();
+        DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
+        if (plugin == null) {
+            return null;
+        }
+        String cron = plugin.getConfiguration().getCountIntervalForJobs();
         return new CronTab(cron);
     }
 
@@ -98,7 +107,7 @@ public class JobWithoutBuildsDiskUsageCalculation extends DiskUsageCalculation {
 
     private boolean startExecution() {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
-        if(!plugin.getConfiguration().isCalculationJobsEnabled()) {
+        if(plugin == null || !plugin.getConfiguration().isCalculationJobsEnabled()) {
             return false;
         }
         return !isExecutingMoreThenOneTimes();
