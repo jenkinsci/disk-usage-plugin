@@ -73,7 +73,7 @@ public class DiskUsagePropertyTest {
         j.buildAndAssertSuccess(project);
         DiskUsageProperty p = process.getProperty(DiskUsageProperty.class);
         Thread.sleep(1000);
-        p.getAllNonSlaveOrCustomWorkspaceSize();
+        p.getAllNonAgentOrCustomWorkspaceSize();
     }
 
     @Test
