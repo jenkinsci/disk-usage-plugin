@@ -3,6 +3,7 @@
 ### Upcoming changes
 
  - [Modernize Tooling](https://github.com/jenkinsci/disk-usage-plugin/pull/89)
+ - [Move matrix plugin to test scope](https://github.com/jenkinsci/disk-usage-plugin/pull/91)
 
 ### Release 1.1 (2023-07-03)
 
