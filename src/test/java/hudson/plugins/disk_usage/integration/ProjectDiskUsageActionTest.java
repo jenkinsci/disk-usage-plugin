@@ -101,24 +101,27 @@ public class ProjectDiskUsageActionTest {
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(sizeofBuild);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).setDiskUsage(sizeOfMatrixBuild1);
         DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).setDiskUsage(sizeOfMatrixBuild2);
+
         long size1 = 5390;
         long size2 = 2390;
         int count = 1;
         long matrixBuild1TotalSize = sizeOfMatrixBuild1;
-        long matrixBuild2TotalSize = sizeOfMatrixBuild2;
         for(MatrixConfiguration c: matrixProject.getItems()) {
-            AbstractBuild<?,?> configurationBuild = c.getBuildByNumber(1);
+
+            final AbstractBuild<?,?> configurationBuild = c.getBuildByNumber(1);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild).setDiskUsage(count * size1);
             matrixBuild1TotalSize += count * size1;
-            AbstractBuild<?,?> configurationBuild2 = c.getBuildByNumber(2);
+
+            final AbstractBuild<?,?> configurationBuild2 = c.getBuildByNumber(2);
             DiskUsageTestUtil.getBuildDiskUsageAction(configurationBuild2).setDiskUsage(count * size2);
-            matrixBuild2TotalSize += count * size2;
+
             count++;
         }
+
         matrixBuild2.delete();
-        Long matrixProjectBuildsTotalSize = matrixBuild1TotalSize + matrixBuild2TotalSize - sizeOfMatrixBuild2;
+
         assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
-        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
+        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all").longValue());
 
     }
 
