@@ -4,7 +4,6 @@
  */
 package hudson.plugins.disk_usage;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AbstractProject;
@@ -84,7 +83,7 @@ public class WorkspaceDiskUsageCalculationThread extends DiskUsageCalculation {
     }
 
     @Override
-    public CronTab getCronTab() throws ANTLRException {
+    public CronTab getCronTab() {
         DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
         if (plugin == null) {
             return null;

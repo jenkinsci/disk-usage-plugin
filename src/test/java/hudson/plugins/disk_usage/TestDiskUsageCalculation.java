@@ -1,6 +1,5 @@
 package hudson.plugins.disk_usage;
 
-import antlr.ANTLRException;
 import hudson.model.AperiodicWork;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
@@ -36,7 +35,7 @@ public class TestDiskUsageCalculation extends BuildDiskUsageCalculationThread {
     }
 
     @Override
-    public CronTab getCronTab() throws ANTLRException {
+    public CronTab getCronTab() {
         return new CronTab(cron);
     }
 
