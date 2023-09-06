@@ -4,7 +4,6 @@
  */
 package hudson.plugins.disk_usage;
 
-import antlr.ANTLRException;
 import hudson.model.AsyncAperiodicWork;
 import hudson.scheduler.CronTab;
 import java.util.Calendar;
@@ -13,7 +12,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import jenkins.util.Timer;
 
 /**
@@ -56,20 +54,14 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
     public abstract DiskUsageCalculation getLastTask();
 
     public long scheduledLastInstanceExecutionTime() {
-        try {
-            if(getLastTask() == null || getLastTask().isCancelled()) { // not scheduled
-                return 0L;
-            }
-            long time = getCronTab().ceil(new GregorianCalendar().getTimeInMillis()).getTimeInMillis();
-            if(time < new GregorianCalendar().getTimeInMillis()) {
-                return 0;
-            }
-            return time;
-
-        } catch (ANTLRException ex) {
-            Logger.getLogger(DiskUsageCalculation.class.getName()).log(Level.SEVERE, null, ex);
-            return -1;
+        if(getLastTask() == null || getLastTask().isCancelled()) { // not scheduled
+            return 0L;
         }
+        long time = getCronTab().ceil(new GregorianCalendar().getTimeInMillis()).getTimeInMillis();
+        if(time < new GregorianCalendar().getTimeInMillis()) {
+            return 0;
+        }
+        return time;
     }
 
     @Override
@@ -102,7 +94,7 @@ public abstract class DiskUsageCalculation extends AsyncAperiodicWork {
         Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
     }
 
-    public abstract CronTab getCronTab() throws ANTLRException;
+    public abstract CronTab getCronTab();
 
     @Override
     public long getRecurrencePeriod() {
