@@ -2,6 +2,8 @@
 
 ### Upcoming changes
 
+### Release 1.2 (2023-09-06)
+
  - [Modernize Tooling](https://github.com/jenkinsci/disk-usage-plugin/pull/89)
  - [Move matrix plugin to test scope](https://github.com/jenkinsci/disk-usage-plugin/pull/91)
  - [Removes usage of deprecated ANTLRException](https://github.com/jenkinsci/disk-usage-plugin/pull/92)
