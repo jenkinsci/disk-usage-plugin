@@ -2,6 +2,8 @@
 
 ### Upcoming changes
 
+ - [Modernize to Jenkins 2.387.3](https://github.com/jenkinsci/disk-usage-plugin/pull/93)
+
 ### Release 1.2 (2023-09-06)
 
  - [Modernize Tooling](https://github.com/jenkinsci/disk-usage-plugin/pull/89)
