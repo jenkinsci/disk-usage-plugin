@@ -132,6 +132,9 @@
     <f:entry title="${%Jobs excluded for disk usage calculation}">
       <f:textarea name="excludedJobs" value="${descriptor.getExcludedJobsInString()}"/>
     </f:entry>
+    <f:entry title="${%Max Depth of Directory Traversal}">
+      <f:textbox name="maxDepthDirTraverse" value="${descriptor.getMaxDepthDirTraverse()}"/>
+    </f:entry>
 
     <!--  </f:section>-->
     <!--     <f:submit name="Submit" value="Submit"/>

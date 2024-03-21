@@ -81,6 +81,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
         private Long diskUsageLockedBuilds = 0L;
 
         private boolean showGraph = true;
+        private int maxDepthDirTraverse = -1;
         private int historyLength = 183;
         List<DiskUsageOvearallGraphGenerator.DiskUsageRecord> history = new LinkedList<DiskUsageOvearallGraphGenerator.DiskUsageRecord>(){
             private static final long serialVersionUID = 1L;
@@ -282,6 +283,15 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                 return null;
             }
             return size.split(" ")[0];
+        }
+
+        public int getMaxDepthDirTraverse() {
+            return maxDepthDirTraverse;
+        }
+
+
+        public void setMaxDepthDirTraverse(int depth) {
+            this.maxDepthDirTraverse = depth;
         }
 
 
