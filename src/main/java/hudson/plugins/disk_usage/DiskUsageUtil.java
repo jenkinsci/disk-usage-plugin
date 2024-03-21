@@ -350,20 +350,22 @@ public class DiskUsageUtil {
         return Util.isSymlink(f);
     }
 
-    public static Long getFileSize(File f, List<File> exceedFiles) throws IOException {
+    public static Long getFileSize(File f, List<File> exceedFiles, int curDirDepth, int maxDepthDirTraverse) throws IOException {
         long size = 0;
         if(!f.exists()) {
             return size;
         }
         if(f.isDirectory() && !isSymlink(f)) {
-            File[] fileList = f.listFiles();
-            if(fileList != null) {
-                for(File child: fileList) {
-                    if(exceedFiles.contains(child)) {
-                        continue;
-                    } // do not count exceeded files
-                    if(!isSymlink(child)) {
-                        size += getFileSize(child, exceedFiles);
+            if (curDirDepth < maxDepthDirTraverse || maxDepthDirTraverse == -1) {
+                File[] fileList = f.listFiles();
+                if(fileList != null) {
+                    for(File child: fileList) {
+                        if(exceedFiles.contains(child)) {
+                            continue;
+                        } // do not count exceeded files
+                        if(!isSymlink(child)) {
+                            size += getFileSize(child, exceedFiles, curDirDepth + 1, maxDepthDirTraverse);
+                        }
                     }
                 }
             }
@@ -398,7 +400,7 @@ public class DiskUsageUtil {
                 exceededFiles.add(p.getRootDir());
             }
         }
-        long buildSize = DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles);
+        long buildSize = DiskUsageUtil.getFileSize(project.getRootDir(), exceededFiles, 0, plugin.getConfiguration().getMaxDepthDirTraverse());
         Long diskUsageWithoutBuilds = property.getDiskUsageWithoutBuilds();
         boolean update = false;
         if((diskUsageWithoutBuilds <= 0) ||
@@ -429,7 +431,7 @@ public class DiskUsageUtil {
         }
         // Build disk usage has to be always recalculated to be kept up-to-date 
         // - artifacts might be kept only for the last build and users sometimes delete files manually as well.
-        long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.get().getBuildDirFor(project), buildId), new ArrayList<>());
+        long buildSize = DiskUsageUtil.getFileSize(new File(Jenkins.get().getBuildDirFor(project), buildId), new ArrayList<>(), 0, plugin.getConfiguration().getMaxDepthDirTraverse());
 
         Collection<AbstractBuild> loadedBuilds = project._getRuns().getLoadedBuilds().values();
         AbstractBuild build = null;
@@ -479,7 +481,8 @@ public class DiskUsageUtil {
             try {
                 DiskUsagePlugin plugin = Jenkins.get().getPlugin(DiskUsagePlugin.class);
                 int minutes = plugin == null ? 5 : plugin.getConfiguration().getTimeoutWorkspace();
-                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded)).get(minutes, TimeUnit.MINUTES);
+                int maxDepthDirTraverse = plugin == null ? -1 : plugin.getConfiguration().getMaxDepthDirTraverse();
+                diskUsage = workspace.getChannel().callAsync(new DiskUsageCallable(workspace, exceeded, 0, maxDepthDirTraverse)).get(minutes, TimeUnit.MINUTES);
             }
             catch (Exception e) {
                 Logger.getLogger(DiskUsageUtil.class.getName()).log(Level.WARNING, "Disk usage fails to calculate workspace for file path " + workspace.getRemote() + " through channel " + workspace.getChannel(), e);
@@ -578,10 +581,14 @@ public class DiskUsageUtil {
 
         private FilePath path;
         private List<FilePath> exceedFilesPath;
+        private int curDirDepth;
+        private final int maxDepthDirTraverse;
 
-        public DiskUsageCallable(FilePath filePath, List<FilePath> exceedFilesPath) {
+        public DiskUsageCallable(FilePath filePath, List<FilePath> exceedFilesPath, int curDirDepth, int maxDepthDirTraverse) {
             this.path = filePath;
             this.exceedFilesPath = exceedFilesPath;
+            this.curDirDepth = curDirDepth;
+            this.maxDepthDirTraverse = maxDepthDirTraverse;
         }
 
         public Long call() throws IOException {
@@ -590,7 +597,7 @@ public class DiskUsageUtil {
             for(FilePath file: exceedFilesPath) {
                 exceeded.add(new File(file.getRemote()));
             }
-            return DiskUsageUtil.getFileSize(f, exceeded);
+            return DiskUsageUtil.getFileSize(f, exceeded, curDirDepth + 1, maxDepthDirTraverse);
         }
 
         @Override
