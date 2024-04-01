@@ -8,6 +8,7 @@ import hudson.model.AperiodicWork;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.TransientProjectActionFactory;
+import hudson.scheduler.CronTab;
 import hudson.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,8 +18,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -376,6 +380,30 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
             if(!oldCountIntervalBuilds.equals(countIntervalBuilds) || oldCalculationBuilds != calculationBuilds) {
                 buildCalculation.reschedule();
             }
+        }
+
+
+        private FormValidation checkCrons(String cron){
+            try {
+                final CronTab cronTab = new CronTab(cron);
+                final String sanity = cronTab.checkSanity();
+                if (sanity == null){
+                    return FormValidation.ok();
+                } else {
+                    return FormValidation.warning(sanity);
+                }
+            } catch (IllegalArgumentException e){
+                return FormValidation.error(Messages.InvalidCrontab(cron));
+            }
+        }
+        public FormValidation doCheckCountIntervalBuilds(@QueryParameter String value){
+            return checkCrons(value);
+        }
+        public FormValidation doCheckCountIntervalJobs(@QueryParameter String value){
+            return checkCrons(value);
+        }
+        public FormValidation doCheckCountIntervalWorkspace(@QueryParameter String value){
+            return checkCrons(value);
         }
 
         private void configureJobsCalculation(JSONObject form) {
