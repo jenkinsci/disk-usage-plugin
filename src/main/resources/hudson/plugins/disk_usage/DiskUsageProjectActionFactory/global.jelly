@@ -10,21 +10,21 @@
 
     <f:optionalBlock name="calculationBuilds" title="${%Enable calculation of builds}"
                      checked="${descriptor.isCalculationBuildsEnabled()}">
-      <f:entry title="${%Time interval for calculation}">
+      <f:entry title="${%Time interval for calculation}" field="countIntervalBuilds">
         <f:textbox name="countIntervalBuilds" value="${descriptor.getCountIntervalForBuilds()}"/>
       </f:entry>
     </f:optionalBlock>
 
     <f:optionalBlock name="calculationJobs" title="${%Enable calculation of jobs}"
                      checked="${descriptor.isCalculationJobsEnabled()}">
-      <f:entry title="${%Time interval for calculation}">
+      <f:entry title="${%Time interval for calculation}" field="countIntervalJobs">
         <f:textbox name="countIntervalJobs" value="${descriptor.getCountIntervalForJobs()}"/>
       </f:entry>
     </f:optionalBlock>
 
     <f:optionalBlock name="calculationWorkspace" title="${%Enable calculation of workspace}"
                      checked="${descriptor.isCalculationWorkspaceEnabled()}">
-      <f:entry title="${%Time interval for calculation}">
+      <f:entry title="${%Time interval for calculation}" field="countIntervalWorkspace">
         <f:textbox name="countIntervalWorkspace" value="${descriptor.getCountIntervalForWorkspaces()}"/>
       </f:entry>
     </f:optionalBlock>
