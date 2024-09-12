@@ -5,6 +5,7 @@
  - [Adds checks for user defined crontab entries](https://github.com/jenkinsci/disk-usage-plugin/pull/96)
  - [Modernize to Jenkins 2.387.3](https://github.com/jenkinsci/disk-usage-plugin/pull/93)
  - [Test with Java 21.](https://github.com/jenkinsci/disk-usage-plugin/pull/94)
+ - [Fix spotbugs warning - invalid method name](https://github.com/jenkinsci/disk-usage-plugin/pull/98)
 
 ### Release 1.2 (2023-09-06)
 
