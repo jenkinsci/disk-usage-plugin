@@ -393,7 +393,7 @@ public class DiskUsageProjectActionFactory extends TransientProjectActionFactory
                     return FormValidation.warning(sanity);
                 }
             } catch (IllegalArgumentException e){
-                return FormValidation.error(Messages.InvalidCrontab(cron));
+                return FormValidation.error(Messages.invalidCrontab(cron));
             }
         }
         public FormValidation doCheckCountIntervalBuilds(@QueryParameter String value){
