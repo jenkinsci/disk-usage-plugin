@@ -2,6 +2,8 @@
 
 ### Upcoming changes
 
+### Release 1.3 (2024-11-19)
+
  - [Adds checks for user defined crontab entries](https://github.com/jenkinsci/disk-usage-plugin/pull/96)
  - [Modernize to Jenkins 2.387.3](https://github.com/jenkinsci/disk-usage-plugin/pull/93)
  - [Test with Java 21.](https://github.com/jenkinsci/disk-usage-plugin/pull/94)
