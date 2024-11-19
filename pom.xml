@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.73</version>
+    <version>4.88</version>
   </parent>
 
   <artifactId>disk-usage</artifactId>
@@ -28,15 +28,15 @@
   </scm>
 
   <properties>
-    <jenkins.version>2.401.1</jenkins.version>
+    <jenkins.version>2.452.4</jenkins.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.401.x</artifactId>
-        <version>2198.v39c76fc308ca</version>
+        <artifactId>bom-2.452.x</artifactId>
+        <version>3387.v0f2773fa_3200</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -63,7 +63,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>promoted-builds</artifactId>
-      <version>892.vd6219fc0a_efb</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
