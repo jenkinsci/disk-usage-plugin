@@ -2,6 +2,8 @@
 
 ### Upcoming changes
 
+ - [Use jenkins.baseline to reduce bom update mistakes](https://github.com/jenkinsci/disk-usage-plugin/pull/100)
+
 ### Release 1.3 (2024-11-19)
 
  - [Adds checks for user defined crontab entries](https://github.com/jenkinsci/disk-usage-plugin/pull/96)
