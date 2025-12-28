@@ -3,6 +3,7 @@
 ### Upcoming changes
 
  - [Use jenkins.baseline to reduce bom update mistakes](https://github.com/jenkinsci/disk-usage-plugin/pull/100)
+ - [Test with Java 25](https://github.com/jenkinsci/disk-usage-plugin/pull/101)
 
 ### Release 1.3 (2024-11-19)
 
