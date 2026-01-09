@@ -1,7 +1,7 @@
 package hudson.plugins.disk_usage;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -10,46 +10,46 @@ import org.junit.Test;
 public class DiskUsageUtilTest {
 
     @Test
-    public void testGetSizeInBytes() {
+    void testGetSizeInBytes() {
         String sizeInString = "57 B";
         long size = 57L;
-        Assert.assertEquals("Byte representation of size 57 B is wrong.", size, DiskUsageUtil.getSizeInBytes(sizeInString), 0);
+        Assertions.assertEquals(size, DiskUsageUtil.getSizeInBytes(sizeInString), 0, "Byte representation of size 57 B is wrong.");
         sizeInString = "5 KB";
         size = 1024L * 5;
-        Assert.assertEquals("Byte representation of size 5 KB is wrong.", size, DiskUsageUtil.getSizeInBytes(sizeInString), 0);
+        Assertions.assertEquals(size, DiskUsageUtil.getSizeInBytes(sizeInString), 0, "Byte representation of size 5 KB is wrong.");
         sizeInString = "9 MB";
         size = 1024L * 1024 * 9;
-        Assert.assertEquals("Byte representation of size 9 MB is wrong.", size, DiskUsageUtil.getSizeInBytes(sizeInString), 0);
+        Assertions.assertEquals(size, DiskUsageUtil.getSizeInBytes(sizeInString), 0, "Byte representation of size 9 MB is wrong.");
         sizeInString = "1 GB";
         size = 1024L * 1024 * 1024;
-        Assert.assertEquals("Byte representation of size 1 GB is wrong.", size, DiskUsageUtil.getSizeInBytes(sizeInString), 0);
+        Assertions.assertEquals(size, DiskUsageUtil.getSizeInBytes(sizeInString), 0, "Byte representation of size 1 GB is wrong.");
         sizeInString = "2 TB";
         size = 1024L * 1024 * 1024 * 1024 * 2;
-        Assert.assertEquals("Byte representation of size 2 TB is wrong.", size, DiskUsageUtil.getSizeInBytes(sizeInString), 0);
+        Assertions.assertEquals(size, DiskUsageUtil.getSizeInBytes(sizeInString), 0, "Byte representation of size 2 TB is wrong.");
         sizeInString = "-";
-        Assert.assertEquals("Byte representation of size - is wrong.", 0, DiskUsageUtil.getSizeInBytes(sizeInString), 0);
+        Assertions.assertEquals(0, DiskUsageUtil.getSizeInBytes(sizeInString), 0, "Byte representation of size - is wrong.");
     }
 
     @Test
-    public void testGetSizeInString() {
+    void testGetSizeInString() {
         String sizeInString = "57 B";
         long size = 57L;
-        Assert.assertEquals("String representation of size 57 B is wrong.", sizeInString, DiskUsageUtil.getSizeString(size));
+        Assertions.assertEquals(sizeInString, DiskUsageUtil.getSizeString(size), "String representation of size 57 B is wrong.");
         sizeInString = "5 KB";
         size = 1024L * 5;
-        Assert.assertEquals("String representation of size 5 KB is wrong.", sizeInString, DiskUsageUtil.getSizeString(size));
+        Assertions.assertEquals(sizeInString, DiskUsageUtil.getSizeString(size), "String representation of size 5 KB is wrong.");
         sizeInString = "9 MB";
         size = 1024L * 1024 * 9;
-        Assert.assertEquals("String representation of size 9 MB is wrong.", sizeInString, DiskUsageUtil.getSizeString(size));
+        Assertions.assertEquals(sizeInString, DiskUsageUtil.getSizeString(size), "String representation of size 9 MB is wrong.");
         sizeInString = "1 GB";
         size = 1024L * 1024 * 1024;
-        Assert.assertEquals("String representation of size 1 GB is wrong.", sizeInString, DiskUsageUtil.getSizeString(size));
+        Assertions.assertEquals(sizeInString, DiskUsageUtil.getSizeString(size), "String representation of size 1 GB is wrong.");
         sizeInString = "2 TB";
         size = 1024L * 1024 * 1024 * 1024 * 2;
-        Assert.assertEquals("String representation of size 2 TB is wrong.", sizeInString, DiskUsageUtil.getSizeString(size));
+        Assertions.assertEquals(sizeInString, DiskUsageUtil.getSizeString(size), "String representation of size 2 TB is wrong.");
         sizeInString = "-";
         size = 0L;
-        Assert.assertEquals("String representation of size 0 B is wrong.", sizeInString, DiskUsageUtil.getSizeString(size));
+        Assertions.assertEquals(sizeInString, DiskUsageUtil.getSizeString(size), "String representation of size 0 B is wrong.");
 
     }
 

@@ -1,51 +1,49 @@
 package hudson.plugins.disk_usage.project.integration;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.matrix.MatrixProject;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
 import hudson.plugins.disk_usage.project.DiskUsagePostBuildCalculation;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  *
  * @author Lucie Votypkova
  */
+@WithJenkins
 public class DiskUsagePostBuildCalculationTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
     @Test
-    public void testDiskUsageIsCalculated() throws Exception {
+    void testDiskUsageIsCalculated(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.getPublishersList().add(new DiskUsagePostBuildCalculation());
         j.buildAndAssertSuccess(project);
         AbstractBuild<?,?> build = project.getLastBuild();
-        assertTrue("Disk usage of build should be calculated.", build.getAction(BuildDiskUsageAction.class).getDiskUsage() > 0);
+        assertTrue(build.getAction(BuildDiskUsageAction.class).getDiskUsage() > 0, "Disk usage of build should be calculated.");
 
     }
 
     @Test
-    public void testDiskUsageIsNotCalculatedTwoTimes() throws Exception {
+    void testDiskUsageIsNotCalculatedTwoTimes(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.getPublishersList().add(new DiskUsagePostBuildCalculation());
         j.buildAndAssertSuccess(project);
         AbstractBuild<?,?> build = project.getLastBuild();
-        assertTrue("Disk usage called by listener should be skipped.", build.getLog(10).contains("Skipping calculation of disk usage, it was already done in post build step."));
+        assertTrue(build.getLog(10).contains("Skipping calculation of disk usage, it was already done in post build step."), "Disk usage called by listener should be skipped.");
     }
 
     @Test
-    public void testDiskUsageCalculationForMatrixProject() throws Exception {
+    void testDiskUsageCalculationForMatrixProject(JenkinsRule j) throws Exception {
         MatrixProject project = j.jenkins.createProject(MatrixProject.class, "project");
         project.getPublishersList().add(new DiskUsagePostBuildCalculation());
         j.buildAndAssertSuccess(project);
         AbstractBuild<?,?> build = project.getLastBuild();
-        assertTrue("Disk usage of build should be calculated.", build.getAction(BuildDiskUsageAction.class).getDiskUsage() > 0);
+        assertTrue(build.getAction(BuildDiskUsageAction.class).getDiskUsage() > 0, "Disk usage of build should be calculated.");
     }
 
 

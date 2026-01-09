@@ -4,9 +4,9 @@
  */
 package hudson.plugins.disk_usage.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -16,22 +16,20 @@ import hudson.model.TopLevelItem;
 import hudson.plugins.disk_usage.DiskUsagePlugin;
 import hudson.plugins.disk_usage.DiskUsageProperty;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
  * @author Lucie Votypkova
  */
+@WithJenkins
 public class DiskUsagePluginTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
     @Test
-    public void testRefreshGlobalInformation() throws IOException {
+    void testRefreshGlobalInformation(JenkinsRule j) throws IOException {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         FreeStyleBuild build1 = project.createExecutable();
         FreeStyleBuild build2 = project.createExecutable();
@@ -53,48 +51,48 @@ public class DiskUsagePluginTest {
         property.setDiskUsageWithoutBuilds(jobUsage);
         property.putAgentWorkspaceSize(j.jenkins, j.jenkins.getWorkspaceFor((TopLevelItem) project).getRemote(), workspaceUsage);
         plugin.refreshGlobalInformation();
-        assertEquals("Global build diskUsage should be refreshed.", sizeofBuild1 + sizeofBuild2 + sizeofBuild3, plugin.getCashedGlobalBuildsDiskUsage(), 0);
-        assertEquals("Global job diskUsage should be refreshed.", jobUsage, plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), 0);
-        assertEquals("Global workspace diskUsage should be refreshed.", workspaceUsage, plugin.getCashedGlobalWorkspacesDiskUsage(), 0);
+        assertEquals(sizeofBuild1 + sizeofBuild2 + sizeofBuild3, plugin.getCashedGlobalBuildsDiskUsage(), 0, "Global build diskUsage should be refreshed.");
+        assertEquals(jobUsage, plugin.getCashedGlobalJobsWithoutBuildsDiskUsage(), 0, "Global job diskUsage should be refreshed.");
+        assertEquals(workspaceUsage, plugin.getCashedGlobalWorkspacesDiskUsage(), 0, "Global workspace diskUsage should be refreshed.");
 
     }
 
     @Test
     @LocalData
-    public void testNotBreakLazyLoading() throws IOException {
+    void testNotBreakLazyLoading(JenkinsRule j) throws IOException {
         AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
-        assertTrue("This tests does not sense if there are loaded all builds.", 8 > loadedBuilds);
+        assertTrue(8 > loadedBuilds, "This tests does not sense if there are loaded all builds.");
         j.jenkins.getPlugin(DiskUsagePlugin.class).refreshGlobalInformation();
-        assertEquals("Size of builds should be loaded.", 47000, j.jenkins.getPlugin(DiskUsagePlugin.class).getCashedGlobalBuildsDiskUsage(), 0);
-        assertTrue("No new build should be loaded.", loadedBuilds <= project._getRuns().getLoadedBuilds().size());
+        assertEquals(47000, j.jenkins.getPlugin(DiskUsagePlugin.class).getCashedGlobalBuildsDiskUsage(), 0, "Size of builds should be loaded.");
+        assertTrue(loadedBuilds <= project._getRuns().getLoadedBuilds().size(), "No new build should be loaded.");
     }
 
     @Test
     @LocalData
-    public void testDoNotLoadAllBuildsDuringStart() {
+    void testDoNotLoadAllBuildsDuringStart(JenkinsRule j) {
         AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         AbstractProject<?,?> project2 = (AbstractProject<?,?>) j.jenkins.getItem("project2");
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
-        assertEquals("Builds of project with disk-usage.xml should not be loaded.", 0, loadedBuilds);
+        assertEquals(0, loadedBuilds, "Builds of project with disk-usage.xml should not be loaded.");
         loadedBuilds = project2._getRuns().getLoadedBuilds().size();
-        assertEquals("Builds of project without disk-usage.xml should not be loaded.", 0, loadedBuilds);
+        assertEquals(0, loadedBuilds, "Builds of project without disk-usage.xml should not be loaded.");
     }
 
     @Test
     @LocalData
-    public void testDoLoadBuildInformationWhenBuildIsLoaded() {
+    void testDoLoadBuildInformationWhenBuildIsLoaded(JenkinsRule j) {
         AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         AbstractBuild<?,?> build = project.getBuild("1");
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertNotNull("Build should be add after its loading (if it is not present before).", property.getDiskUsageOfBuild(2));
-        assertEquals("Only required build should be loaded into Jenkins.", 1, loadedBuilds);
+        assertNotNull(property.getDiskUsageOfBuild(2), "Build should be add after its loading (if it is not present before).");
+        assertEquals(1, loadedBuilds, "Only required build should be loaded into Jenkins.");
     }
 
     @Test
     @LocalData
-    public void testBuildInfoIsNoLoadedMultipleTimes() throws Exception {
+    void testBuildInfoIsNoLoadedMultipleTimes(JenkinsRule j) throws Exception {
         AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         AbstractBuild<?,?> build = project.getBuild("2");
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
@@ -103,8 +101,8 @@ public class DiskUsagePluginTest {
         project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         build = project.getBuild("2");
         property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertNotNull("Should be loaded build 2", property.getDiskUsageBuildInformation(2));
-        assertEquals("Only one build should be loaded into disk usage build information.", 1, property.getDiskUsageOfBuilds().size());
+        assertNotNull(property.getDiskUsageBuildInformation(2), "Should be loaded build 2");
+        assertEquals(1, property.getDiskUsageOfBuilds().size(), "Only one build should be loaded into disk usage build information.");
 
     }
 }

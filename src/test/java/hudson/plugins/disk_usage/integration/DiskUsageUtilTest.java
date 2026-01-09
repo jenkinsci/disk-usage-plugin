@@ -1,7 +1,7 @@
 package hudson.plugins.disk_usage.integration;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
@@ -22,35 +22,33 @@ import hudson.plugins.disk_usage.ProjectDiskUsageAction;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
  * @author Lucie Votypkova
  */
+@WithJenkins
 public class DiskUsageUtilTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
     @Test
     @LocalData
-    public void testCalculateDiskUsageForBuild() throws Exception {
+    void testCalculateDiskUsageForBuild(JenkinsRule j) throws Exception {
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
         AbstractBuild<?,?> build = project.getBuildByNumber(2);
         File file = new File(build.getRootDir(), "fileList");
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + build.getRootDir().length();
         DiskUsageUtil.calculateDiskUsageForBuild(build.getId(), project);
-        Assert.assertEquals("Calculation of build disk usage does not return right size of build directory.", size, DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage());
+        Assertions.assertEquals(size, DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage(), "Calculation of build disk usage does not return right size of build directory.");
     }
 
     @Test
     @LocalData
-    public void testCalculateDiskUsageForMatrixBuild() throws Exception {
+    void testCalculateDiskUsageForMatrixBuild(JenkinsRule j) throws Exception {
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         AbstractBuild<?,?> build = project.getBuildByNumber(1);
         File file = new File(build.getRootDir(), "fileList");
@@ -62,16 +60,16 @@ public class DiskUsageUtilTest {
             sizeAll += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(f)) + b.getRootDir().length();
         }
         DiskUsageUtil.calculateDiskUsageForBuild(build.getId(), project);
-        Assert.assertEquals("Matrix project project1 has disk usage size.", size, DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage());
+        Assertions.assertEquals(size, DiskUsageTestUtil.getBuildDiskUsageAction(build).getDiskUsage(), "Matrix project project1 has disk usage size.");
         for(MatrixConfiguration config: project.getActiveConfigurations()) {
             DiskUsageUtil.calculateDiskUsageForBuild(config.getBuildByNumber(1).getId(), config);
         }
-        Assert.assertEquals("Matrix project project1 has wrong size for its build.", sizeAll, DiskUsageTestUtil.getBuildDiskUsageAction(build).getAllDiskUsage());
+        Assertions.assertEquals(sizeAll, DiskUsageTestUtil.getBuildDiskUsageAction(build).getAllDiskUsage(), "Matrix project project1 has wrong size for its build.");
     }
 
     @Test
     @LocalData
-    public void testCalculateDiskUsageForJob() throws Exception {
+    void testCalculateDiskUsageForJob(JenkinsRule j) throws Exception {
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("project1");
         // all builds has to be loaded
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
@@ -79,13 +77,13 @@ public class DiskUsageUtilTest {
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + project.getRootDir().length();
         size += project.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         DiskUsageUtil.calculateDiskUsageForProject(project);
-        Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds());
+        Assertions.assertEquals(size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), "Calculation of job disk usage does not return right size of job without builds.");
 
     }
 
     @Test
     @LocalData
-    public void testCalculateDiskUsageForMatrixJob() throws Exception {
+    void testCalculateDiskUsageForMatrixJob(JenkinsRule j) throws Exception {
         MatrixProject project = (MatrixProject) j.jenkins.getItem("project1");
         // all builds has to be loaded
         project.getProperty(DiskUsageProperty.class).getDiskUsage().loadAllBuilds();
@@ -100,17 +98,17 @@ public class DiskUsageUtilTest {
             sizeAll += config.getProperty(DiskUsageProperty.class).getProjectDiskUsage().getConfigFile().getFile().length();
         }
         DiskUsageUtil.calculateDiskUsageForProject(project);
-        Assert.assertEquals("Calculation of job disk usage does not return right size of job without builds.", size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds());
+        Assertions.assertEquals(size, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), "Calculation of job disk usage does not return right size of job without builds.");
         for(AbstractProject<?,?> p: project.getItems()) {
             DiskUsageUtil.calculateDiskUsageForProject(p);
         }
-        Assert.assertEquals("Calculation of job disk usage does not return right size of job and its sub-jobs without builds.", sizeAll, project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds());
+        Assertions.assertEquals(sizeAll, project.getAction(ProjectDiskUsageAction.class).getAllDiskUsageWithoutBuilds(), "Calculation of job disk usage does not return right size of job and its sub-jobs without builds.");
 
     }
 
     @Test
     @LocalData
-    public void testCalculateDiskUsageWorkspaceForProject() throws Exception {
+    void testCalculateDiskUsageWorkspaceForProject(JenkinsRule j) throws Exception {
         // turn off run listener
         RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -131,16 +129,16 @@ public class DiskUsageUtilTest {
         Long size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent1.getWorkspaceFor(project1).length();
         size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file2)) + agent2.getWorkspaceFor(project1).length();
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
-        Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assertions.assertEquals(size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of job workspace disk usage does not return right size.");
         file = new File(agent1.getWorkspaceFor(project2).getRemote(), "fileList");
         size = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent1.getWorkspaceFor(project2).length() + agent2.getWorkspaceFor(project2).length();
         DiskUsageUtil.calculateWorkspaceDiskUsage(project2);
-        Assert.assertEquals("Calculation of job workspace disk usage does not return right size.", size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assertions.assertEquals(size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of job workspace disk usage does not return right size.");
     }
 
     @Test
     @LocalData
-    public void testCalculateDiskUsageWorkspaceForMatrixProjectWithConfigurationInSameDirectory() throws Exception {
+    void testCalculateDiskUsageWorkspaceForMatrixProjectWithConfigurationInSameDirectory(JenkinsRule j) throws Exception {
         // turn off run listener
         RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -174,11 +172,11 @@ public class DiskUsageUtilTest {
             DiskUsageUtil.calculateWorkspaceDiskUsage(c);
         }
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
-        Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assertions.assertEquals(size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix job workspace disk usage does not return right size.");
 
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assertions.assertEquals(sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
+        Assertions.assertEquals(sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
+        Assertions.assertEquals(sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
 
 
         // next build - configuration are built on next agent
@@ -190,9 +188,9 @@ public class DiskUsageUtilTest {
         }
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
 
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assertions.assertEquals(sizeAxis1, project1.getItem("axis=axis1").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
+        Assertions.assertEquals(sizeAxis2, project1.getItem("axis=axis2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
+        Assertions.assertEquals(sizeAxis3, project1.getItem("axis=axis3").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
         fileAxis1 = new File(agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis1/label/agent2", "fileList");
         fileAxis2 = new File(agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis2/label/agent2", "fileList");
         fileAxis3 = new File(agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis3/label/agent2", "fileList");
@@ -202,9 +200,9 @@ public class DiskUsageUtilTest {
             agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis2/label/agent2").length();
         sizeAxis3 = DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(fileAxis3)) + new File(
             agent2.getWorkspaceFor(project1).getRemote() + "/axis/axis3/label/agent2").length();
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis1, project1.getItem("axis=axis1,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis2, project1.getItem("axis=axis2,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
-        Assert.assertEquals("Calculation of matrix configuration workspace disk usage does not return right size.", sizeAxis3, project1.getItem("axis=axis3,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assertions.assertEquals(sizeAxis1, project1.getItem("axis=axis1,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
+        Assertions.assertEquals(sizeAxis2, project1.getItem("axis=axis2,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
+        Assertions.assertEquals(sizeAxis3, project1.getItem("axis=axis3,label=agent2").getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix configuration workspace disk usage does not return right size.");
 
 
         // matrix project is built on the next agent
@@ -214,12 +212,12 @@ public class DiskUsageUtilTest {
         file = new File(agent2.getWorkspaceFor(project1).getRemote(), "fileList");
         size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent2.getWorkspaceFor(project1).length();
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
-        Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assertions.assertEquals(size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix job workspace disk usage does not return right size.");
     }
 
     @Test
     @LocalData
-    public void testCalculateDiskUsageWorkspaceWhenReferenceFromJobDoesNotExists() throws Exception {
+    void testCalculateDiskUsageWorkspaceWhenReferenceFromJobDoesNotExists(JenkinsRule j) throws Exception {
         // turn off run listener
         RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -249,13 +247,13 @@ public class DiskUsageUtilTest {
         file = new File(agent2.getWorkspaceFor(project1).getRemote(), "fileList");
         size += DiskUsageTestUtil.getSize(DiskUsageTestUtil.readFileList(file)) + agent2.getWorkspaceFor(project1).length() + sizeAxis1 + sizeAxis2 + sizeAxis3;
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
-        Assert.assertEquals("Calculation of matrix job workspace disk usage does not return right size.", size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace());
+        Assertions.assertEquals(size, project1.getAction(ProjectDiskUsageAction.class).getDiskUsageWorkspace(), "Calculation of matrix job workspace disk usage does not return right size.");
         plugin.getConfiguration().setCheckWorkspaceOnAgent(false);
     }
 
 
     @Test
-    public void testCalculateDiskUsageWorkspaceUpdateIformationIfSavedWorkspaceDoesNotExists() throws Exception {
+    void testCalculateDiskUsageWorkspaceUpdateIformationIfSavedWorkspaceDoesNotExists(JenkinsRule j) throws Exception {
         RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Slave agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(), "workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
@@ -271,32 +269,32 @@ public class DiskUsageUtilTest {
         }
         prop.putAgentWorkspaceSize(agent2, agent2.getWorkspaceFor((TopLevelItem) project1).getRemote(), 54356l);
         DiskUsageUtil.calculateWorkspaceDiskUsage(project1);
-        assertFalse("Agent agent2 should be removed from disk usage, because a workspace for project1 does not exist on this agent.", prop.getAgentWorkspaceUsage().containsKey(
-            agent2.getNodeName()));
-        assertTrue("Disk usage should contains agent1, there is a workspace for project1.", prop.getAgentWorkspaceUsage().containsKey(
-            agent1.getNodeName()));
+        assertFalse(prop.getAgentWorkspaceUsage().containsKey(
+            agent2.getNodeName()), "Agent agent2 should be removed from disk usage, because a workspace for project1 does not exist on this agent.");
+        assertTrue(prop.getAgentWorkspaceUsage().containsKey(
+            agent1.getNodeName()), "Disk usage should contains agent1, there is a workspace for project1.");
     }
 
     @Test
-    public void testParseExcludedJobsFromString() throws Exception {
+    void testParseExcludedJobsFromString(JenkinsRule j) throws Exception {
         FreeStyleProject projectWithSpace = j.createFreeStyleProject("Project with space");
         FreeStyleProject project = j.createFreeStyleProject("Project");
         FreeStyleProject project2 = j.createFreeStyleProject("Project2");
         FreeStyleProject projectWithSpace2 = j.createFreeStyleProject(" Project with space");
         String excluded = "Project with space,Project";
         List<String> excludedJobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
-        assertTrue("Excluded jobs should contains job without spaces in name", excludedJobs.contains(project.getName()));
-        assertTrue("Excluded jobs should contains job with spaces in name", excludedJobs.contains(projectWithSpace.getName()));
+        assertTrue(excludedJobs.contains(project.getName()), "Excluded jobs should contains job without spaces in name");
+        assertTrue(excludedJobs.contains(projectWithSpace.getName()), "Excluded jobs should contains job with spaces in name");
         excluded = "Project with space, Project";
         excludedJobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
-        assertTrue("Excluded jobs should parse jobs with spaces even if the space is used as separator.", excludedJobs.contains(projectWithSpace.getName()));
-        assertFalse("Excluded jobs should parse jobs correctly even if the space is used as separator.", excludedJobs.contains(projectWithSpace2.getName()));
-        assertFalse("Excluded jobs should not contains jobs which is not occuren in excluded string.", excludedJobs.contains(project2.getName()));
+        assertTrue(excludedJobs.contains(projectWithSpace.getName()), "Excluded jobs should parse jobs with spaces even if the space is used as separator.");
+        assertFalse(excludedJobs.contains(projectWithSpace2.getName()), "Excluded jobs should parse jobs correctly even if the space is used as separator.");
+        assertFalse(excludedJobs.contains(project2.getName()), "Excluded jobs should not contains jobs which is not occuren in excluded string.");
         excluded = "Project with space, Project5";
         excludedJobs = DiskUsageUtil.parseExcludedJobsFromString(excluded);
-        assertFalse("Excluded jobs should not contains jobs which does not exists.", excludedJobs.contains("Project5"));
+        assertFalse(excludedJobs.contains("Project5"), "Excluded jobs should not contains jobs which does not exists.");
         excluded = "Project with space, ";
-        assertTrue("Excluded jobs should be parsed correctly even if there additional separator", excludedJobs.contains(projectWithSpace.getName()) && excludedJobs.size() == 1);
+        assertTrue(excludedJobs.contains(projectWithSpace.getName()) && excludedJobs.size() == 1, "Excluded jobs should be parsed correctly even if there additional separator");
     }
 
 }

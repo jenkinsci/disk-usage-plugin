@@ -1,7 +1,7 @@
 package hudson.plugins.disk_usage.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixBuild;
@@ -23,22 +23,20 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
  * @author Lucie Votypkova
  */
+@WithJenkins
 public class ProjectDiskUsageActionTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
     @Test
-    public void testGetBuildsDiskUsage() throws Exception {
+    void testGetBuildsDiskUsage(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -74,13 +72,13 @@ public class ProjectDiskUsageActionTest {
             count++;
         }
         Long matrixProjectBuildsTotalSize = matrixBuild1TotalSize + matrixBuild2TotalSize;
-        assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
-        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
+        assertEquals(sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"), "BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.");
+        assertEquals(matrixProjectBuildsTotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"), "BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.");
 
     }
 
     @Test
-    public void testGetBuildsDiskUsageNotDeletedConfigurations() throws Exception {
+    void testGetBuildsDiskUsageNotDeletedConfigurations(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -120,13 +118,13 @@ public class ProjectDiskUsageActionTest {
 
         matrixBuild2.delete();
 
-        assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"));
-        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all").longValue());
+        assertEquals(sizeofBuild, project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all"), "BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.");
+        assertEquals(matrixBuild1TotalSize, matrixProject.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage().get("all").longValue(), "BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.");
 
     }
 
     @Test
-    public void getAllBuildDiskUsageFiltered() throws Exception {
+    void getAllBuildDiskUsageFiltered(JenkinsRule j) throws Exception {
         ProjectTest project = new ProjectTest(j.jenkins, "project");
         Calendar calendar1 = new GregorianCalendar();
         Calendar calendar2 = new GregorianCalendar();
@@ -156,30 +154,30 @@ public class ProjectDiskUsageActionTest {
         DiskUsageTestUtil.getBuildDiskUsageAction(build3).setDiskUsage(sizeofBuild3);
         project.update();
         Map<String, Long> size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(null, youngerThan10days);
-        assertEquals("Disk usage of builds should count only build 1 (only build 1 is younger than 10 days ago).", sizeofBuild1, size.get("all"), 0);
+        assertEquals(sizeofBuild1, size.get("all"), 0, "Disk usage of builds should count only build 1 (only build 1 is younger than 10 days ago).");
         size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(olderThan7days, youngerThan10days);
-        assertEquals("Disk usage of builds should count only build 1 (only build 1 is younger than 10 days ago and older than 8 days ago).", 0, size.get("all"), 0);
+        assertEquals(0, size.get("all"), 0, "Disk usage of builds should count only build 1 (only build 1 is younger than 10 days ago and older than 8 days ago).");
         size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(olderThan7days, null);
-        assertEquals("Disk usage of builds should count all builds (all builds is older than 7 days ago).", sizeofBuild2 + sizeofBuild3, size.get("all"), 0);
+        assertEquals(sizeofBuild2 + sizeofBuild3, size.get("all"), 0, "Disk usage of builds should count all builds (all builds is older than 7 days ago).");
         size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(olderThan7days, youngerThan3weeks);
-        assertEquals("Disk usage of builds should count build 1 and build 2 (build 1 and build 2 are older than 7 days but younger that 3 weeks).", sizeofBuild2, size.get("all"), 0);
+        assertEquals(sizeofBuild2, size.get("all"), 0, "Disk usage of builds should count build 1 and build 2 (build 1 and build 2 are older than 7 days but younger that 3 weeks).");
         size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(olderThan5months, null);
-        assertEquals("No builds is older than 5 months ago", 0, size.get("all"), 0);
+        assertEquals(0, size.get("all"), 0, "No builds is older than 5 months ago");
         size = project.getAction(ProjectDiskUsageAction.class).getBuildsDiskUsage(olderThan3weeks, null);
-        assertEquals("Disk usage of builds should count only build 3 (only build 3 is older tah 3 weeks).", sizeofBuild3, size.get("all"), 0);
+        assertEquals(sizeofBuild3, size.get("all"), 0, "Disk usage of builds should count only build 3 (only build 3 is older tah 3 weeks).");
 
 
     }
 
     @Test
     @LocalData
-    public void testNotToBreakLazyLoading() throws IOException {
+    void testNotToBreakLazyLoading(JenkinsRule j) throws IOException {
         AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         project.isBuilding();
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
-        assertTrue("This test does not have sense if there is loaded all builds", 8 > loadedBuilds);
+        assertTrue(8 > loadedBuilds, "This test does not have sense if there is loaded all builds");
         project.getAction(ProjectDiskUsageAction.class).getGraph();
-        assertTrue("Creation of graph should not cause loading of builds.", project._getRuns().getLoadedBuilds().size() <= loadedBuilds);
+        assertTrue(project._getRuns().getLoadedBuilds().size() <= loadedBuilds, "Creation of graph should not cause loading of builds.");
 
     }
 
