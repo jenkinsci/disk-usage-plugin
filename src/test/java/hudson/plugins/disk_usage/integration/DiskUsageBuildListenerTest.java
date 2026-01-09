@@ -4,43 +4,41 @@
  */
 package hudson.plugins.disk_usage.integration;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Functions;
 import hudson.model.FreeStyleProject;
 import hudson.plugins.disk_usage.DiskUsageProperty;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  *
  * @author Lucie Votypkova
  */
+@WithJenkins
 public class DiskUsageBuildListenerTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
     @Test
-    public void testOnDeleted() throws Exception {
+    void testOnDeleted(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
         project.getBuildByNumber(2).delete();
-        assertNull("Build 2 was not removed from caches informations.", property.getDiskUsageBuildInformation(2));
-        assertNotNull("Disk usage property whoud contains cashed information about build 1.", property.getDiskUsageOfBuild(1));
-        assertNotNull("Disk usage property whoud contains cashed information about build 3.", property.getDiskUsageOfBuild(3));
+        assertNull(property.getDiskUsageBuildInformation(2), "Build 2 was not removed from caches informations.");
+        assertNotNull(property.getDiskUsageOfBuild(1), "Disk usage property whoud contains cashed information about build 1.");
+        assertNotNull(property.getDiskUsageOfBuild(3), "Disk usage property whoud contains cashed information about build 3.");
     }
 
     @Test
-    public void testOnCompleted() throws Exception {
+    void testOnCompleted(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         if(Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo ahoj > log.log"));
@@ -49,8 +47,8 @@ public class DiskUsageBuildListenerTest {
         }
         j.buildAndAssertSuccess(project);
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        assertNotNull("Build information is cached.", property.getDiskUsageBuildInformation(1));
-        assertTrue("Build disk usage should be counted.", property.getDiskUsageOfBuild(1) > 0);
-        assertTrue("Workspace of build should be counted.", property.getAllWorkspaceSize() > 0);
+        assertNotNull(property.getDiskUsageBuildInformation(1), "Build information is cached.");
+        assertTrue(property.getDiskUsageOfBuild(1) > 0, "Build disk usage should be counted.");
+        assertTrue(property.getAllWorkspaceSize() > 0, "Workspace of build should be counted.");
     }
 }

@@ -1,6 +1,6 @@
 package hudson.plugins.disk_usage.integration;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixBuild;
@@ -11,21 +11,19 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.FreeStyleProject;
 import hudson.plugins.disk_usage.BuildDiskUsageAction;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  *
  * @author Lucie Votypkova
  */
+@WithJenkins
 public class BuildDiskUsageActionTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
     @Test
-    public void testGetAllDiskUsage() throws Exception {
+    void testGetAllDiskUsage(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -60,14 +58,14 @@ public class BuildDiskUsageActionTest {
             matrixBuild2TotalSize += count * size2;
             count++;
         }
-        assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, DiskUsageTestUtil.getBuildDiskUsageAction(build).getAllDiskUsage());
-        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).getAllDiskUsage());
-        assertEquals("BuildDiskUsageAction for build 2 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild2TotalSize, DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).getAllDiskUsage());
+        assertEquals(sizeofBuild, DiskUsageTestUtil.getBuildDiskUsageAction(build).getAllDiskUsage(), "BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.");
+        assertEquals(matrixBuild1TotalSize, DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild1).getAllDiskUsage(), "BuildDiskUsageAction for build 1 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.");
+        assertEquals(matrixBuild2TotalSize, DiskUsageTestUtil.getBuildDiskUsageAction(matrixBuild2).getAllDiskUsage(), "BuildDiskUsageAction for build 2 of MatrixProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.");
 
     }
 
     @Test
-    public void getBuildUsageStringMatrixProject() throws Exception {
+    void getBuildUsageStringMatrixProject(JenkinsRule j) throws Exception {
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
         TextAxis axis2 = new TextAxis("axis2", "Aaxis", "Baxis", "Caxis");
@@ -100,11 +98,11 @@ public class BuildDiskUsageActionTest {
         }
         count++;
         String size = (kiloBytes * count / 1024) + " KB";
-        assertEquals("String representation of build disk usage which has "  + size + " is wrong.", size, action.getBuildUsageString());
+        assertEquals(size, action.getBuildUsageString(), "String representation of build disk usage which has "  + size + " is wrong.");
     }
 
     @Test
-    public void getBuildUsageStringFreeStyleProject() throws Exception {
+    void getBuildUsageStringFreeStyleProject(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         j.buildAndAssertSuccess(project);
         AbstractBuild<?,?> build = project.getLastBuild();
@@ -114,15 +112,15 @@ public class BuildDiskUsageActionTest {
         long gygaBytes = megaBytes * 1024;
         Long teraBytes = gygaBytes * 1024;
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(bytes);
-        assertEquals("String representation of build disk usage is wrong which has 100 B is wrong.", "100 B", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        assertEquals("100 B", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString(), "String representation of build disk usage is wrong which has 100 B is wrong.");
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(kiloBytes);
-        assertEquals("String representation of build disk usage is wrong which has 2 KB is wrong.", "2 KB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        assertEquals("2 KB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString(), "String representation of build disk usage is wrong which has 2 KB is wrong.");
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(megaBytes);
-        assertEquals("String representation of build disk usage is wrong which has 2 MB is wrong.", "2 MB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        assertEquals("2 MB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString(), "String representation of build disk usage is wrong which has 2 MB is wrong.");
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(gygaBytes);
-        assertEquals("String representation of build disk usage is wrong which has 2 GB is wrong.", "2 GB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        assertEquals("2 GB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString(), "String representation of build disk usage is wrong which has 2 GB is wrong.");
         DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(teraBytes);
-        assertEquals("String representation of build disk usage is wrong which has 2T B is wrong.", "2 TB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString());
+        assertEquals("2 TB", DiskUsageTestUtil.getBuildDiskUsageAction(build).getBuildUsageString(), "String representation of build disk usage is wrong which has 2T B is wrong.");
     }
 
 }

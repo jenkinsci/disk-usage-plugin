@@ -4,8 +4,8 @@
  */
 package hudson.plugins.disk_usage.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.AbstractProject;
 import hudson.plugins.disk_usage.DiskUsageBuildInformation;
@@ -13,47 +13,44 @@ import hudson.plugins.disk_usage.DiskUsageProperty;
 import hudson.plugins.disk_usage.ProjectDiskUsageAction;
 import java.io.IOException;
 import java.util.Set;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
  * @author lucinka
  */
+@WithJenkins
 public class ProjectDiskUsageTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
 
     @Test
     @LocalData
-    public void testAllInfoLoaded() throws IOException {
+    void testAllInfoLoaded(JenkinsRule j) throws IOException {
         AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         ProjectDiskUsageAction action = project.getAction(ProjectDiskUsageAction.class);
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
         Set<DiskUsageBuildInformation> informations = project.getAction(ProjectDiskUsageAction.class).getBuildsInformation();
-        assertEquals("Number of loaded builds should be the same.", loadedBuilds, project._getRuns().getLoadedBuilds().size());
-        assertEquals("Set of DisUsageBuildInformation does not contains all builds of job.", 8, informations.size());
-        assertTrue("The test have to be rewritten because loaded builds is not less then all builds.", 8 > loadedBuilds);
+        assertEquals(loadedBuilds, project._getRuns().getLoadedBuilds().size(), "Number of loaded builds should be the same.");
+        assertEquals(8, informations.size(), "Set of DisUsageBuildInformation does not contains all builds of job.");
+        assertTrue(8 > loadedBuilds, "The test have to be rewritten because loaded builds is not less then all builds.");
     }
 
     @Test
     @LocalData
-    public void testFirstLoad() throws IOException {
+    void testFirstLoad(JenkinsRule j) throws IOException {
         AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         Set<DiskUsageBuildInformation> informations = project.getProperty(DiskUsageProperty.class)
                                                              .getDiskUsage().getBuildDiskUsage(false);
-        assertEquals("Set of DisUsageBuildInformation should not contain information about builds because they are not loaded.", 0, informations.size());
+        assertEquals(0, informations.size(), "Set of DisUsageBuildInformation should not contain information about builds because they are not loaded.");
     }
 
     @Test
     @LocalData
-    public void testLoadingAllBuildInformationFromPreviousVersion() {
+    void testLoadingAllBuildInformationFromPreviousVersion(JenkinsRule j) {
         AbstractProject<?,?> project = (AbstractProject<?,?>) j.jenkins.getItem("project1");
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        assertEquals("Builds information should be loaded.", 8, property.getDiskUsage().getBuildDiskUsage(true).size(), 0);
+        assertEquals(8, property.getDiskUsage().getBuildDiskUsage(true).size(), 0, "Builds information should be loaded.");
     }
 }

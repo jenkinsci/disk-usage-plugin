@@ -2,10 +2,10 @@ package hudson.plugins.disk_usage.integration;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.FilePath;
 import hudson.Functions;
@@ -45,25 +45,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
  * @author Lucie Votypkova
  */
+@WithJenkins
 public class DiskUsagePropertyTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
     @Issue("JENKINS-40728")
     @Test
-    public void testCalculationWorkspaceForItemInNonTopLeverGroupItem() throws Exception {
+    void testCalculationWorkspaceForItemInNonTopLeverGroupItem(JenkinsRule j) throws Exception {
         final var project = j.createFreeStyleProject("some-project");
         JobPropertyImpl property = new JobPropertyImpl(project);
         project.addProperty(property);
@@ -77,7 +75,7 @@ public class DiskUsagePropertyTest {
     }
 
     @Test
-    public void testGetAllDiskUsageWithoutBuilds() throws Exception {
+    void testGetAllDiskUsageWithoutBuilds(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -102,12 +100,12 @@ public class DiskUsagePropertyTest {
             matrixProjectTotalSize += count * size1;
             count++;
         }
-        assertEquals("DiskUsageProperty for FreeStyleProject " + project.getDisplayName() + " returns wrong value its size without builds and including sub-projects.", sizeOfProject, project.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds());
-        assertEquals("DiskUsageProperty for MatrixProject " + project.getDisplayName() + " returns wrong value for its size without builds and including sub-projects.", matrixProjectTotalSize, matrixProject.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds());
+        assertEquals(sizeOfProject, project.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), "DiskUsageProperty for FreeStyleProject " + project.getDisplayName() + " returns wrong value its size without builds and including sub-projects.");
+        assertEquals(matrixProjectTotalSize, matrixProject.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), "DiskUsageProperty for MatrixProject " + project.getDisplayName() + " returns wrong value for its size without builds and including sub-projects.");
     }
 
     @Test
-    public void testCheckWorkspaces() throws Exception {
+    void testCheckWorkspaces(JenkinsRule j) throws Exception {
         // turn off run listener
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -126,21 +124,21 @@ public class DiskUsagePropertyTest {
         }
         prop.checkWorkspaces();
         Set<String> nodes = prop.getAgentWorkspaceUsage().keySet();
-        assertTrue("DiskUsage property should contains agent " + agent2.getDisplayName() + " in agentWorkspaceUsage.", nodes.contains(
-            agent2.getNodeName()));
-        assertFalse("DiskUsage property should not contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace without reference from project is not set.", nodes.contains(
-            agent1.getNodeName()));
+        assertTrue(nodes.contains(
+            agent2.getNodeName()), "DiskUsage property should contains agent " + agent2.getDisplayName() + " in agentWorkspaceUsage.");
+        assertFalse(nodes.contains(
+            agent1.getNodeName()), "DiskUsage property should not contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace without reference from project is not set.");
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnAgent(true);
         prop.checkWorkspaces();
-        assertTrue("DiskUsage property should contains agent " + agent2.getDisplayName() + " in agentWorkspaceUsage.", nodes.contains(
-            agent2.getNodeName()));
-        assertTrue("DiskUsage property should contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace without reference from project is set.", nodes.contains(
-            agent1.getNodeName()));
+        assertTrue(nodes.contains(
+            agent2.getNodeName()), "DiskUsage property should contains agent " + agent2.getDisplayName() + " in agentWorkspaceUsage.");
+        assertTrue(nodes.contains(
+            agent1.getNodeName()), "DiskUsage property should contains agent " + agent1.getDisplayName() + " in agentWorkspaceUsage when detection of user workspace without reference from project is set.");
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().setCheckWorkspaceOnAgent(false);
     }
 
     @Test
-    public void getWorkspaceSizeTest() throws Exception {
+    void getWorkspaceSizeTest(JenkinsRule j) throws Exception {
         RunListener listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
         Slave agent1 = DiskUsageTestUtil.createAgent("agent1", new File(j.jenkins.getRootDir(), "workspace1").getPath(), j.jenkins, j.createComputerLauncher(null));
@@ -166,12 +164,12 @@ public class DiskUsagePropertyTest {
                 agentInfo.put(path, workspaceSize);
             }
         }
-        assertEquals("DiskUsage workspaces which is configured as agent workspace is wrong.", workspaceSize * 2, prop.getWorkspaceSize(true), 0);
-        assertEquals("DiskUsage workspaces which is not configured as agent workspace is wrong.", workspaceSize, prop.getWorkspaceSize(false), 0);
+        assertEquals(workspaceSize * 2, prop.getWorkspaceSize(true), 0, "DiskUsage workspaces which is configured as agent workspace is wrong.");
+        assertEquals(workspaceSize, prop.getWorkspaceSize(false), 0, "DiskUsage workspaces which is not configured as agent workspace is wrong.");
     }
 
     @Test
-    public void testcheckWorkspacesIfAgentIsDeleted() throws Exception {
+    void testcheckWorkspacesIfAgentIsDeleted(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         DiskUsageProperty property = new DiskUsageProperty();
         project.addProperty(property);
@@ -186,14 +184,14 @@ public class DiskUsagePropertyTest {
         property.putAgentWorkspaceSize(agent2, agent2.getRemoteFS(), 7987l);
         j.jenkins.removeNode(agent2);
         property.checkWorkspaces();
-        assertFalse("Disk usage property should not contains agent which does not exist.", property.getAgentWorkspaceUsage().containsKey(
-            agent2.getNodeName()));
-        assertTrue("Disk usage property should contains agent1.", property.getAgentWorkspaceUsage().containsKey(agent1.getNodeName()));
-        assertTrue("Disk usage property should contains jenkins master.", property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
+        assertFalse(property.getAgentWorkspaceUsage().containsKey(
+            agent2.getNodeName()), "Disk usage property should not contains agent which does not exist.");
+        assertTrue(property.getAgentWorkspaceUsage().containsKey(agent1.getNodeName()), "Disk usage property should contains agent1.");
+        assertTrue(property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()), "Disk usage property should contains jenkins master.");
     }
 
     @Test
-    public void testCheckWorkspacesIfDoesNotExistsIsDeleted() throws Exception {
+    void testCheckWorkspacesIfDoesNotExistsIsDeleted(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         DiskUsageProperty property = new DiskUsageProperty();
         project.addProperty(property);
@@ -207,18 +205,18 @@ public class DiskUsagePropertyTest {
         property.putAgentWorkspaceSize(agent1, agent1.getRemoteFS() + "/project", 5670l);
         property.putAgentWorkspaceSize(agent2, agent2.getRemoteFS(), 7987l);
         property.checkWorkspaces();
-        assertFalse("Disk usage property should not contains agent which does not have any workspace for its project.", property.getAgentWorkspaceUsage().containsKey(
-            agent1.getNodeName()));
-        assertTrue("Disk usage property should contains agent2.", property.getAgentWorkspaceUsage().containsKey(agent2.getNodeName()));
-        assertTrue("Disk usage property should contains jenkins master.", property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
+        assertFalse(property.getAgentWorkspaceUsage().containsKey(
+            agent1.getNodeName()), "Disk usage property should not contains agent which does not have any workspace for its project.");
+        assertTrue(property.getAgentWorkspaceUsage().containsKey(agent2.getNodeName()), "Disk usage property should contains agent2.");
+        assertTrue(property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()), "Disk usage property should contains jenkins master.");
         path.delete();
         property.checkWorkspaces();
-        assertFalse("Disk usage property should contains jenkins master, because workspace for its project was deleted.", property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()));
+        assertFalse(property.getAgentWorkspaceUsage().containsKey(j.jenkins.getNodeName()), "Disk usage property should contains jenkins master, because workspace for its project was deleted.");
 
     }
 
     @Test
-    public void testGetAllNonAgentOrCustomWorkspaceSizeWithOnlyAgents() throws Exception {
+    void testGetAllNonAgentOrCustomWorkspaceSizeWithOnlyAgents(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         if(Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo hello > log"));
@@ -244,14 +242,14 @@ public class DiskUsagePropertyTest {
         project.setCustomWorkspace(customWorkspaceAgent2.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
         Long customWorkspaceAgentSize = customWorkspaceAgent1.length() + customWorkspaceAgent2.length() + customWorkspaceAgent1.getParentFile().length() + customWorkspaceAgent2.getParentFile().length();
-        assertEquals("", customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0);
+        assertEquals(customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0, "");
         // take one agent offline
         agent1.toComputer().disconnect(new OfflineCause.ByCLI("test disconnection"));
-        assertEquals("", customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0);
+        assertEquals(customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0, "");
     }
 
     @Test
-    public void testGetAllNonAgentOrCustomWorkspaceSizeWithMaster() throws Exception {
+    void testGetAllNonAgentOrCustomWorkspaceSizeWithMaster(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project");
         if(Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo hello > log"));
@@ -273,91 +271,91 @@ public class DiskUsagePropertyTest {
         project.setCustomWorkspace(customWorkspaceAgent2.getParentFile().getAbsolutePath());
         j.buildAndAssertSuccess(project);
         Long customWorkspaceAgentSize = customWorkspaceAgent1.length() + customWorkspaceAgent2.length() + customWorkspaceAgent1.getParentFile().length() + customWorkspaceAgent2.getParentFile().length();
-        assertEquals("", customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0);
+        assertEquals(customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0, "");
         // take one agent offline
         j.jenkins.setNumExecutors(0);
-        assertEquals("", customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0);
+        assertEquals(customWorkspaceAgentSize, project.getProperty(DiskUsageProperty.class).getAllNonAgentOrCustomWorkspaceSize(), 0, "");
     }
 
     @Test
     @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml")
     @LocalData
-    public void testBackwadrCompatibility2() throws IOException {
+    void testBackwadrCompatibility2(JenkinsRule j) throws IOException {
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableBuildsDiskUsageCalculation();
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableJobsDiskUsageCalculation();
         j.jenkins.getPlugin(DiskUsagePlugin.class).getConfiguration().disableWorkspacesDiskUsageCalculation();
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         property.getDiskUsage().loadAllBuilds();
-        assertEquals("Size of project1 should be loaded from previous configuration.", 188357L, property.getAllDiskUsageWithoutBuilds(), 0);
-        assertEquals("Size of workspaces should be loaded from previous configuration.", 4096L, property.getAllWorkspaceSize(), 0);
-        assertTrue("Path of workspace should be loaded form previous configuration.", property.getAgentWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
+        assertEquals(188357L, property.getAllDiskUsageWithoutBuilds(), 0, "Size of project1 should be loaded from previous configuration.");
+        assertEquals(4096L, property.getAllWorkspaceSize(), 0, "Size of workspaces should be loaded from previous configuration.");
+        assertTrue(property.getAgentWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"), "Path of workspace should be loaded form previous configuration.");
     }
 
     @Test
     @LocalData
-    public void testGetDiskUsageOfBuilds() {
+    void testGetDiskUsageOfBuilds(JenkinsRule j) {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         for(DiskUsageBuildInformation information: property.getDiskUsageOfBuilds()) {
-            assertEquals("Disk usage of build has loaded wrong size.", information.getNumber() * 1000, information.getSize(), 0);
+            assertEquals(information.getNumber() * 1000, information.getSize(), 0, "Disk usage of build has loaded wrong size.");
         }
-        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+        assertEquals(loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0, "No build should be loaded.");
     }
 
 
     @Test
     @LocalData
-    public void testGetDiskUsageOfBuild() {
+    void testGetDiskUsageOfBuild(JenkinsRule j) {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageOfBuild("1"), 0);
-        assertEquals("Build with id 7 should have size 10000", 10000, property.getDiskUsageOfBuild("7"), 0);
-        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+        assertEquals(3000, property.getDiskUsageOfBuild("1"), 0, "Build with id 1 should have size 3000");
+        assertEquals(10000, property.getDiskUsageOfBuild("7"), 0, "Build with id 7 should have size 10000");
+        assertEquals(loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0, "No build should be loaded.");
     }
 
     @Test
     @LocalData
-    public void testGetDiskUsageBuildInformation() {
+    void testGetDiskUsageBuildInformation(JenkinsRule j) {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageBuildInformation("1").getSize(), 0);
-        assertEquals("Build with id 7 should have size 10000", 10000, property.getDiskUsageBuildInformation("7").getSize(), 0);
-        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+        assertEquals(3000, property.getDiskUsageBuildInformation("1").getSize(), 0, "Build with id 1 should have size 3000");
+        assertEquals(10000, property.getDiskUsageBuildInformation("7").getSize(), 0, "Build with id 7 should have size 10000");
+        assertEquals(loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0, "No build should be loaded.");
     }
 
     @Test
     @LocalData
-    public void testGetDiskUsageOfBuildByNumber() {
+    void testGetDiskUsageOfBuildByNumber(JenkinsRule j) {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertEquals("Build with id 1 should have size 3000", 3000, property.getDiskUsageOfBuild(1), 0);
-        assertEquals("Build with id 7 should have size 10000", 10000, property.getDiskUsageOfBuild(7), 0);
-        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+        assertEquals(3000, property.getDiskUsageOfBuild(1), 0, "Build with id 1 should have size 3000");
+        assertEquals(10000, property.getDiskUsageOfBuild(7), 0, "Build with id 7 should have size 10000");
+        assertEquals(loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0, "No build should be loaded.");
 
     }
 
     @Test
     @ReplaceHudsonHomeWithCurrentPath("jobs/project1/disk-usage.xml")
     @LocalData
-    public void testCheckWorkspacesBuildsWithoutLoadingBuilds() throws IOException, InterruptedException {
+    void testCheckWorkspacesBuildsWithoutLoadingBuilds(JenkinsRule j) throws IOException, InterruptedException {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuildsSize = project._getRuns().getLoadedBuilds().size();
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         FilePath f = j.jenkins.getWorkspaceFor((TopLevelItem) project);
         property.checkWorkspaces();
-        assertEquals("Workspace should have size 4096", 4096, property.getAllWorkspaceSize(), 0);
-        assertEquals("No build should be loaded.", loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0);
+        assertEquals(4096, property.getAllWorkspaceSize(), 0, "Workspace should have size 4096");
+        assertEquals(loadedBuildsSize, project._getRuns().getLoadedBuilds().size(), 0, "No build should be loaded.");
     }
 
     @Test
     @ReplaceHudsonHomeWithCurrentPath("jobs/project1/config.xml, jobs/project1/builds/1/build.xml, jobs/project1/builds/3/build.xml")
     @LocalData
-    public void testCheckWorkspacesWithLoadingBuilds() throws IOException {
+    void testCheckWorkspacesWithLoadingBuilds(JenkinsRule j) throws IOException {
         File file = new File(j.jenkins.getRootDir(), "jobs/project2/builds/1/build.xml");
         XmlFile f = new XmlFile(new XStream2(), file);
         String newBuildXml = f.asString().replace("${JENKINS_HOME}", j.jenkins.getRootDir().getAbsolutePath());
@@ -368,14 +366,14 @@ public class DiskUsagePropertyTest {
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
         DiskUsageProperty property2 = (DiskUsageProperty) project2.getProperty(DiskUsageProperty.class);
         property2.getDiskUsage().loadAllBuilds();
-        assertTrue("Project should contains workspace with path {JENKINS_HOME}/jobs/project1/workspace", property.getAgentWorkspaceUsage().get("").containsKey("${JENKINS_HOME}/jobs/project1/workspace"));
-        assertTrue("Project should contains workspace with path {JENKINS_HOME}/workspace", property2.getAgentWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"));
+        assertTrue(property.getAgentWorkspaceUsage().get("").containsKey("${JENKINS_HOME}/jobs/project1/workspace"), "Project should contains workspace with path {JENKINS_HOME}/jobs/project1/workspace");
+        assertTrue(property2.getAgentWorkspaceUsage().get("").containsKey(j.jenkins.getRootDir().getAbsolutePath() + "/workspace"), "Project should contains workspace with path {JENKINS_HOME}/workspace");
 
-        assertEquals("Builds should be loaded.", 2, project2._getRuns().getLoadedBuilds().size(), 0);
+        assertEquals(2, project2._getRuns().getLoadedBuilds().size(), 0, "Builds should be loaded.");
     }
 
     @Test
-    public void testGetAllDiskUsageOfBuild() throws IOException, Exception {
+    void testGetAllDiskUsageOfBuild(JenkinsRule j) throws IOException, Exception {
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "project1");
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "project2");
         TextAxis axis1 = new TextAxis("axis", "axisA", "axisB", "axisC");
@@ -412,38 +410,38 @@ public class DiskUsagePropertyTest {
         }
         hudson.plugins.disk_usage.DiskUsageProperty freeStyleProjectProperty = project.getProperty(DiskUsageProperty.class);
         DiskUsageProperty matrixProjectProperty = matrixProject.getProperty(DiskUsageProperty.class);
-        assertEquals("BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.", sizeofBuild, freeStyleProjectProperty.getAllDiskUsageOfBuild(1));
-        assertEquals("BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild1TotalSize, matrixProjectProperty.getAllDiskUsageOfBuild(1));
-        assertEquals("BuildDiskUsageAction for build 2 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.", matrixBuild2TotalSize, matrixProjectProperty.getAllDiskUsageOfBuild(2));
+        assertEquals(sizeofBuild, freeStyleProjectProperty.getAllDiskUsageOfBuild(1), "BuildDiskUsageAction for build 1 of FreeStyleProject " + project.getDisplayName() + " returns wrong value for its size including sub-builds.");
+        assertEquals(matrixBuild1TotalSize, matrixProjectProperty.getAllDiskUsageOfBuild(1), "BuildDiskUsageAction for build 1 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.");
+        assertEquals(matrixBuild2TotalSize, matrixProjectProperty.getAllDiskUsageOfBuild(2), "BuildDiskUsageAction for build 2 of MatrixProject " + matrixProject.getDisplayName() + " returns wrong value for its size including sub-builds.");
 
     }
 
     @Test
     @LocalData
-    public void testDoNotBreakLazyLoading() {
+    void testDoNotBreakLazyLoading(JenkinsRule j) {
         AbstractProject project = (AbstractProject) j.jenkins.getItem("project1");
         int loadedBuilds = project._getRuns().getLoadedBuilds().size();
-        assertTrue("This tests does not sense if there are loaded all builds.", 8 > loadedBuilds);
+        assertTrue(8 > loadedBuilds, "This tests does not sense if there are loaded all builds.");
         DiskUsageProperty property = (DiskUsageProperty) project.getProperty(DiskUsageProperty.class);
-        assertEquals("Size of builds should be loaded.", 1000, property.getAllDiskUsageOfBuild(8), 0);
-        assertEquals("Size of builds should be loaded.", 7000, property.getAllDiskUsageOfBuild(4), 0);
-        assertTrue("No new build should be loaded.", loadedBuilds <= project._getRuns().getLoadedBuilds().size());
+        assertEquals(1000, property.getAllDiskUsageOfBuild(8), 0, "Size of builds should be loaded.");
+        assertEquals(7000, property.getAllDiskUsageOfBuild(4), 0, "Size of builds should be loaded.");
+        assertTrue(loadedBuilds <= project._getRuns().getLoadedBuilds().size(), "No new build should be loaded.");
     }
 
     @Test
-    public void testRemoveBuild() throws Exception {
+    void testRemoveBuild(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        assertEquals("Disk usage should have information about two builds.", 2, property.getDiskUsage().getBuildDiskUsage(false).size());
+        assertEquals(2, property.getDiskUsage().getBuildDiskUsage(false).size(), "Disk usage should have information about two builds.");
         AbstractBuild build = project.getLastBuild();
         build.delete();
-        assertEquals("Deleted build should be removed from disk-usage informations too.", 1, property.getDiskUsage().getBuildDiskUsage(false).size());
+        assertEquals(1, property.getDiskUsage().getBuildDiskUsage(false).size(), "Deleted build should be removed from disk-usage informations too.");
     }
 
     @Test
-    public void testRemoveDeletedBuildNotLoadedByJenkins() throws Exception {
+    void testRemoveDeletedBuildNotLoadedByJenkins(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
@@ -452,12 +450,12 @@ public class DiskUsagePropertyTest {
         FilePath path = new FilePath(file);
         path.deleteRecursive();
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
-        assertFalse("It is not possible to delete build.", file.exists());
-        assertEquals("Disk usage should have information about 2 builds.", 2, property.getDiskUsage().getBuildDiskUsage(false).size());
+        assertFalse(file.exists(), "It is not possible to delete build.");
+        assertEquals(2, property.getDiskUsage().getBuildDiskUsage(false).size(), "Disk usage should have information about 2 builds.");
         j.jenkins.reload();
         project = (FreeStyleProject) j.jenkins.getItem(project.getDisplayName());
         property = project.getProperty(DiskUsageProperty.class);
-        assertEquals("Deleted build without Jenkins should not be loaded.", 1, property.getDiskUsage().getBuildDiskUsage(false).size());
+        assertEquals(1, property.getDiskUsage().getBuildDiskUsage(false).size(), "Deleted build without Jenkins should not be loaded.");
 
     }
 
@@ -542,7 +540,7 @@ public class DiskUsagePropertyTest {
 
     @Issue("JENKINS-29143")
     @Test
-    public void testThreadSaveOperationUnderSetOfDiskUsageBuildInformation() throws Exception {
+    void testThreadSaveOperationUnderSetOfDiskUsageBuildInformation(JenkinsRule j) throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         final ProjectDiskUsage diskUsage = new ProjectDiskUsage();
         diskUsage.setProject(project);

@@ -1,7 +1,7 @@
 package hudson.plugins.disk_usage.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
@@ -26,19 +26,17 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
  * @author Lucie Votypkova
  */
+@WithJenkins
 public class JobDiskUsageCalculationThreadTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
     private void waitUntilThreadEnds(JobWithoutBuildsDiskUsageCalculation calculation) throws InterruptedException {
         while(calculation.isExecuting()) {
@@ -68,7 +66,7 @@ public class JobDiskUsageCalculationThreadTest {
 
     @Test
     @LocalData
-    public void testExecute() throws IOException, InterruptedException {
+    void testExecute(JenkinsRule j) throws IOException, InterruptedException {
         // turn off run listener
         RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
         j.jenkins.getExtensionList(RunListener.class).remove(listener);
@@ -90,13 +88,13 @@ public class JobDiskUsageCalculationThreadTest {
         }
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
-        assertEquals("Project project2 has wrong job size.", project2Size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
+        assertEquals(projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0, "Project project has wrong job size.");
+        assertEquals(project2Size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0, "Project project2 has wrong job size.");
     }
 
     @Test
     @LocalData
-    public void testMatrixProject() throws IOException, InterruptedException {
+    void testMatrixProject(JenkinsRule j) throws IOException, InterruptedException {
         // turn off run listener
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
         RunListener<?> listener = RunListener.all().get(DiskUsageBuildListener.class);
@@ -126,15 +124,15 @@ public class JobDiskUsageCalculationThreadTest {
         }
         calculation.execute(TaskListener.NULL);
         waitUntilThreadEnds(calculation);
-        assertEquals("Project project has wrong job size.", projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
-        assertEquals("Project project2 has wrong job size.", project2Size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
+        assertEquals(projectSize, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0, "Project project has wrong job size.");
+        assertEquals(project2Size, project2.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0, "Project project2 has wrong job size.");
         for(MatrixConfiguration config: project.getItems()) {
-            assertEquals("Configuration " + config.getDisplayName() + " has wrong job size.", matrixConfigurationsSize.get(config.getDisplayName()), config.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
+            assertEquals(matrixConfigurationsSize.get(config.getDisplayName()), config.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0, "Configuration " + config.getDisplayName() + " has wrong job size.");
         }
     }
 
     @Test
-    public void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress() throws Exception {
+    void testDoNotExecuteDiskUsageWhenPreviousCalculationIsInProgress(JenkinsRule j) throws Exception {
         JobWithoutBuildsDiskUsageCalculation calculation = new JobWithoutBuildsDiskUsageCalculation();
         DiskUsageTestUtil.cancelCalculation(calculation);
         FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "freestyle1");
@@ -152,22 +150,22 @@ public class JobDiskUsageCalculationThreadTest {
         t.start();
         Thread.sleep(1000);
         testCalculation.doRun();
-        assertEquals("Disk usage should not start calculation if preview calculation is in progress.", 0l, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0);
+        assertEquals(0l, project.getAction(ProjectDiskUsageAction.class).getDiskUsageWithoutBuilds(), 0, "Disk usage should not start calculation if preview calculation is in progress.");
         t.interrupt();
     }
 
     @Test
-    public void testDoNotCalculateUnenabledDiskUsage() throws Exception {
+    void testDoNotCalculateUnenabledDiskUsage(JenkinsRule j) throws Exception {
         FreeStyleProject projectWithoutDiskUsage = j.jenkins.createProject(FreeStyleProject.class, "projectWithoutDiskUsage");
         DiskUsageProjectActionFactory.DESCRIPTOR.disableJobsDiskUsageCalculation();
         JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
         calculation.execute(TaskListener.NULL);
-        assertEquals("Disk usage for build should not be counted.", 0, projectWithoutDiskUsage.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), 0);
+        assertEquals(0, projectWithoutDiskUsage.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), 0, "Disk usage for build should not be counted.");
         DiskUsageProjectActionFactory.DESCRIPTOR.enableJobsDiskUsageCalculation();
     }
 
     @Test
-    public void testDoNotCalculateExcludedJobs() throws Exception {
+    void testDoNotCalculateExcludedJobs(JenkinsRule j) throws Exception {
         JobWithoutBuildsDiskUsageCalculation calculation = AperiodicWork.all().get(JobWithoutBuildsDiskUsageCalculation.class);
         if(calculation.isExecuting()) {
             DiskUsageTestUtil.cancelCalculation(calculation);
@@ -178,8 +176,8 @@ public class JobDiskUsageCalculationThreadTest {
         excludes.add(excludedJob.getName());
         DiskUsageProjectActionFactory.DESCRIPTOR.setExcludedJobs(excludes);
         calculation.execute(TaskListener.NULL);
-        assertEquals("Disk usage for excluded project should not be counted.", 0, excludedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), 0);
-        assertTrue("Disk usage for included project should be not be counted.", includedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds() > 0);
+        assertEquals(0, excludedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds(), 0, "Disk usage for excluded project should not be counted.");
+        assertTrue(includedJob.getProperty(DiskUsageProperty.class).getAllDiskUsageWithoutBuilds() > 0, "Disk usage for included project should be not be counted.");
         excludes.clear();
     }
 
