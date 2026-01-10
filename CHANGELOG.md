@@ -8,6 +8,7 @@
  - [Use most recent parent pom 6.2111.v8b_6a_1d599df3](https://github.com/jenkinsci/disk-usage-plugin/pull/104)
  - [Migrate tests to JUnit5](https://github.com/jenkinsci/disk-usage-plugin/pull/102)
  - [Ban JUnit 4 imports](https://github.com/jenkinsci/disk-usage-plugin/pull/105)
+ - [Removes unused dependency on junit plugin](https://github.com/jenkinsci/disk-usage-plugin/pull/107)
 
 ### Release 1.3 (2024-11-19)
 
