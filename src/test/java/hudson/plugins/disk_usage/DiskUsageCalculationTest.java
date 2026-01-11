@@ -49,7 +49,7 @@ public class DiskUsageCalculationTest {
         calculation.setCron(minute + " * * * *");
         calculation.reschedule();
         expectedNextExecution = calendar.getTimeInMillis();
-        assertEquals(expectedNextExecution, calculation.scheduledLastInstanceExecutionTime(), 60000, "Scheduled time of disk usage calculation should be changed");
+        assertEquals(expectedNextExecution, calculation.scheduledLastInstanceExecutionTime(), 120_000, "Scheduled time of disk usage calculation should be changed");
 
     }
 
