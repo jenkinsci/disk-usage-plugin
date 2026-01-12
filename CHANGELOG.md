@@ -9,6 +9,7 @@
  - [Migrate tests to JUnit5](https://github.com/jenkinsci/disk-usage-plugin/pull/102)
  - [Ban JUnit 4 imports](https://github.com/jenkinsci/disk-usage-plugin/pull/105)
  - [Removes unused dependency on junit plugin](https://github.com/jenkinsci/disk-usage-plugin/pull/107)
+ - [Require 2.504.3 as minimum Jenkins version](https://github.com/jenkinsci/disk-usage-plugin/pull/108)
 
 ### Release 1.3 (2024-11-19)
 
