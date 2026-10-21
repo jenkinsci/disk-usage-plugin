@@ -6,6 +6,7 @@ package hudson.plugins.disk_usage.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.AbstractBuild;
@@ -16,6 +17,8 @@ import hudson.model.TopLevelItem;
 import hudson.plugins.disk_usage.DiskUsagePlugin;
 import hudson.plugins.disk_usage.DiskUsageProperty;
 import java.io.IOException;
+import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -27,6 +30,39 @@ import org.jvnet.hudson.test.recipes.LocalData;
  */
 @WithJenkins
 public class DiskUsagePluginTest {
+
+    @Test
+    void testApiExportsGlobalUsage(JenkinsRule j) throws Exception {
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "apiProject");
+        FreeStyleBuild build = project.createExecutable();
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(1234L);
+        j.jenkins.getPlugin(DiskUsagePlugin.class).refreshGlobalInformation();
+
+        JSONObject json = j.getJSON("plugin/disk-usage/api/json").getJSONObject();
+
+        assertEquals(1234L, json.getLong("builds"));
+        assertEquals(1234L, json.getLong("jobs"));
+    }
+
+    @Test
+    void testJobApiExportsJobUsage(JenkinsRule j) throws Exception {
+        FreeStyleProject project = j.jenkins.createProject(FreeStyleProject.class, "apiJob");
+        FreeStyleBuild build = project.createExecutable();
+        DiskUsageTestUtil.getBuildDiskUsageAction(build).setDiskUsage(1234L);
+
+        JSONObject json = j.getJSON("job/apiJob/diskUsage/api/json").getJSONObject();
+
+        assertEquals(1234L, json.getLong("builds"));
+        assertEquals(0L, json.getLong("lockedBuilds"));
+        assertTrue(json.has("job"));
+        assertTrue(json.has("workspaces"));
+    }
+
+    @Test
+    void testApiRejectsInvalidTree(JenkinsRule j) {
+        assertThrows(FailingHttpStatusCodeException.class,
+            () -> j.createWebClient().goTo("plugin/disk-usage/api/json?tree=builds[", null));
+    }
 
     @Test
     void testRefreshGlobalInformation(JenkinsRule j) throws IOException {

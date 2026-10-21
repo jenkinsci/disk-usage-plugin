@@ -2,6 +2,7 @@ package hudson.plugins.disk_usage;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Api;
 import hudson.model.ItemGroup;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -64,6 +66,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return getAllAgentWorkspaces();
     }
 
+    @Exported(name = "agentWorkspaces")
     public Long getAllAgentWorkspaces() {
         return getAllDiskUsageWorkspace() - getAllCustomOrNonAgentWorkspaces();
     }
@@ -73,6 +76,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return getAllCustomOrNonAgentWorkspaces();
     }
 
+    @Exported(name = "nonAgentWorkspaces")
     public Long getAllCustomOrNonAgentWorkspaces() {
         Long diskUsage = 0L;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
@@ -99,6 +103,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
      * 
      * @return disk usage project and its sub-projects
      */
+    @Exported(name = "workspaces")
     public Long getAllDiskUsageWorkspace() {
         Long diskUsage = 0L;
         DiskUsageProperty property = project.getProperty(DiskUsageProperty.class);
@@ -143,6 +148,7 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
     }
 
 
+    @Exported(name = "job")
     public Long getJobRootDirDiskUsage() {
         try {
             return getBuildsDiskUsage().get("all") + getDiskUsageWithoutBuilds();
@@ -213,8 +219,18 @@ public class ProjectDiskUsageAction implements ProminentProjectAction {
         return getBuildsDiskUsage(null, null);
     }
 
+    @Exported(name = "builds")
     public Long getAllBuildsDiskUsage() throws IOException {
         return getBuildsDiskUsage(null, null).get("all");
+    }
+
+    @Exported(name = "lockedBuilds")
+    public Long getLockedBuildsDiskUsage() throws IOException {
+        return getBuildsDiskUsage().get("locked");
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**

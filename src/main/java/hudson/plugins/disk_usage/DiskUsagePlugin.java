@@ -3,6 +3,7 @@ package hudson.plugins.disk_usage;
 import hudson.Extension;
 import hudson.Plugin;
 import hudson.model.AbstractProject;
+import hudson.model.Api;
 import hudson.model.AperiodicWork;
 import hudson.model.Item;
 import hudson.model.Job;
@@ -18,6 +19,8 @@ import jenkins.model.Jenkins;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Entry point of the plugin.
@@ -25,6 +28,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author dvrzalik
  */
 @Extension
+@ExportedBean
 public class DiskUsagePlugin extends Plugin {
 
     private Long diskUsageBuilds = 0L;
@@ -55,22 +59,27 @@ public class DiskUsagePlugin extends Plugin {
         }
     }
 
+    @Exported(name = "builds")
     public Long getCashedGlobalBuildsDiskUsage() {
         return diskUsageBuilds;
     }
 
+    @Exported(name = "jobs")
     public Long getCashedGlobalJobsDiskUsage() {
         return diskUsageBuilds + diskUsageJobsWithoutBuilds;
     }
 
+    @Exported(name = "jobsWithoutBuilds")
     public Long getCashedGlobalJobsWithoutBuildsDiskUsage() {
         return diskUsageJobsWithoutBuilds;
     }
 
+    @Exported(name = "lockedBuilds")
     public Long getCashedGlobalLockedBuildsDiskUsage() {
         return diskUsageLockedBuilds;
     }
 
+    @Exported(name = "workspaces")
     public Long getCashedGlobalWorkspacesDiskUsage() {
         return diskUsageWorkspaces;
     }
@@ -80,6 +89,7 @@ public class DiskUsagePlugin extends Plugin {
         return diskUsageNonAgentWorkspaces;
     }
 
+    @Exported(name = "nonAgentWorkspaces")
     public Long getCashedNonAgentDiskUsageWorkspace() {
         return diskUsageNonAgentWorkspaces;
     }
@@ -89,8 +99,13 @@ public class DiskUsagePlugin extends Plugin {
         return getCashedAgentDiskUsageWorkspace();
     }
 
+    @Exported(name = "agentWorkspaces")
     public Long getCashedAgentDiskUsageWorkspace() {
         return diskUsageWorkspaces - diskUsageNonAgentWorkspaces;
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     public Long getGlobalBuildsDiskUsage() throws IOException {
